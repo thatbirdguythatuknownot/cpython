@@ -459,7 +459,7 @@ _PyAST_Compile(mod_ty mod, PyObject *filename, PyCompilerFlags *flags,
     if (c.c_future->ff_features & 0x2000000) {
         if (merged & 0x400000) {
             merged ^= 0x400000;
-            printf("Barry has been overthrown from BDFL-ship!\n"); // optional message
+            printf("Barry has resigned from BDFL-ship.\n"); // optional message
         } else
             merged ^= 0x2000000;
     }
