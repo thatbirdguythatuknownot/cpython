@@ -34,8 +34,8 @@ future_check_features(PyFutureFeatures *ff, stmt_ty s, PyObject *filename)
             continue;
         } else if (strcmp(feature, FUTURE_BARRY_AS_BDFL) == 0) {
             ff->ff_features |= CO_FUTURE_BARRY_AS_BDFL;
-        } else if (strcmp(feature, FUTURE_REVOLT_AND_REMOVE_BARRY_FROM_BDFL) == 0) {
-            ff->ff_features |= CO_FUTURE_REVOLT_AND_REMOVE_BARRY_FROM_BDFL;
+        } else if (strcmp(feature, FUTURE_BARRY_RESIGNED_AS_BDFL) == 0) {
+            ff->ff_features |= CO_FUTURE_BARRY_RESIGNED_AS_BDFL;
         } else if (strcmp(feature, FUTURE_GENERATOR_STOP) == 0) {
             continue;
         } else if (strcmp(feature, FUTURE_ANNOTATIONS) == 0) {
@@ -97,7 +97,7 @@ future_parse(PyFutureFeatures *ff, mod_ty mod, PyObject *filename)
             int skip_check = 1;
             for (Py_ssize_t iter_i = 0; iter_i < asdl_seq_LEN(importnames); ++iter_i) {
                 skip_check = _PyUnicode_EqualToASCIIString(asdl_seq_GET(importnames, iter_i)->name, FUTURE_BARRY_AS_BDFL) ||
-                             _PyUnicode_EqualToASCIIString(asdl_seq_GET(importnames, iter_i)->name, FUTURE_REVOLT_AND_REMOVE_BARRY_FROM_BDFL);
+                             _PyUnicode_EqualToASCIIString(asdl_seq_GET(importnames, iter_i)->name, FUTURE_BARRY_RESIGNED_AS_BDFL);
                 if (skip_check == 0)
                     break;
             }
