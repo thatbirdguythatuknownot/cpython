@@ -3504,7 +3504,7 @@ compiler_from_import(struct compiler *c, stmt_ty s)
     for (i = 0; i < n; i++) {
         alias_ty alias = (alias_ty)asdl_seq_GET(s->v.ImportFrom.names, i);
         if (skip_check)
-            skip_check = _PyUnicode_EqualToASCIIString(alias->name, "barry_as_FLUFL") || _PyUnicode_EqualToASCIIString(alias->name, "remove_barry_from_BDFL");
+            skip_check = _PyUnicode_EqualToASCIIString(alias->name, "barry_as_FLUFL") || _PyUnicode_EqualToASCIIString(alias->name, "barry_resign_as_FLUFL");
         Py_INCREF(alias->name);
         PyTuple_SET_ITEM(names, i, alias->name);
     }
