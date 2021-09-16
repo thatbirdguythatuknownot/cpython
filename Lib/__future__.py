@@ -56,7 +56,7 @@ all_feature_names = [
     "print_function",
     "unicode_literals",
     "barry_as_FLUFL",
-    "remove_barry_from_BDFL",
+    "barry_resign_as_FLUFL",
     "generator_stop",
     "annotations",
 ]
@@ -67,17 +67,17 @@ __all__ = ["all_feature_names"] + all_feature_names
 # code.h and used by compile.h, so that an editor search will find them here.
 # However, they're not exported in __all__, because they don't really belong to
 # this module.
-CO_NESTED = 0x0010                                         # nested_scopes
-CO_GENERATOR_ALLOWED = 0                                   # generators (obsolete, was 0x1000)
-CO_FUTURE_DIVISION = 0x20000                               # division
-CO_FUTURE_ABSOLUTE_IMPORT = 0x40000                        # perform absolute imports by default
-CO_FUTURE_WITH_STATEMENT = 0x80000                         # with statement
-CO_FUTURE_PRINT_FUNCTION = 0x100000                        # print function
-CO_FUTURE_UNICODE_LITERALS = 0x200000                      # unicode string literals
-CO_FUTURE_BARRY_AS_BDFL = 0x400000                         # Revert from __future__ import remove_barry_from_BDFL
-CO_FUTURE_GENERATOR_STOP = 0x800000                        # StopIteration becomes RuntimeError in generators
-CO_FUTURE_ANNOTATIONS = 0x1000000                          # annotations become strings at runtime
-CO_FUTURE_REVOLT_AND_REMOVE_BARRY_FROM_BDFL = 0x2000000    # Revert from __future__ import barry_as_FLUFL
+CO_NESTED = 0x0010                                     # nested_scopes
+CO_GENERATOR_ALLOWED = 0                               # generators (obsolete, was 0x1000)
+CO_FUTURE_DIVISION = 0x20000                           # division
+CO_FUTURE_ABSOLUTE_IMPORT = 0x40000                    # perform absolute imports by default
+CO_FUTURE_WITH_STATEMENT = 0x80000                     # with statement
+CO_FUTURE_PRINT_FUNCTION = 0x100000                    # print function
+CO_FUTURE_UNICODE_LITERALS = 0x200000                  # unicode string literals
+CO_FUTURE_BARRY_AS_BDFL = 0x400000                     # Revert from __future__ import barry_resign_as_FLUFL
+CO_FUTURE_GENERATOR_STOP = 0x800000                    # StopIteration becomes RuntimeError in generators
+CO_FUTURE_ANNOTATIONS = 0x1000000                      # annotations become strings at runtime
+CO_FUTURE_BARRY_RESIGNED_AS_BDFL = 0x2000000           # Revert from __future__ import barry_as_FLUFL
 
 
 class _Feature:
@@ -140,9 +140,9 @@ barry_as_FLUFL = _Feature((3, 1, 0, "alpha", 2),
                           (4, 0, 0, "alpha", 0),
                           CO_FUTURE_BARRY_AS_BDFL)
 
-remove_barry_from_BDFL = _Feature((3, 11, 0, "alpha", 0),
+barry_resign_as_FLUFL = _Feature((3, 11, 0, "alpha", 0),
                                   (4, 0, 0, "alpha", 0),
-                                  CO_FUTURE_REVOLT_AND_REMOVE_BARRY_FROM_BDFL)
+                                  CO_FUTURE_BARRY_RESIGNED_AS_BDFL)
 
 generator_stop = _Feature((3, 5, 0, "beta", 1),
                           (3, 7, 0, "alpha", 0),
