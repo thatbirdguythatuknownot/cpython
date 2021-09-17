@@ -663,7 +663,7 @@ _PyCode_Addr2Offset(PyCodeObject* co, int addrq)
         return -1;
     }
 
-    unsigned char* bytes = (unsigned char*)PyBytes_AS_STRING(co->co_columntable);
+    unsigned char* bytes = PyBytes_AS_STRING(co->co_columntable);
     return bytes[addrq] - 1;
 }
 
