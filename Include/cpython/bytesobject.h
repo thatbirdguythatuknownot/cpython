@@ -61,7 +61,7 @@ typedef struct {
 
     /* Stack buffer */
     int use_small_buffer;
-    char small_buffer[512];
+    unsigned char small_buffer[512];
 } _PyBytesWriter;
 
 /* Initialize a bytes writer
