@@ -56,7 +56,6 @@ all_feature_names = [
     "print_function",
     "unicode_literals",
     "barry_as_FLUFL",
-    "barry_resign_as_FLUFL",
     "generator_stop",
     "annotations",
 ]
@@ -77,7 +76,6 @@ CO_FUTURE_UNICODE_LITERALS = 0x200000                  # unicode string literals
 CO_FUTURE_BARRY_AS_BDFL = 0x400000                     # Revert from __future__ import barry_resign_as_FLUFL
 CO_FUTURE_GENERATOR_STOP = 0x800000                    # StopIteration becomes RuntimeError in generators
 CO_FUTURE_ANNOTATIONS = 0x1000000                      # annotations become strings at runtime
-CO_FUTURE_BARRY_RESIGNED_AS_BDFL = 0x2000000           # Revert from __future__ import barry_as_FLUFL
 
 
 class _Feature:
@@ -139,10 +137,6 @@ unicode_literals = _Feature((2, 6, 0, "alpha", 2),
 barry_as_FLUFL = _Feature((3, 1, 0, "alpha", 2),
                           (4, 0, 0, "alpha", 0),
                           CO_FUTURE_BARRY_AS_BDFL)
-
-barry_resign_as_FLUFL = _Feature((3, 11, 0, "alpha", 0),
-                                  (4, 0, 0, "alpha", 0),
-                                  CO_FUTURE_BARRY_RESIGNED_AS_BDFL)
 
 generator_stop = _Feature((3, 5, 0, "beta", 1),
                           (3, 7, 0, "alpha", 0),
