@@ -93,17 +93,9 @@ future_parse(PyFutureFeatures *ff, mod_ty mod, PyObject *filename)
 
         if (s->kind == ImportFrom_kind) {
             identifier modname = s->v.ImportFrom.module;
-            asdl_alias_seq *importnames = s->v.ImportFrom.names;
-            int skip_check = 1;
-            for (Py_ssize_t iter_i = 0; iter_i < asdl_seq_LEN(importnames); ++iter_i) {
-                skip_check = _PyUnicode_EqualToASCIIString(asdl_seq_GET(importnames, iter_i)->name, FUTURE_BARRY_AS_BDFL) ||
-                             _PyUnicode_EqualToASCIIString(asdl_seq_GET(importnames, iter_i)->name, FUTURE_BARRY_RESIGNED_AS_BDFL);
-                if (skip_check == 0)
-                    break;
-            }
             if (modname &&
                 _PyUnicode_EqualToASCIIString(modname, "__future__")) {
-                if (skip_check == 0 && done) {
+                if (done) {
                     PyErr_SetString(PyExc_SyntaxError,
                                     ERR_LATE_FUTURE);
                     PyErr_SyntaxLocationObject(filename, s->lineno, s->col_offset);
