@@ -1955,14 +1955,27 @@ _PyPegen_get_patterns(Parser *p, asdl_seq *seq)
 
 /* Constructs a NameDefaultPair */
 NameDefaultPair *
-_PyPegen_name_default_pair(Parser *p, arg_ty arg, expr_ty value, Token *tc)
+_PyPegen_name_default_pair(Parser *p, arg_ty arg, ArgumentDefault *value, Token *tc)
 {
     NameDefaultPair *a = _PyArena_Malloc(p->arena, sizeof(NameDefaultPair));
     if (!a) {
         return NULL;
     }
     a->arg = _PyPegen_add_type_comment_to_arg(p, arg, tc);
+    a->value = value ? value->value : NULL; //TODO: Replace this with just a->value=value once NDP wants AD not expr_ty
+    return a;
+}
+
+/* Constructs an ArgumentDefault */
+ArgumentDefault *
+_PyPegen_arg_default(Parser *p, expr_ty value, int type)
+{
+    ArgumentDefault *a = _PyArena_Malloc(p->arena, sizeof(ArgumentDefault));
+    if (!a) {
+        return NULL;
+    }
     a->value = value;
+    a->type = type;
     return a;
 }
 
