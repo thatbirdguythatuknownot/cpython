@@ -188,6 +188,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->conversion);
     Py_CLEAR(state->ctx);
     Py_CLEAR(state->decorator_list);
+    Py_CLEAR(state->default_type);
     Py_CLEAR(state->defaults);
     Py_CLEAR(state->elt);
     Py_CLEAR(state->elts);
@@ -514,7 +515,6 @@ static const char * const expr_attributes[] = {
     "end_lineno",
     "end_col_offset",
 };
-static PyObject* ast2obj_default(struct ast_state *state, void*);
 static PyObject* ast2obj_expr(struct ast_state *state, void*);
 static const char * const BoolOp_fields[]={
     "op",
@@ -673,6 +673,11 @@ static const char * const arg_fields[]={
     "arg",
     "annotation",
     "type_comment",
+};
+static PyObject* ast2obj_default(struct ast_state *state, void*);
+static const char * const default_fields[]={
+    "value",
+    "type",
 };
 static PyObject* ast2obj_keyword(struct ast_state *state, void*);
 static const char * const keyword_attributes[] = {
@@ -1734,6 +1739,11 @@ init_types(struct ast_state *state)
         return 0;
     if (PyObject_SetAttr(state->arg_type, state->end_col_offset, Py_None) == -1)
         return 0;
+    state->default_type = make_type(state, "default", state->AST_type,
+                                    default_fields, 2,
+        "default(expr value, int type)");
+    if (!state->default_type) return 0;
+    if (!add_attributes(state, state->default_type, NULL, 0)) return 0;
     state->keyword_type = make_type(state, "keyword", state->AST_type,
                                     keyword_fields, 2,
         "keyword(identifier? arg, expr value)");
@@ -1871,6 +1881,8 @@ static int obj2ast_arguments(struct ast_state *state, PyObject* obj,
                              arguments_ty* out, PyArena* arena);
 static int obj2ast_arg(struct ast_state *state, PyObject* obj, arg_ty* out,
                        PyArena* arena);
+static int obj2ast_default(struct ast_state *state, PyObject* obj, default_ty*
+                           out, PyArena* arena);
 static int obj2ast_keyword(struct ast_state *state, PyObject* obj, keyword_ty*
                            out, PyArena* arena);
 static int obj2ast_alias(struct ast_state *state, PyObject* obj, alias_ty* out,
@@ -3272,8 +3284,8 @@ _PyAST_ExceptHandler(expr_ty type, identifier name, asdl_stmt_seq * body, int
 arguments_ty
 _PyAST_arguments(asdl_arg_seq * posonlyargs, asdl_arg_seq * args, arg_ty
                  vararg, asdl_arg_seq * kwonlyargs, asdl_default_seq *
-                 kw_defaults, arg_ty kwarg, asdl_default_seq * defaults, PyArena
-                 *arena)
+                 kw_defaults, arg_ty kwarg, asdl_default_seq * defaults,
+                 PyArena *arena)
 {
     arguments_ty p;
     p = (arguments_ty)_PyArena_Malloc(arena, sizeof(*p));
@@ -3309,6 +3321,23 @@ _PyAST_arg(identifier arg, expr_ty annotation, string type_comment, int lineno,
     p->col_offset = col_offset;
     p->end_lineno = end_lineno;
     p->end_col_offset = end_col_offset;
+    return p;
+}
+
+default_ty
+_PyAST_default(expr_ty value, int type, PyArena *arena)
+{
+    default_ty p;
+    if (!value) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'value' is required for default");
+        return NULL;
+    }
+    p = (default_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->value = value;
+    p->type = type;
     return p;
 }
 
@@ -4174,17 +4203,6 @@ failed:
 }
 
 PyObject*
-ast2obj_default(struct ast_state *state, void* _o)
-{
-    default_ty o = (default_ty)_o;
-    if (!o) {
-        Py_RETURN_NONE;
-    }
-    //FIXME: Assumes early-bound default
-    return ast2obj_expr(state, o->value);
-}
-
-PyObject*
 ast2obj_expr(struct ast_state *state, void* _o)
 {
     expr_ty o = (expr_ty)_o;
@@ -4984,6 +5002,35 @@ ast2obj_arg(struct ast_state *state, void* _o)
     value = ast2obj_int(state, o->end_col_offset);
     if (!value) goto failed;
     if (PyObject_SetAttr(result, state->end_col_offset, value) < 0)
+        goto failed;
+    Py_DECREF(value);
+    return result;
+failed:
+    Py_XDECREF(value);
+    Py_XDECREF(result);
+    return NULL;
+}
+
+PyObject*
+ast2obj_default(struct ast_state *state, void* _o)
+{
+    default_ty o = (default_ty)_o;
+    PyObject *result = NULL, *value = NULL;
+    PyTypeObject *tp;
+    if (!o) {
+        Py_RETURN_NONE;
+    }
+    tp = (PyTypeObject *)state->default_type;
+    result = PyType_GenericNew(tp, NULL, NULL);
+    if (!result) return NULL;
+    value = ast2obj_expr(state, o->value);
+    if (!value) goto failed;
+    if (PyObject_SetAttr(result, state->value, value) == -1)
+        goto failed;
+    Py_DECREF(value);
+    value = ast2obj_int(state, o->type);
+    if (!value) goto failed;
+    if (PyObject_SetAttr(result, state->type, value) == -1)
         goto failed;
     Py_DECREF(value);
     return result;
@@ -10362,13 +10409,13 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
         kw_defaults = _Py_asdl_default_seq_new(len, arena);
         if (kw_defaults == NULL) goto failed;
         for (i = 0; i < len; i++) {
-            expr_ty val;
+            default_ty val;
             PyObject *tmp2 = PyList_GET_ITEM(tmp, i);
             Py_INCREF(tmp2);
             if (Py_EnterRecursiveCall(" while traversing 'arguments' node")) {
                 goto failed;
             }
-            res = obj2ast_expr(state, tmp2, &val, arena);
+            res = obj2ast_default(state, tmp2, &val, arena);
             Py_LeaveRecursiveCall();
             Py_DECREF(tmp2);
             if (res != 0) goto failed;
@@ -10376,12 +10423,7 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 PyErr_SetString(PyExc_RuntimeError, "arguments field \"kw_defaults\" changed size during iteration");
                 goto failed;
             }
-	    //FIXME: We accept only early-bound defaults here
-            default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
-            dflt->value = val;
-            dflt->type = 1;
-	    //End FIXME
-            asdl_seq_SET(kw_defaults, i, dflt);
+            asdl_seq_SET(kw_defaults, i, val);
         }
         Py_CLEAR(tmp);
     }
@@ -10421,13 +10463,13 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
         defaults = _Py_asdl_default_seq_new(len, arena);
         if (defaults == NULL) goto failed;
         for (i = 0; i < len; i++) {
-            expr_ty val;
+            default_ty val;
             PyObject *tmp2 = PyList_GET_ITEM(tmp, i);
             Py_INCREF(tmp2);
             if (Py_EnterRecursiveCall(" while traversing 'arguments' node")) {
                 goto failed;
             }
-            res = obj2ast_expr(state, tmp2, &val, arena);
+            res = obj2ast_default(state, tmp2, &val, arena);
             Py_LeaveRecursiveCall();
             Py_DECREF(tmp2);
             if (res != 0) goto failed;
@@ -10435,12 +10477,7 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 PyErr_SetString(PyExc_RuntimeError, "arguments field \"defaults\" changed size during iteration");
                 goto failed;
             }
-	    //FIXME: We accept only early-bound defaults here
-            default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
-            dflt->value = val;
-            dflt->type = 1;
-	    //End FIXME
-            asdl_seq_SET(defaults, i, dflt);
+            asdl_seq_SET(defaults, i, val);
         }
         Py_CLEAR(tmp);
     }
@@ -10585,6 +10622,55 @@ obj2ast_arg(struct ast_state *state, PyObject* obj, arg_ty* out, PyArena* arena)
     }
     *out = _PyAST_arg(arg, annotation, type_comment, lineno, col_offset,
                       end_lineno, end_col_offset, arena);
+    return 0;
+failed:
+    Py_XDECREF(tmp);
+    return 1;
+}
+
+int
+obj2ast_default(struct ast_state *state, PyObject* obj, default_ty* out,
+                PyArena* arena)
+{
+    PyObject* tmp = NULL;
+    expr_ty value;
+    int type;
+
+    if (_PyObject_LookupAttr(obj, state->value, &tmp) < 0) {
+        return 1;
+    }
+    if (tmp == NULL) {
+        PyErr_SetString(PyExc_TypeError, "required field \"value\" missing from default");
+        return 1;
+    }
+    else {
+        int res;
+        if (Py_EnterRecursiveCall(" while traversing 'default' node")) {
+            goto failed;
+        }
+        res = obj2ast_expr(state, tmp, &value, arena);
+        Py_LeaveRecursiveCall();
+        if (res != 0) goto failed;
+        Py_CLEAR(tmp);
+    }
+    if (_PyObject_LookupAttr(obj, state->type, &tmp) < 0) {
+        return 1;
+    }
+    if (tmp == NULL) {
+        PyErr_SetString(PyExc_TypeError, "required field \"type\" missing from default");
+        return 1;
+    }
+    else {
+        int res;
+        if (Py_EnterRecursiveCall(" while traversing 'default' node")) {
+            goto failed;
+        }
+        res = obj2ast_int(state, tmp, &type, arena);
+        Py_LeaveRecursiveCall();
+        if (res != 0) goto failed;
+        Py_CLEAR(tmp);
+    }
+    *out = _PyAST_default(value, type, arena);
     return 0;
 failed:
     Py_XDECREF(tmp);
@@ -11951,6 +12037,9 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "arg", state->arg_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "default", state->default_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "keyword", state->keyword_type) < 0) {

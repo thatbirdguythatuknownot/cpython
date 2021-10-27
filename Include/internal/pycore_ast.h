@@ -35,11 +35,11 @@ typedef struct _comprehension *comprehension_ty;
 
 typedef struct _excepthandler *excepthandler_ty;
 
-typedef struct _default *default_ty;
-
 typedef struct _arguments *arguments_ty;
 
 typedef struct _arg *arg_ty;
+
+typedef struct _default *default_ty;
 
 typedef struct _keyword *keyword_ty;
 
@@ -519,11 +519,6 @@ struct _excepthandler {
     int end_col_offset;
 };
 
-struct _default {
-    expr_ty value;
-    int type;
-};
-
 struct _arguments {
     asdl_arg_seq *posonlyargs;
     asdl_arg_seq *args;
@@ -542,6 +537,11 @@ struct _arg {
     int col_offset;
     int end_lineno;
     int end_col_offset;
+};
+
+struct _default {
+    expr_ty value;
+    int type;
 };
 
 struct _keyword {
@@ -812,6 +812,7 @@ arguments_ty _PyAST_arguments(asdl_arg_seq * posonlyargs, asdl_arg_seq * args,
 arg_ty _PyAST_arg(identifier arg, expr_ty annotation, string type_comment, int
                   lineno, int col_offset, int end_lineno, int end_col_offset,
                   PyArena *arena);
+default_ty _PyAST_default(expr_ty value, int type, PyArena *arena);
 keyword_ty _PyAST_keyword(identifier arg, expr_ty value, int lineno, int
                           col_offset, int end_lineno, int end_col_offset,
                           PyArena *arena);

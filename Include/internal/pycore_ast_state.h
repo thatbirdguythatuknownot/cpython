@@ -174,6 +174,7 @@ struct ast_state {
     PyObject *conversion;
     PyObject *ctx;
     PyObject *decorator_list;
+    PyObject *default_type;
     PyObject *defaults;
     PyObject *elt;
     PyObject *elts;
