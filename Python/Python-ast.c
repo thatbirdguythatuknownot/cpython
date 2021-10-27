@@ -3270,8 +3270,8 @@ _PyAST_ExceptHandler(expr_ty type, identifier name, asdl_stmt_seq * body, int
 
 arguments_ty
 _PyAST_arguments(asdl_arg_seq * posonlyargs, asdl_arg_seq * args, arg_ty
-                 vararg, asdl_arg_seq * kwonlyargs, asdl_expr_seq *
-                 kw_defaults, arg_ty kwarg, asdl_expr_seq * defaults, PyArena
+                 vararg, asdl_arg_seq * kwonlyargs, asdl_default_seq *
+                 kw_defaults, arg_ty kwarg, asdl_default_seq * defaults, PyArena
                  *arena)
 {
     arguments_ty p;
@@ -10199,9 +10199,9 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
     asdl_arg_seq* args;
     arg_ty vararg;
     asdl_arg_seq* kwonlyargs;
-    asdl_expr_seq* kw_defaults;
+    asdl_default_seq* kw_defaults;
     arg_ty kwarg;
-    asdl_expr_seq* defaults;
+    asdl_default_seq* defaults;
 
     if (_PyObject_LookupAttr(obj, state->posonlyargs, &tmp) < 0) {
         return 1;
@@ -10347,7 +10347,7 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
             goto failed;
         }
         len = PyList_GET_SIZE(tmp);
-        kw_defaults = _Py_asdl_expr_seq_new(len, arena);
+        kw_defaults = _Py_asdl_default_seq_new(len, arena);
         if (kw_defaults == NULL) goto failed;
         for (i = 0; i < len; i++) {
             expr_ty val;
@@ -10364,7 +10364,12 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 PyErr_SetString(PyExc_RuntimeError, "arguments field \"kw_defaults\" changed size during iteration");
                 goto failed;
             }
-            asdl_seq_SET(kw_defaults, i, val);
+	    //FIXME: We accept only early-bound defaults here
+	    default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
+	    dflt->value = val;
+	    dflt->type = 1;
+	    //End FIXME
+            asdl_seq_SET(kw_defaults, i, dflt);
         }
         Py_CLEAR(tmp);
     }
@@ -10401,7 +10406,7 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
             goto failed;
         }
         len = PyList_GET_SIZE(tmp);
-        defaults = _Py_asdl_expr_seq_new(len, arena);
+        defaults = _Py_asdl_default_seq_new(len, arena);
         if (defaults == NULL) goto failed;
         for (i = 0; i < len; i++) {
             expr_ty val;
@@ -10418,7 +10423,12 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 PyErr_SetString(PyExc_RuntimeError, "arguments field \"defaults\" changed size during iteration");
                 goto failed;
             }
-            asdl_seq_SET(defaults, i, val);
+	    //FIXME: We accept only early-bound defaults here
+	    default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
+	    dflt->value = val;
+	    dflt->type = 1;
+	    //End FIXME
+            asdl_seq_SET(defaults, i, dflt);
         }
         Py_CLEAR(tmp);
     }

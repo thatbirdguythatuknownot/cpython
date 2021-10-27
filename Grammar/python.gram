@@ -339,7 +339,7 @@ param_maybe_default[NameDefaultPair*]:
     | a=param c=default? tc=TYPE_COMMENT? &')' { _PyPegen_name_default_pair(p, a, c, tc) }
 param[arg_ty]: a=NAME b=annotation? { _PyAST_arg(a->v.Name.id, b, NULL, EXTRA) }
 annotation[expr_ty]: ':' a=expression { a }
-default[ArgumentDefault*]:
+default[default_ty]:
     | '=' a=expression { _PyPegen_arg_default(p, a, 0) }
     | '=' '>' a=expression { _PyPegen_arg_default(p, a, 1) }
 

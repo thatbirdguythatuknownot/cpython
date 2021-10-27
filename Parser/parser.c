@@ -545,7 +545,7 @@ static NameDefaultPair* param_with_default_rule(Parser *p);
 static NameDefaultPair* param_maybe_default_rule(Parser *p);
 static arg_ty param_rule(Parser *p);
 static expr_ty annotation_rule(Parser *p);
-static ArgumentDefault* default_rule(Parser *p);
+static default_ty default_rule(Parser *p);
 static stmt_ty if_stmt_rule(Parser *p);
 static stmt_ty elif_stmt_rule(Parser *p);
 static asdl_stmt_seq* else_block_rule(Parser *p);
@@ -4968,7 +4968,7 @@ param_with_default_rule(Parser *p)
         D(fprintf(stderr, "%*c> param_with_default[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "param default ',' TYPE_COMMENT?"));
         Token * _literal;
         arg_ty a;
-        ArgumentDefault* c;
+        default_ty c;
         void *tc;
         if (
             (a = param_rule(p))  // param
@@ -5000,7 +5000,7 @@ param_with_default_rule(Parser *p)
         }
         D(fprintf(stderr, "%*c> param_with_default[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "param default TYPE_COMMENT? &')'"));
         arg_ty a;
-        ArgumentDefault* c;
+        default_ty c;
         void *tc;
         if (
             (a = param_rule(p))  // param
@@ -5222,7 +5222,7 @@ annotation_rule(Parser *p)
 }
 
 // default: '=' expression | '=' '>' expression
-static ArgumentDefault*
+static default_ty
 default_rule(Parser *p)
 {
     D(p->level++);
@@ -5230,7 +5230,7 @@ default_rule(Parser *p)
         D(p->level--);
         return NULL;
     }
-    ArgumentDefault* _res = NULL;
+    default_ty _res = NULL;
     int _mark = p->mark;
     { // '=' expression
         if (p->error_indicator) {
@@ -14239,7 +14239,7 @@ lambda_param_with_default_rule(Parser *p)
         D(fprintf(stderr, "%*c> lambda_param_with_default[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "lambda_param default ','"));
         Token * _literal;
         arg_ty a;
-        ArgumentDefault* c;
+        default_ty c;
         if (
             (a = lambda_param_rule(p))  // lambda_param
             &&
@@ -14268,7 +14268,7 @@ lambda_param_with_default_rule(Parser *p)
         }
         D(fprintf(stderr, "%*c> lambda_param_with_default[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "lambda_param default &':'"));
         arg_ty a;
-        ArgumentDefault* c;
+        default_ty c;
         if (
             (a = lambda_param_rule(p))  // lambda_param
             &&
