@@ -10377,9 +10377,9 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 goto failed;
             }
 	    //FIXME: We accept only early-bound defaults here
-	    default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
-	    dflt->value = val;
-	    dflt->type = 1;
+            default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
+            dflt->value = val;
+            dflt->type = 1;
 	    //End FIXME
             asdl_seq_SET(kw_defaults, i, dflt);
         }
@@ -10436,9 +10436,9 @@ obj2ast_arguments(struct ast_state *state, PyObject* obj, arguments_ty* out,
                 goto failed;
             }
 	    //FIXME: We accept only early-bound defaults here
-	    default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
-	    dflt->value = val;
-	    dflt->type = 1;
+            default_ty dflt = _PyArena_Malloc(arena, sizeof(struct _default));
+            dflt->value = val;
+            dflt->type = 1;
 	    //End FIXME
             asdl_seq_SET(defaults, i, dflt);
         }
