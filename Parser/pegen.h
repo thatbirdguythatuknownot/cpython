@@ -99,8 +99,7 @@ typedef struct {
 
 typedef struct {
     arg_ty arg;
-    //~ ArgumentDefault *value;
-    expr_ty value;
+    ArgumentDefault *value;
 } NameDefaultPair;
 
 typedef struct {

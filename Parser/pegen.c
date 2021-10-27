@@ -1962,7 +1962,7 @@ _PyPegen_name_default_pair(Parser *p, arg_ty arg, ArgumentDefault *value, Token 
         return NULL;
     }
     a->arg = _PyPegen_add_type_comment_to_arg(p, arg, tc);
-    a->value = value ? value->value : NULL; //TODO: Replace this with just a->value=value once NDP wants AD not expr_ty
+    a->value = value;
     return a;
 }
 
@@ -2042,11 +2042,11 @@ _get_names(Parser *p, asdl_seq *names_with_defaults)
     return seq;
 }
 
-static asdl_expr_seq *
+static asdl_seq *
 _get_defaults(Parser *p, asdl_seq *names_with_defaults)
 {
     Py_ssize_t len = asdl_seq_LEN(names_with_defaults);
-    asdl_expr_seq *seq = _Py_asdl_expr_seq_new(len, p->arena);
+    asdl_default_seq *seq = _Py_asdl_default_seq_new(len, p->arena);
     if (!seq) {
         return NULL;
     }

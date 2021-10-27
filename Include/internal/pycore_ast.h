@@ -35,6 +35,8 @@ typedef struct _comprehension *comprehension_ty;
 
 typedef struct _excepthandler *excepthandler_ty;
 
+typedef struct _default *default_ty;
+
 typedef struct _arguments *arguments_ty;
 
 typedef struct _arg *arg_ty;
@@ -102,6 +104,13 @@ typedef struct {
 } asdl_arg_seq;
 
 asdl_arg_seq *_Py_asdl_arg_seq_new(Py_ssize_t size, PyArena *arena);
+
+typedef struct {
+    _ASDL_SEQ_HEAD
+    default_ty typed_elements[1];
+} asdl_default_seq;
+
+asdl_default_seq *_Py_asdl_default_seq_new(Py_ssize_t size, PyArena *arena);
 
 typedef struct {
     _ASDL_SEQ_HEAD
@@ -510,14 +519,19 @@ struct _excepthandler {
     int end_col_offset;
 };
 
+struct _default {
+    expr_ty value;
+    int type;
+};
+
 struct _arguments {
     asdl_arg_seq *posonlyargs;
     asdl_arg_seq *args;
     arg_ty vararg;
     asdl_arg_seq *kwonlyargs;
-    asdl_expr_seq *kw_defaults;
+    asdl_default_seq *kw_defaults;
     arg_ty kwarg;
-    asdl_expr_seq *defaults;
+    asdl_default_seq *defaults;
 };
 
 struct _arg {
