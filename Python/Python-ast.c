@@ -514,6 +514,7 @@ static const char * const expr_attributes[] = {
     "end_lineno",
     "end_col_offset",
 };
+static PyObject* ast2obj_default(struct ast_state *state, void*);
 static PyObject* ast2obj_expr(struct ast_state *state, void*);
 static const char * const BoolOp_fields[]={
     "op",
@@ -1714,7 +1715,7 @@ init_types(struct ast_state *state)
         return 0;
     state->arguments_type = make_type(state, "arguments", state->AST_type,
                                       arguments_fields, 7,
-        "arguments(arg* posonlyargs, arg* args, arg? vararg, arg* kwonlyargs, expr* kw_defaults, arg? kwarg, expr* defaults)");
+        "arguments(arg* posonlyargs, arg* args, arg? vararg, arg* kwonlyargs, default* kw_defaults, arg? kwarg, default* defaults)");
     if (!state->arguments_type) return 0;
     if (!add_attributes(state, state->arguments_type, NULL, 0)) return 0;
     if (PyObject_SetAttr(state->arguments_type, state->vararg, Py_None) == -1)
@@ -4173,6 +4174,17 @@ failed:
 }
 
 PyObject*
+ast2obj_default(struct ast_state *state, void* _o)
+{
+    default_ty o = (default_ty)_o;
+    if (!o) {
+        Py_RETURN_NONE;
+    }
+    //FIXME: Assumes early-bound default
+    return ast2obj_expr(state, o->value);
+}
+
+PyObject*
 ast2obj_expr(struct ast_state *state, void* _o)
 {
     expr_ty o = (expr_ty)_o;
@@ -4905,7 +4917,7 @@ ast2obj_arguments(struct ast_state *state, void* _o)
     if (PyObject_SetAttr(result, state->kwonlyargs, value) == -1)
         goto failed;
     Py_DECREF(value);
-    value = ast2obj_list(state, (asdl_seq*)o->kw_defaults, ast2obj_expr);
+    value = ast2obj_list(state, (asdl_seq*)o->kw_defaults, ast2obj_default);
     if (!value) goto failed;
     if (PyObject_SetAttr(result, state->kw_defaults, value) == -1)
         goto failed;
@@ -4915,7 +4927,7 @@ ast2obj_arguments(struct ast_state *state, void* _o)
     if (PyObject_SetAttr(result, state->kwarg, value) == -1)
         goto failed;
     Py_DECREF(value);
-    value = ast2obj_list(state, (asdl_seq*)o->defaults, ast2obj_expr);
+    value = ast2obj_list(state, (asdl_seq*)o->defaults, ast2obj_default);
     if (!value) goto failed;
     if (PyObject_SetAttr(result, state->defaults, value) == -1)
         goto failed;
