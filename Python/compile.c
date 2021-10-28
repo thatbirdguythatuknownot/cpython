@@ -2160,7 +2160,7 @@ compiler_decorators(struct compiler *c, asdl_expr_seq* decos)
 
 static int
 compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
-                              asdl_expr_seq *kw_defaults)
+                              asdl_default_seq *kw_defaults)
 {
     /* Push a dict of keyword-only default values.
 
@@ -2171,7 +2171,7 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
 
     for (i = 0; i < asdl_seq_LEN(kwonlyargs); i++) {
         arg_ty arg = asdl_seq_GET(kwonlyargs, i);
-        expr_ty default_ = asdl_seq_GET(kw_defaults, i);
+        default_ty default_ = asdl_seq_GET(kw_defaults, i);
         if (default_) {
             PyObject *mangled = _Py_Mangle(c->u->u_private, arg->arg);
             if (!mangled) {
@@ -2192,7 +2192,7 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
                     goto error;
                 }
             }
-            if (!compiler_visit_expr(c, default_)) {
+            if (!compiler_visit_expr(c, default_->value)) {
                 goto error;
             }
         }
@@ -2308,9 +2308,15 @@ compiler_visit_annotations(struct compiler *c, arguments_ty args,
 }
 
 static int
+compiler_visit_default(struct compiler *c, default_ty dflt)
+{
+    return compiler_visit_expr(c, dflt->value);
+}
+
+static int
 compiler_visit_defaults(struct compiler *c, arguments_ty args)
 {
-    VISIT_SEQ(c, expr, args->defaults);
+    VISIT_SEQ(c, default, args->defaults);
     ADDOP_I(c, BUILD_TUPLE, asdl_seq_LEN(args->defaults));
     return 1;
 }

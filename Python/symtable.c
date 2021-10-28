@@ -213,6 +213,7 @@ static int symtable_visit_alias(struct symtable *st, alias_ty);
 static int symtable_visit_comprehension(struct symtable *st, comprehension_ty);
 static int symtable_visit_keyword(struct symtable *st, keyword_ty);
 static int symtable_visit_params(struct symtable *st, asdl_arg_seq *args);
+static int symtable_visit_default(struct symtable *st, default_ty);
 static int symtable_visit_annotation(struct symtable *st, expr_ty annotation);
 static int symtable_visit_argannotations(struct symtable *st, asdl_arg_seq *args);
 static int symtable_implicit_arg(struct symtable *st, int pos);
@@ -1202,9 +1203,9 @@ symtable_visit_stmt(struct symtable *st, stmt_ty s)
         if (!symtable_add_def(st, s->v.FunctionDef.name, DEF_LOCAL))
             VISIT_QUIT(st, 0);
         if (s->v.FunctionDef.args->defaults)
-            VISIT_SEQ(st, expr, s->v.FunctionDef.args->defaults);
+            VISIT_SEQ(st, default, s->v.FunctionDef.args->defaults);
         if (s->v.FunctionDef.args->kw_defaults)
-            VISIT_SEQ_WITH_NULL(st, expr, s->v.FunctionDef.args->kw_defaults);
+            VISIT_SEQ_WITH_NULL(st, default, s->v.FunctionDef.args->kw_defaults);
         if (!symtable_visit_annotations(st, s, s->v.FunctionDef.args,
                                         s->v.FunctionDef.returns))
             VISIT_QUIT(st, 0);
@@ -1436,9 +1437,9 @@ symtable_visit_stmt(struct symtable *st, stmt_ty s)
         if (!symtable_add_def(st, s->v.AsyncFunctionDef.name, DEF_LOCAL))
             VISIT_QUIT(st, 0);
         if (s->v.AsyncFunctionDef.args->defaults)
-            VISIT_SEQ(st, expr, s->v.AsyncFunctionDef.args->defaults);
+            VISIT_SEQ(st, default, s->v.AsyncFunctionDef.args->defaults);
         if (s->v.AsyncFunctionDef.args->kw_defaults)
-            VISIT_SEQ_WITH_NULL(st, expr,
+            VISIT_SEQ_WITH_NULL(st, default,
                                 s->v.AsyncFunctionDef.args->kw_defaults);
         if (!symtable_visit_annotations(st, s, s->v.AsyncFunctionDef.args,
                                         s->v.AsyncFunctionDef.returns))
@@ -1602,9 +1603,9 @@ symtable_visit_expr(struct symtable *st, expr_ty e)
         if (!GET_IDENTIFIER(lambda))
             VISIT_QUIT(st, 0);
         if (e->v.Lambda.args->defaults)
-            VISIT_SEQ(st, expr, e->v.Lambda.args->defaults);
+            VISIT_SEQ(st, default, e->v.Lambda.args->defaults);
         if (e->v.Lambda.args->kw_defaults)
-            VISIT_SEQ_WITH_NULL(st, expr, e->v.Lambda.args->kw_defaults);
+            VISIT_SEQ_WITH_NULL(st, default, e->v.Lambda.args->kw_defaults);
         if (!symtable_enter_block(st, lambda,
                                   FunctionBlock, (void *)e,
                                   e->lineno, e->col_offset,
@@ -1806,6 +1807,15 @@ symtable_visit_params(struct symtable *st, asdl_arg_seq *args)
         if (!symtable_add_def(st, arg->arg, DEF_PARAM))
             return 0;
     }
+
+    return 1;
+}
+
+static int
+symtable_visit_default(struct symtable *st, default_ty dflt)
+{
+    VISIT(st, expr, dflt->value);
+    //FIXME: What needs to be visited for the integer?
 
     return 1;
 }
