@@ -2161,7 +2161,10 @@ compiler_decorators(struct compiler *c, asdl_expr_seq* decos)
 static int
 compiler_visit_default(struct compiler *c, default_ty dflt)
 {
-    return compiler_visit_expr(c, dflt->value);
+    //ADDOP_LOAD_CONST(c, Py_None); //FIXME: Source code for the value
+    VISIT(c, expr, dflt->value);
+    //ADDOP_I(c, BUILD_TUPLE, 2);
+    return 1;
 }
 
 static int
@@ -2473,6 +2476,8 @@ compiler_function(struct compiler *c, stmt_ty s, int is_async)
     c->u->u_argcount = asdl_seq_LEN(args->args);
     c->u->u_posonlyargcount = asdl_seq_LEN(args->posonlyargs);
     c->u->u_kwonlyargcount = asdl_seq_LEN(args->kwonlyargs);
+    //TODO: Add late-bound arg default processing
+
     for (i = docstring ? 1 : 0; i < asdl_seq_LEN(body); i++) {
         VISIT_IN_SCOPE(c, stmt, (stmt_ty)asdl_seq_GET(body, i));
     }
@@ -2880,6 +2885,7 @@ compiler_lambda(struct compiler *c, expr_ty e)
     c->u->u_argcount = asdl_seq_LEN(args->args);
     c->u->u_posonlyargcount = asdl_seq_LEN(args->posonlyargs);
     c->u->u_kwonlyargcount = asdl_seq_LEN(args->kwonlyargs);
+    //TODO: Late-bound defaults
     VISIT_IN_SCOPE(c, expr, e->v.Lambda.body);
     if (c->u->u_ste->ste_generator) {
         co = assemble(c, 0);
