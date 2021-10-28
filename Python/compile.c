@@ -2159,6 +2159,12 @@ compiler_decorators(struct compiler *c, asdl_expr_seq* decos)
 }
 
 static int
+compiler_visit_default(struct compiler *c, default_ty dflt)
+{
+    return compiler_visit_expr(c, dflt->value);
+}
+
+static int
 compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
                               asdl_default_seq *kw_defaults)
 {
@@ -2192,7 +2198,7 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
                     goto error;
                 }
             }
-            if (!compiler_visit_expr(c, default_->value)) {
+            if (!compiler_visit_default(c, default_)) {
                 goto error;
             }
         }
@@ -2305,12 +2311,6 @@ compiler_visit_annotations(struct compiler *c, arguments_ty args,
     }
 
     return -1;
-}
-
-static int
-compiler_visit_default(struct compiler *c, default_ty dflt)
-{
-    return compiler_visit_expr(c, dflt->value);
 }
 
 static int
