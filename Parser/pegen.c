@@ -1968,7 +1968,7 @@ _PyPegen_name_default_pair(Parser *p, arg_ty arg, default_ty value, Token *tc)
 
 /* Constructs an argument default */
 default_ty
-_PyPegen_arg_default(Parser *p, expr_ty value, int type)
+_PyPegen_arg_default(Parser *p, expr_ty value, dflt_style_ty type)
 {
     default_ty a = _PyArena_Malloc(p->arena, sizeof(struct _default));
     if (!a) {

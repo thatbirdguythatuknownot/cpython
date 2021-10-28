@@ -114,7 +114,8 @@ module Python
     arg = (identifier arg, expr? annotation, string? type_comment)
            attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
-    default = (expr value, int type)
+    dflt_style = DfltValue | DfltExpr
+    default = (expr value, dflt_style type)
 
     -- keyword arguments supplied to call (NULL identifier for **kwargs)
     keyword = (identifier? arg, expr value)

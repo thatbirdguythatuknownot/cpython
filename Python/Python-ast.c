@@ -57,6 +57,10 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Del_singleton);
     Py_CLEAR(state->Del_type);
     Py_CLEAR(state->Delete_type);
+    Py_CLEAR(state->DfltExpr_singleton);
+    Py_CLEAR(state->DfltExpr_type);
+    Py_CLEAR(state->DfltValue_singleton);
+    Py_CLEAR(state->DfltValue_type);
     Py_CLEAR(state->DictComp_type);
     Py_CLEAR(state->Dict_type);
     Py_CLEAR(state->Div_singleton);
@@ -190,6 +194,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->decorator_list);
     Py_CLEAR(state->default_type);
     Py_CLEAR(state->defaults);
+    Py_CLEAR(state->dflt_style_type);
     Py_CLEAR(state->elt);
     Py_CLEAR(state->elts);
     Py_CLEAR(state->end_col_offset);
@@ -674,6 +679,7 @@ static const char * const arg_fields[]={
     "annotation",
     "type_comment",
 };
+static PyObject* ast2obj_dflt_style(struct ast_state *state, dflt_style_ty);
 static PyObject* ast2obj_default(struct ast_state *state, void*);
 static const char * const default_fields[]={
     "value",
@@ -1739,9 +1745,30 @@ init_types(struct ast_state *state)
         return 0;
     if (PyObject_SetAttr(state->arg_type, state->end_col_offset, Py_None) == -1)
         return 0;
+    state->dflt_style_type = make_type(state, "dflt_style", state->AST_type,
+                                       NULL, 0,
+        "dflt_style = DfltValue | DfltExpr");
+    if (!state->dflt_style_type) return 0;
+    if (!add_attributes(state, state->dflt_style_type, NULL, 0)) return 0;
+    state->DfltValue_type = make_type(state, "DfltValue",
+                                      state->dflt_style_type, NULL, 0,
+        "DfltValue");
+    if (!state->DfltValue_type) return 0;
+    state->DfltValue_singleton = PyType_GenericNew((PyTypeObject
+                                                   *)state->DfltValue_type,
+                                                   NULL, NULL);
+    if (!state->DfltValue_singleton) return 0;
+    state->DfltExpr_type = make_type(state, "DfltExpr", state->dflt_style_type,
+                                     NULL, 0,
+        "DfltExpr");
+    if (!state->DfltExpr_type) return 0;
+    state->DfltExpr_singleton = PyType_GenericNew((PyTypeObject
+                                                  *)state->DfltExpr_type, NULL,
+                                                  NULL);
+    if (!state->DfltExpr_singleton) return 0;
     state->default_type = make_type(state, "default", state->AST_type,
                                     default_fields, 2,
-        "default(expr value, int type)");
+        "default(expr value, dflt_style type)");
     if (!state->default_type) return 0;
     if (!add_attributes(state, state->default_type, NULL, 0)) return 0;
     state->keyword_type = make_type(state, "keyword", state->AST_type,
@@ -1881,6 +1908,8 @@ static int obj2ast_arguments(struct ast_state *state, PyObject* obj,
                              arguments_ty* out, PyArena* arena);
 static int obj2ast_arg(struct ast_state *state, PyObject* obj, arg_ty* out,
                        PyArena* arena);
+static int obj2ast_dflt_style(struct ast_state *state, PyObject* obj,
+                              dflt_style_ty* out, PyArena* arena);
 static int obj2ast_default(struct ast_state *state, PyObject* obj, default_ty*
                            out, PyArena* arena);
 static int obj2ast_keyword(struct ast_state *state, PyObject* obj, keyword_ty*
@@ -3325,12 +3354,17 @@ _PyAST_arg(identifier arg, expr_ty annotation, string type_comment, int lineno,
 }
 
 default_ty
-_PyAST_default(expr_ty value, int type, PyArena *arena)
+_PyAST_default(expr_ty value, dflt_style_ty type, PyArena *arena)
 {
     default_ty p;
     if (!value) {
         PyErr_SetString(PyExc_ValueError,
                         "field 'value' is required for default");
+        return NULL;
+    }
+    if (!type) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'type' is required for default");
         return NULL;
     }
     p = (default_ty)_PyArena_Malloc(arena, sizeof(*p));
@@ -5011,6 +5045,18 @@ failed:
     return NULL;
 }
 
+PyObject* ast2obj_dflt_style(struct ast_state *state, dflt_style_ty o)
+{
+    switch(o) {
+        case DfltValue:
+            Py_INCREF(state->DfltValue_singleton);
+            return state->DfltValue_singleton;
+        case DfltExpr:
+            Py_INCREF(state->DfltExpr_singleton);
+            return state->DfltExpr_singleton;
+    }
+    Py_UNREACHABLE();
+}
 PyObject*
 ast2obj_default(struct ast_state *state, void* _o)
 {
@@ -5028,7 +5074,7 @@ ast2obj_default(struct ast_state *state, void* _o)
     if (PyObject_SetAttr(result, state->value, value) == -1)
         goto failed;
     Py_DECREF(value);
-    value = ast2obj_int(state, o->type);
+    value = ast2obj_dflt_style(state, o->type);
     if (!value) goto failed;
     if (PyObject_SetAttr(result, state->type, value) == -1)
         goto failed;
@@ -10629,12 +10675,39 @@ failed:
 }
 
 int
+obj2ast_dflt_style(struct ast_state *state, PyObject* obj, dflt_style_ty* out,
+                   PyArena* arena)
+{
+    int isinstance;
+
+    isinstance = PyObject_IsInstance(obj, state->DfltValue_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = DfltValue;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->DfltExpr_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = DfltExpr;
+        return 0;
+    }
+
+    PyErr_Format(PyExc_TypeError, "expected some sort of dflt_style, but got %R", obj);
+    return 1;
+}
+
+int
 obj2ast_default(struct ast_state *state, PyObject* obj, default_ty* out,
                 PyArena* arena)
 {
     PyObject* tmp = NULL;
     expr_ty value;
-    int type;
+    dflt_style_ty type;
 
     if (_PyObject_LookupAttr(obj, state->value, &tmp) < 0) {
         return 1;
@@ -10665,7 +10738,7 @@ obj2ast_default(struct ast_state *state, PyObject* obj, default_ty* out,
         if (Py_EnterRecursiveCall(" while traversing 'default' node")) {
             goto failed;
         }
-        res = obj2ast_int(state, tmp, &type, arena);
+        res = obj2ast_dflt_style(state, tmp, &type, arena);
         Py_LeaveRecursiveCall();
         if (res != 0) goto failed;
         Py_CLEAR(tmp);
@@ -12037,6 +12110,15 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "arg", state->arg_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "dflt_style", state->dflt_style_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "DfltValue", state->DfltValue_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "DfltExpr", state->DfltExpr_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "default", state->default_type) < 0) {

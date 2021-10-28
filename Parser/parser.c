@@ -5247,7 +5247,7 @@ default_rule(Parser *p)
         )
         {
             D(fprintf(stderr, "%*c+ default[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'=' expression"));
-            _res = _PyPegen_arg_default ( p , a , 0 );
+            _res = _PyPegen_arg_default ( p , a , DfltValue );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
                 D(p->level--);
@@ -5277,7 +5277,7 @@ default_rule(Parser *p)
         )
         {
             D(fprintf(stderr, "%*c+ default[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'=' '>' expression"));
-            _res = _PyPegen_arg_default ( p , a , 1 );
+            _res = _PyPegen_arg_default ( p , a , DfltExpr );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
                 D(p->level--);

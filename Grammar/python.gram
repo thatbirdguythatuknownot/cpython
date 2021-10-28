@@ -340,8 +340,8 @@ param_maybe_default[NameDefaultPair*]:
 param[arg_ty]: a=NAME b=annotation? { _PyAST_arg(a->v.Name.id, b, NULL, EXTRA) }
 annotation[expr_ty]: ':' a=expression { a }
 default[default_ty]:
-    | '=' a=expression { _PyPegen_arg_default(p, a, 0) }
-    | '=' '>' a=expression { _PyPegen_arg_default(p, a, 1) }
+    | '=' a=expression { _PyPegen_arg_default(p, a, DfltValue) }
+    | '=' '>' a=expression { _PyPegen_arg_default(p, a, DfltExpr) }
 
 # If statement
 # ------------
