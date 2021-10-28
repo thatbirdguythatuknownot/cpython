@@ -103,7 +103,7 @@ validate_defaults(struct validator *state, asdl_default_seq *exprs, int null_ok)
     for (i = 0; i < asdl_seq_LEN(exprs); i++) {
         default_ty dflt = asdl_seq_GET(exprs, i);
         if (dflt) {
-            if (dflt->type != 1 && dflt->type != 2) {
+            if (dflt->type != DfltValue && dflt->type != DfltExpr) {
                 PyErr_SetString(PyExc_ValueError,
                                 "Invalid default type");
                 return 0;
