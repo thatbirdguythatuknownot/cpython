@@ -2161,9 +2161,15 @@ compiler_decorators(struct compiler *c, asdl_expr_seq* decos)
 static int
 compiler_visit_default(struct compiler *c, default_ty dflt)
 {
-    ADDOP_LOAD_CONST(c, Py_None); //FIXME: Source code for the value
-    VISIT(c, expr, dflt->value);
-    ADDOP_I(c, BUILD_TUPLE, 2);
+    if (dflt->type == DfltValue) {
+        ADDOP_LOAD_CONST(c, Py_None); //Omit source code from default values
+        VISIT(c, expr, dflt->value);
+        ADDOP_I(c, BUILD_TUPLE, 2);
+    }
+    else {
+        ADDOP_LOAD_CONST(c, Py_None); //FIXME: Source code for the expression
+        ADDOP_I(c, BUILD_TUPLE, 1);
+    }
     return 1;
 }
 
