@@ -168,6 +168,8 @@ def_op('RERAISE', 119)
 
 jabs_op('JUMP_IF_NOT_EXC_MATCH', 121)
 
+def_op('QUERY_FAST', 123)        # Local variable number
+haslocal.append(123)
 def_op('LOAD_FAST', 124)        # Local variable number
 haslocal.append(124)
 def_op('STORE_FAST', 125)       # Local variable number

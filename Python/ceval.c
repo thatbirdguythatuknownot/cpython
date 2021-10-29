@@ -1730,6 +1730,17 @@ check_eval_breaker:
             DISPATCH();
         }
 
+        TARGET(QUERY_FAST) {
+            PyObject *value = GETLOCAL(oparg);
+            if (value == NULL)
+                value = Py_False;
+            else
+                value = Py_True;
+            Py_INCREF(value);
+            PUSH(value);
+            DISPATCH();
+        }
+
         TARGET(LOAD_CONST) {
             PREDICTED(LOAD_CONST);
             PyObject *value = GETITEM(consts, oparg);

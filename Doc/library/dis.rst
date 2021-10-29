@@ -1045,6 +1045,13 @@ All of the following opcodes use their arguments.
    Loads the global named ``co_names[namei]`` onto the stack.
 
 
+.. opcode:: QUERY_FAST (var_num)
+
+   Tests whether the local ``co_varnames[var_num]`` has a value, and pushes True or
+   False accordingly. If ``QUERY_FAST`` pushes ``False``, ``LOAD_FAST`` would
+   raise ``UnboundLocalError``.
+
+
 .. opcode:: LOAD_FAST (var_num)
 
    Pushes a reference to the local ``co_varnames[var_num]`` onto the stack.

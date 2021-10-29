@@ -1173,6 +1173,8 @@ stack_effect(int opcode, int oparg, int jump)
         case WITH_EXCEPT_START:
             return 1;
 
+        case QUERY_FAST:
+            return 1;
         case LOAD_FAST:
             return 1;
         case STORE_FAST:
@@ -2361,7 +2363,7 @@ compiler_default_arg_expression(struct compiler *c, int local, default_ty dflt)
     basicblock *end = compiler_new_block(c);
     if (end == NULL)
         return 0;
-    ADDOP_LOAD_CONST(c, Py_None); //FIXME: Query the local, store True if set, False if not
+    ADDOP_I(c, QUERY_FAST, local);
     ADDOP_JUMP(c, POP_JUMP_IF_TRUE, end);
     NEXT_BLOCK(c);
     VISIT(c, expr, dflt->value);
