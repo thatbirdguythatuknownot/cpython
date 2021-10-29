@@ -2353,6 +2353,36 @@ compiler_default_arguments(struct compiler *c, arguments_ty args)
 }
 
 static int
+compiler_default_arg_expressions(struct compiler *c, arguments_ty args)
+{
+    int i;
+    Py_ssize_t argcount = asdl_seq_LEN(args->posonlyargs) + asdl_seq_LEN(args->args);
+    if (args->defaults && asdl_seq_LEN(args->defaults) > 0) {
+        Py_ssize_t mandatory = argcount - asdl_seq_LEN(args->defaults);
+        for (i = 0; i < asdl_seq_LEN(args->defaults); i++) {
+            default_ty dflt = asdl_seq_GET(args->defaults, i);
+            if (dflt->type == DfltExpr) {
+                //FIXME: Check if the argument (fast local mandatory+i) is unset
+                //FIXME: References to surrounding scopes aren't being properly handled (?)
+                VISIT(c, expr, dflt->value);
+                ADDOP_I(c, STORE_FAST, mandatory + i);
+            }
+        }
+    }
+    if (args->kwonlyargs) {
+        for (i = 0; i < asdl_seq_LEN(args->kwonlyargs); i++) {
+            default_ty dflt = asdl_seq_GET(args->kw_defaults, i);
+            if (dflt && dflt->type == DfltExpr) {
+                //FIXME: As above, and as above
+                VISIT(c, expr, dflt->value);
+                ADDOP_I(c, STORE_FAST, argcount + i);
+            }
+        }
+    }
+    return 1;
+}
+
+static int
 forbidden_name(struct compiler *c, identifier name, expr_context_ty ctx)
 {
 
@@ -2482,8 +2512,10 @@ compiler_function(struct compiler *c, stmt_ty s, int is_async)
     c->u->u_argcount = asdl_seq_LEN(args->args);
     c->u->u_posonlyargcount = asdl_seq_LEN(args->posonlyargs);
     c->u->u_kwonlyargcount = asdl_seq_LEN(args->kwonlyargs);
-    //TODO: Add late-bound arg default processing
-
+    if (!compiler_default_arg_expressions(c, args)) {
+        compiler_exit_scope(c);
+        return 0;
+    }
     for (i = docstring ? 1 : 0; i < asdl_seq_LEN(body); i++) {
         VISIT_IN_SCOPE(c, stmt, (stmt_ty)asdl_seq_GET(body, i));
     }
@@ -2891,7 +2923,10 @@ compiler_lambda(struct compiler *c, expr_ty e)
     c->u->u_argcount = asdl_seq_LEN(args->args);
     c->u->u_posonlyargcount = asdl_seq_LEN(args->posonlyargs);
     c->u->u_kwonlyargcount = asdl_seq_LEN(args->kwonlyargs);
-    //TODO: Late-bound defaults
+    if (!compiler_default_arg_expressions(c, args)) {
+        compiler_exit_scope(c);
+        return 0;
+    }
     VISIT_IN_SCOPE(c, expr, e->v.Lambda.body);
     if (c->u->u_ste->ste_generator) {
         co = assemble(c, 0);
