@@ -2600,20 +2600,10 @@ class Parameter:
                                        formatannotation(self._annotation))
 
         if self._default is not _empty:
-            equals = "="
-            if isinstance(self._default, tuple):
-                if len(self._default) == 2:
-                    desc = repr(self._default[1]) # Default value
-                else:
-                    equals, desc = "=>", "<calculated>"
-                if self._default[0] is not None:
-                    desc = str(self._default[0])
-            else:
-                desc = repr(self._default)
             if self._annotation is not _empty:
-                formatted = '{} {} {}'.format(formatted, equals, desc)
+                formatted = '{} = {}'.format(formatted, repr(self._default))
             else:
-                formatted = '{}{}{}'.format(formatted, equals, desc)
+                formatted = '{}={}'.format(formatted, repr(self._default))
 
         if kind == _VAR_POSITIONAL:
             formatted = '*' + formatted
