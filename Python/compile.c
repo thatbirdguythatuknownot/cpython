@@ -2353,6 +2353,18 @@ compiler_default_arguments(struct compiler *c, arguments_ty args)
 }
 
 static int
+compiler_default_arg_expression(struct compiler *c, int local, default_ty dflt)
+{
+    if (!dflt || dflt->type != DfltExpr) return 1;
+    //FIXME: Check if the argument (fast local mandatory+i) is unset
+    //FIXME: Global names aren't getting visited by symtable.c::analyze_name()
+    //due to this not being a statement.
+    VISIT(c, expr, dflt->value);
+    ADDOP_I(c, STORE_FAST, local);
+    return 1;
+}
+
+static int
 compiler_default_arg_expressions(struct compiler *c, arguments_ty args)
 {
     int i;
@@ -2361,23 +2373,15 @@ compiler_default_arg_expressions(struct compiler *c, arguments_ty args)
         Py_ssize_t mandatory = argcount - asdl_seq_LEN(args->defaults);
         for (i = 0; i < asdl_seq_LEN(args->defaults); i++) {
             default_ty dflt = asdl_seq_GET(args->defaults, i);
-            if (dflt->type == DfltExpr) {
-                //FIXME: Check if the argument (fast local mandatory+i) is unset
-                //FIXME: Global names aren't getting visited by symtable.c::analyze_name()
-                //due to this not being a statement.
-                VISIT(c, expr, dflt->value);
-                ADDOP_I(c, STORE_FAST, mandatory + i);
-            }
+            if (!compiler_default_arg_expression(c, mandatory + i, dflt))
+                return 0;
         }
     }
     if (args->kwonlyargs) {
         for (i = 0; i < asdl_seq_LEN(args->kwonlyargs); i++) {
             default_ty dflt = asdl_seq_GET(args->kw_defaults, i);
-            if (dflt && dflt->type == DfltExpr) {
-                //FIXME: As above, and as above
-                VISIT(c, expr, dflt->value);
-                ADDOP_I(c, STORE_FAST, argcount + i);
-            }
+            if (!compiler_default_arg_expression(c, argcount + i, dflt))
+                return 0;
         }
     }
     return 1;
