@@ -2356,11 +2356,17 @@ static int
 compiler_default_arg_expression(struct compiler *c, int local, default_ty dflt)
 {
     if (!dflt || dflt->type != DfltExpr) return 1;
-    //FIXME: Check if the argument (fast local mandatory+i) is unset
     //FIXME: Global names aren't getting visited by symtable.c::analyze_name()
     //due to this not being a statement.
+    basicblock *end = compiler_new_block(c);
+    if (end == NULL)
+        return 0;
+    ADDOP_LOAD_CONST(c, Py_None); //FIXME: Query the local, store True if set, False if not
+    ADDOP_JUMP(c, POP_JUMP_IF_TRUE, end);
+    NEXT_BLOCK(c);
     VISIT(c, expr, dflt->value);
     ADDOP_I(c, STORE_FAST, local);
+    compiler_use_next_block(c, end);
     return 1;
 }
 
