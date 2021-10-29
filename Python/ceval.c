@@ -4732,6 +4732,10 @@ check_eval_breaker:
             int deflen = cache1->defaults_len;
             for (int i = 0; i < deflen; i++) {
                 PyObject *def = PyTuple_GET_ITEM(func->func_defaults, cache1->defaults_start+i);
+                if (PyTuple_CheckExact(def)) { //FIXME: Borked defaults are currently assumed to be default values
+                    if (PyTuple_GET_SIZE(def) < 2) continue; //A length-1 tuple represents a default expression and should be left unbound
+                    def = PyTuple_GET_ITEM(def, 1);
+                }
                 Py_INCREF(def);
                 new_frame->localsplus[argcount+i] = def;
             }
@@ -5773,6 +5777,10 @@ initialize_locals(PyThreadState *tstate, PyFrameConstructor *con,
             for (; i < defcount; i++) {
                 if (localsplus[m+i] == NULL) {
                     PyObject *def = defs[i];
+                    if (PyTuple_CheckExact(def)) { //FIXME: Borked defaults are currently assumed to be default values
+                        if (PyTuple_GET_SIZE(def) < 2) continue; //A length-1 tuple represents a default expression and should be left unbound
+                        def = PyTuple_GET_ITEM(def, 1);
+		    }
                     Py_INCREF(def);
                     localsplus[m+i] = def;
                 }
@@ -5790,6 +5798,10 @@ initialize_locals(PyThreadState *tstate, PyFrameConstructor *con,
             if (con->fc_kwdefaults != NULL) {
                 PyObject *def = PyDict_GetItemWithError(con->fc_kwdefaults, varname);
                 if (def) {
+                    if (PyTuple_CheckExact(def)) { //FIXME: Borked defaults are currently assumed to be default values
+                        if (PyTuple_GET_SIZE(def) < 2) continue; //A length-1 tuple represents a default expression and should be left unbound
+                        def = PyTuple_GET_ITEM(def, 1);
+                    }
                     Py_INCREF(def);
                     localsplus[i] = def;
                     continue;
