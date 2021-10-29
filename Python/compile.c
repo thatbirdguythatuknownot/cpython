@@ -2363,7 +2363,8 @@ compiler_default_arg_expressions(struct compiler *c, arguments_ty args)
             default_ty dflt = asdl_seq_GET(args->defaults, i);
             if (dflt->type == DfltExpr) {
                 //FIXME: Check if the argument (fast local mandatory+i) is unset
-                //FIXME: References to surrounding scopes aren't being properly handled (?)
+                //FIXME: Global names aren't getting visited by symtable.c::analyze_name()
+                //due to this not being a statement.
                 VISIT(c, expr, dflt->value);
                 ADDOP_I(c, STORE_FAST, mandatory + i);
             }
