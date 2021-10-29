@@ -1814,9 +1814,10 @@ symtable_visit_params(struct symtable *st, asdl_arg_seq *args)
 static int
 symtable_visit_default(struct symtable *st, default_ty dflt)
 {
-    VISIT(st, expr, dflt->value);
-    //FIXME: What needs to be visited for the integer?
-
+    //Visit early-bound defaults here; late-bound defaults get visited in
+    //the function's scope.
+    if (dflt->type == DfltValue)
+        VISIT(st, expr, dflt->value);
     return 1;
 }
 
@@ -1905,6 +1906,22 @@ symtable_visit_arguments(struct symtable *st, arguments_ty a)
         if (!symtable_add_def(st, a->kwarg->arg, DEF_PARAM))
             return 0;
         st->st_cur->ste_varkeywords = 1;
+    }
+    if (a->defaults) {
+        int i = 0;
+        for (i = 0; i < asdl_seq_LEN(a->defaults); i++) {
+            default_ty dflt = (default_ty)asdl_seq_GET(a->defaults, i);
+            if (dflt->type == DfltExpr)
+                VISIT(st, expr, dflt->value);
+        }
+    }
+    if (a->kw_defaults) {
+        int i = 0;
+        for (i = 0; i < asdl_seq_LEN(a->kw_defaults); i++) {
+            default_ty dflt = (default_ty)asdl_seq_GET(a->kw_defaults, i);
+            if (dflt && dflt->type == DfltExpr)
+                VISIT(st, expr, dflt->value);
+        }
     }
     return 1;
 }

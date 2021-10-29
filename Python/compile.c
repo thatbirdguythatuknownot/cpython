@@ -2358,8 +2358,6 @@ static int
 compiler_default_arg_expression(struct compiler *c, int local, default_ty dflt)
 {
     if (!dflt || dflt->type != DfltExpr) return 1;
-    //FIXME: Global names aren't getting visited by symtable.c::analyze_name()
-    //due to this not being a statement.
     basicblock *end = compiler_new_block(c);
     if (end == NULL)
         return 0;
