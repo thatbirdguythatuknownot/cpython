@@ -211,6 +211,69 @@ PyFunction_SetKwDefaults(PyObject *op, PyObject *defaults)
 }
 
 PyObject *
+PyFunction_GetDefaultsExtra(PyObject *op)
+{
+    if (!PyFunction_Check(op)) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+    return ((PyFunctionObject *) op) -> func_defaults_extra;
+}
+
+int
+PyFunction_SetDefaultsExtra(PyObject *op, PyObject *defaults)
+{
+    if (!PyFunction_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    if (defaults == Py_None)
+        defaults = NULL;
+    else if (defaults && PyTuple_Check(defaults)) {
+        Py_INCREF(defaults);
+    }
+    else {
+        PyErr_SetString(PyExc_SystemError, "non-tuple default arg extras");
+        return -1;
+    }
+    ((PyFunctionObject *)op)->func_version = 0;
+    Py_XSETREF(((PyFunctionObject *)op)->func_defaults_extra, defaults);
+    return 0;
+}
+
+PyObject *
+PyFunction_GetKwDefaultsExtra(PyObject *op)
+{
+    if (!PyFunction_Check(op)) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+    return ((PyFunctionObject *) op) -> func_kwdefaults_extra;
+}
+
+int
+PyFunction_SetKwDefaultsExtra(PyObject *op, PyObject *defaults)
+{
+    if (!PyFunction_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    if (defaults == Py_None)
+        defaults = NULL;
+    else if (defaults && PyDict_Check(defaults)) {
+        Py_INCREF(defaults);
+    }
+    else {
+        PyErr_SetString(PyExc_SystemError,
+                        "non-dict keyword only default arg extras");
+        return -1;
+    }
+    ((PyFunctionObject *)op)->func_version = 0;
+    Py_XSETREF(((PyFunctionObject *)op)->func_kwdefaults_extra, defaults);
+    return 0;
+}
+
+PyObject *
 PyFunction_GetClosure(PyObject *op)
 {
     if (!PyFunction_Check(op)) {
@@ -463,6 +526,89 @@ func_set_kwdefaults(PyFunctionObject *op, PyObject *value, void *Py_UNUSED(ignor
 }
 
 static PyObject *
+func_get_defaults_extra(PyFunctionObject *op, void *Py_UNUSED(ignored))
+{
+    if (PySys_Audit("object.__getattr__", "Os", op, "__defaults_extra__") < 0) {
+        return NULL;
+    }
+    if (op->func_defaults == NULL) {
+        Py_RETURN_NONE;
+    }
+    Py_INCREF(op->func_defaults_extra);
+    return op->func_defaults_extra;
+}
+
+static int
+func_set_defaults_extra(PyFunctionObject *op, PyObject *value, void *Py_UNUSED(ignored))
+{
+    /* Legal to del f.func_defaults_extra.
+     * Can only set func_defaults_extra to NULL or a tuple. */
+    if (value == Py_None)
+        value = NULL;
+    if (value != NULL && !PyTuple_Check(value)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__defaults_extra__ must be set to a tuple object");
+        return -1;
+    }
+    if (value) {
+        if (PySys_Audit("object.__setattr__", "OsO",
+                        op, "__defaults_extra__", value) < 0) {
+            return -1;
+        }
+    } else if (PySys_Audit("object.__delattr__", "Os",
+                           op, "__defaults_extra__") < 0) {
+        return -1;
+    }
+
+    op->func_version = 0;
+    Py_XINCREF(value);
+    Py_XSETREF(op->func_defaults_extra, value);
+    return 0;
+}
+
+static PyObject *
+func_get_kwdefaults_extra(PyFunctionObject *op, void *Py_UNUSED(ignored))
+{
+    if (PySys_Audit("object.__getattr__", "Os",
+                    op, "__kwdefaults_extra__") < 0) {
+        return NULL;
+    }
+    if (op->func_kwdefaults_extra == NULL) {
+        Py_RETURN_NONE;
+    }
+    Py_INCREF(op->func_kwdefaults_extra);
+    return op->func_kwdefaults_extra;
+}
+
+static int
+func_set_kwdefaults_extra(PyFunctionObject *op, PyObject *value, void *Py_UNUSED(ignored))
+{
+    if (value == Py_None)
+        value = NULL;
+    /* Legal to del f.func_kwdefaults_extra.
+     * Can only set func_kwdefaults_extra to NULL or a dict. */
+    if (value != NULL && !PyDict_Check(value)) {
+        PyErr_SetString(PyExc_TypeError,
+            "__kwdefaults_extra__ must be set to a dict object");
+        return -1;
+    }
+    if (value) {
+        if (PySys_Audit("object.__setattr__", "OsO",
+                        op, "__kwdefaults_extra__", value) < 0) {
+            return -1;
+        }
+    } else if (PySys_Audit("object.__delattr__", "Os",
+                           op, "__kwdefaults_extra__") < 0) {
+        return -1;
+    }
+
+    op->func_version = 0;
+    Py_XINCREF(value);
+    Py_XSETREF(op->func_kwdefaults_extra, value);
+    return 0;
+}
+
+static PyObject *
 func_get_annotations(PyFunctionObject *op, void *Py_UNUSED(ignored))
 {
     if (op->func_annotations == NULL) {
@@ -518,6 +664,10 @@ static PyGetSetDef func_getsetlist[] = {
      (setter)func_set_defaults},
     {"__kwdefaults__", (getter)func_get_kwdefaults,
      (setter)func_set_kwdefaults},
+    {"__defaults_extra__", (getter)func_get_defaults_extra,
+     (setter)func_set_defaults_extra},
+    {"__kwdefaults_extra__", (getter)func_get_kwdefaults_extra,
+     (setter)func_set_kwdefaults_extra},
     {"__annotations__", (getter)func_get_annotations,
      (setter)func_set_annotations},
     {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
