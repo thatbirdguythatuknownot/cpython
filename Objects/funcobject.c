@@ -531,7 +531,7 @@ func_get_defaults_extra(PyFunctionObject *op, void *Py_UNUSED(ignored))
     if (PySys_Audit("object.__getattr__", "Os", op, "__defaults_extra__") < 0) {
         return NULL;
     }
-    if (op->func_defaults == NULL) {
+    if (op->func_defaults_extra == NULL) {
         Py_RETURN_NONE;
     }
     Py_INCREF(op->func_defaults_extra);
