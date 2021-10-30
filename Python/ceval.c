@@ -4743,8 +4743,13 @@ check_eval_breaker:
             int deflen = cache1->defaults_len;
             for (int i = 0; i < deflen; i++) {
                 PyObject *def = PyTuple_GET_ITEM(func->func_defaults, cache1->defaults_start+i);
-                if (def == Py_Ellipsis) {
-                    //TODO: Look up the other mapping. If not found, continue to use Ellipsis.
+		if (def == Py_Ellipsis && func->func_defaults_extra) {
+		    PyObject *info = NULL;
+		    if (i <= PyTuple_GET_SIZE(func->func_defaults_extra))
+		        info = PyTuple_GET_ITEM(func->func_defaults_extra, i);
+		    if (info && info != Py_None) {
+		        continue;
+		    }
                 }
                 Py_INCREF(def);
                 new_frame->localsplus[argcount+i] = def;
@@ -4934,14 +4939,6 @@ check_eval_breaker:
                 goto error;
             }
 
-            if (oparg & 0x20) {
-                assert(PyDict_CheckExact(TOP()));
-                func->func_kwdefaults_extra = POP();
-            }
-            if (oparg & 0x10) {
-                assert(PyTuple_CheckExact(TOP()));
-                func->func_defaults_extra = POP();
-            }
             if (oparg & 0x08) {
                 assert(PyTuple_CheckExact(TOP()));
                 func->func_closure = POP();
@@ -4950,9 +4947,17 @@ check_eval_breaker:
                 assert(PyTuple_CheckExact(TOP()));
                 func->func_annotations = POP();
             }
+            if (oparg & 0x20) {
+                assert(PyDict_CheckExact(TOP()));
+                func->func_kwdefaults_extra = POP();
+            }
             if (oparg & 0x02) {
                 assert(PyDict_CheckExact(TOP()));
                 func->func_kwdefaults = POP();
+            }
+            if (oparg & 0x10) {
+                assert(PyTuple_CheckExact(TOP()));
+                func->func_defaults_extra = POP();
             }
             if (oparg & 0x01) {
                 assert(PyTuple_CheckExact(TOP()));
@@ -5795,8 +5800,13 @@ initialize_locals(PyThreadState *tstate, PyFrameConstructor *con,
             for (; i < defcount; i++) {
                 if (localsplus[m+i] == NULL) {
                     PyObject *def = defs[i];
-                    if (def == Py_Ellipsis) {
-                        //Per above
+                    if (def == Py_Ellipsis && con->fc_defaults_extra) {
+			PyObject *info = NULL;
+			if (i <= PyTuple_GET_SIZE(con->fc_defaults_extra))
+			    info = PyTuple_GET_ITEM(con->fc_defaults_extra, i);
+			if (info && info != Py_None) {
+			    continue;
+			}
 		    }
                     Py_INCREF(def);
                     localsplus[m+i] = def;

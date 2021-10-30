@@ -2354,22 +2354,38 @@ compiler_visit_annotations(struct compiler *c, arguments_ty args,
     return -1;
 }
 
-static int
-compiler_visit_defaults(struct compiler *c, arguments_ty args)
-{
-    VISIT_SEQ(c, default, args->defaults);
-    ADDOP_I(c, BUILD_TUPLE, asdl_seq_LEN(args->defaults));
-    return 1;
-}
-
 static Py_ssize_t
 compiler_default_arguments(struct compiler *c, arguments_ty args)
 {
     Py_ssize_t funcflags = 0;
     if (args->defaults && asdl_seq_LEN(args->defaults) > 0) {
-        if (!compiler_visit_defaults(c, args))
-            return -1;
+        int i, late = -1;
+        asdl_default_seq *seq = args->defaults;
+        for (i = 0; i < asdl_seq_LEN(seq); i++) {
+            default_ty elt = (default_ty)asdl_seq_GET(seq, i);
+            if (!compiler_visit_default(c, elt))
+                return -1;
+            if (elt->type == DfltExpr) late = i;
+        }
+        ADDOP_I(c, BUILD_TUPLE, asdl_seq_LEN(args->defaults));
         funcflags |= 0x01;
+	if (late > -1) {
+	    //There's at least one late-bound default, and the last one is in the given position.
+	    PyObject *extra = PyTuple_New(late + 1);
+	    if (!extra) return -1;
+	    for (i = 0; i <= late; i++) {
+		default_ty d = (default_ty)asdl_seq_GET(seq, i);
+		if (d->type == DfltExpr) {
+		    PyObject *empty = PyUnicode_New(0, 0); //TODO: Put an actual description, not just an empty string
+		    PyTuple_SET_ITEM(extra, i, empty);
+		} else {
+		    Py_INCREF(Py_None);
+		    PyTuple_SET_ITEM(extra, i, Py_None);
+		}
+	    }
+	    ADDOP_LOAD_CONST_NEW(c, extra);
+	    funcflags |= 0x10;
+        }
     }
     if (args->kwonlyargs) {
         int res = compiler_visit_kwonlydefaults(c, args->kwonlyargs,
