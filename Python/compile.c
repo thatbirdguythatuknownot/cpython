@@ -2164,13 +2164,10 @@ static int
 compiler_visit_default(struct compiler *c, default_ty dflt)
 {
     if (dflt->type == DfltValue) {
-        ADDOP_LOAD_CONST(c, Py_None); //Omit source code from default values
         VISIT(c, expr, dflt->value);
-        ADDOP_I(c, BUILD_TUPLE, 2);
     }
     else {
-        ADDOP_LOAD_CONST(c, Py_None); //FIXME: Source code for the expression
-        ADDOP_I(c, BUILD_TUPLE, 1);
+        ADDOP_LOAD_CONST(c, Py_Ellipsis);
     }
     return 1;
 }
@@ -2181,10 +2178,12 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
 {
     /* Push a dict of keyword-only default values.
 
-       Return 0 on error, -1 if no dict pushed, 1 if a dict is pushed.
+       Return 0 on error, -1 if no dict pushed, 1-2 if dict(s) pushed.
        */
     int i;
     PyObject *keys = NULL;
+    PyObject *extra_keys = NULL;
+    PyObject *extra_vals = NULL;
 
     for (i = 0; i < asdl_seq_LEN(kwonlyargs); i++) {
         arg_ty arg = asdl_seq_GET(kwonlyargs, i);
@@ -2193,6 +2192,19 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
             PyObject *mangled = _Py_Mangle(c->u->u_private, arg->arg);
             if (!mangled) {
                 goto error;
+            }
+            if (default_->type == DfltExpr) {
+                if (!extra_keys) {
+                    extra_keys = PyList_New(0);
+                    if (!extra_keys) goto error;
+                    extra_vals = PyList_New(0);
+                    if (!extra_vals) goto error;
+                }
+		if (PyList_Append(extra_keys, mangled) == -1) goto error;
+                PyObject *empty = PyUnicode_New(0, 0); //TODO: Put an actual description, not just an empty string
+		int res = PyList_Append(extra_vals, empty);
+                Py_DECREF(empty);
+                if (res == -1) goto error;
             }
             if (keys == NULL) {
                 keys = PyList_New(1);
@@ -2221,6 +2233,22 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
         ADDOP_LOAD_CONST_NEW(c, keys_tuple);
         ADDOP_I(c, BUILD_CONST_KEY_MAP, default_count);
         assert(default_count > 0);
+        if (extra_keys) {
+	    //What I really want here is to add a frozen dict as a constant.
+	    //Instead, we keep the keys and values as tuples, unpack the values,
+	    //and then build a dict out of them. (Is it worth having a dedicated
+	    //opcode to build a dict out of a pair of tuples?)
+	    Py_ssize_t count = PyList_GET_SIZE(extra_keys);
+            PyObject *ekeys_tuple = PyList_AsTuple(extra_keys);
+            Py_DECREF(extra_keys);
+            PyObject *evals_tuple = PyList_AsTuple(extra_vals);
+            Py_DECREF(extra_vals);
+	    ADDOP_LOAD_CONST_NEW(c, evals_tuple);
+	    ADDOP_I(c, UNPACK_SEQUENCE, count);
+	    ADDOP_LOAD_CONST_NEW(c, ekeys_tuple);
+	    ADDOP_I(c, BUILD_CONST_KEY_MAP, count);
+	    return 2;
+	}
         return 1;
     }
     else {
@@ -2228,6 +2256,8 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
     }
 
 error:
+    Py_XDECREF(extra_keys);
+    Py_XDECREF(extra_vals);
     Py_XDECREF(keys);
     return 0;
 }
@@ -2347,8 +2377,11 @@ compiler_default_arguments(struct compiler *c, arguments_ty args)
         if (res == 0) {
             return -1;
         }
-        else if (res > 0) {
+        if (res > 0) {
             funcflags |= 0x02;
+        }
+        if (res > 1) {
+            funcflags |= 0x20;
         }
     }
     return funcflags;

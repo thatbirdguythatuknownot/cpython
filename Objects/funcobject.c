@@ -73,7 +73,9 @@ PyFunction_NewWithQualName(PyObject *code, PyObject *globals, PyObject *qualname
     op->func_qualname = qualname;
     op->func_code = (PyObject*)code_obj;
     op->func_defaults = NULL;    // No default positional arguments
+    op->func_defaults_extra = NULL;
     op->func_kwdefaults = NULL;  // No default keyword arguments
+    op->func_kwdefaults_extra = NULL;
     op->func_closure = NULL;
     op->func_doc = doc;
     op->func_dict = NULL;

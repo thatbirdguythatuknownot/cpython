@@ -15,7 +15,9 @@ extern "C" {
     PyObject *PREFIX ## qualname; \
     PyObject *PREFIX ## code;        /* A code object, the __code__ attribute */ \
     PyObject *PREFIX ## defaults;    /* NULL or a tuple */ \
+    PyObject *PREFIX ## defaults_extra;    /* NULL or a tuple */ \
     PyObject *PREFIX ## kwdefaults;  /* NULL or a dict */ \
+    PyObject *PREFIX ## kwdefaults_extra;  /* NULL or a dict */ \
     PyObject *PREFIX ## closure;     /* NULL or a tuple of cell objects */
 
 typedef struct {
