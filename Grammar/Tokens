@@ -53,6 +53,8 @@ ATEQUAL                 '@='
 RARROW                  '->'
 ELLIPSIS                '...'
 COLONEQUAL              ':='
+DOUBLEPLUS              '++'
+DOUBLEMINUS             '--'
 
 OP
 AWAIT
