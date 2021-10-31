@@ -373,6 +373,22 @@ The Python compiler currently generates the following bytecode instructions.
 Unary operations take the top of the stack, apply the operation, and push the
 result back on the stack.
 
+.. opcode:: INCREMENT (is_prefix)
+
+   Pushes ``++TOS`` to stack. If *is_prefix* is 1, ``TOS`` is
+   set to ``++TOS``. Otherwise, ``TOS`` remains as it is.
+
+   .. versionadded:: 3.11
+
+
+.. opcode:: DECREMENT (is_prefix)
+
+   Pushes ``--TOS`` to stack. If *is_prefix* is 1, ``TOS`` is
+   set to ``--TOS``. Otherwise, ``TOS`` remains as it is.
+
+   .. versionadded:: 3.11
+
+
 .. opcode:: UNARY_POSITIVE
 
    Implements ``TOS = +TOS``.
