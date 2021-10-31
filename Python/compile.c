@@ -2201,9 +2201,9 @@ compiler_visit_kwonlydefaults(struct compiler *c, asdl_arg_seq *kwonlyargs,
                     if (!extra_vals) goto error;
                 }
 		if (PyList_Append(extra_keys, mangled) == -1) goto error;
-                PyObject *empty = PyUnicode_New(0, 0); //TODO: Put an actual description, not just an empty string
-		int res = PyList_Append(extra_vals, empty);
-                Py_DECREF(empty);
+                PyObject *desc = _PyAST_ExprAsUnicode(default_->value);
+		int res = PyList_Append(extra_vals, desc);
+                Py_DECREF(desc);
                 if (res == -1) goto error;
             }
             if (keys == NULL) {
@@ -2376,8 +2376,8 @@ compiler_default_arguments(struct compiler *c, arguments_ty args)
 	    for (i = 0; i <= late; i++) {
 		default_ty d = (default_ty)asdl_seq_GET(seq, i);
 		if (d->type == DfltExpr) {
-		    PyObject *empty = PyUnicode_New(0, 0); //TODO: Put an actual description, not just an empty string
-		    PyTuple_SET_ITEM(extra, i, empty);
+		    PyObject *desc = _PyAST_ExprAsUnicode(d->value);
+		    PyTuple_SET_ITEM(extra, i, desc);
 		} else {
 		    Py_INCREF(Py_None);
 		    PyTuple_SET_ITEM(extra, i, Py_None);
