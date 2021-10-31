@@ -756,7 +756,16 @@ power[expr_ty]:
 # Primary elements are things like "obj.something.something", "obj[something]", "obj(something)", "obj" ...
 
 await_primary[expr_ty] (memo):
-    | AWAIT a=primary { CHECK_VERSION(expr_ty, 5, "Await expressions are", _PyAST_Await(a, EXTRA)) }
+    | AWAIT a=await_primary { CHECK_VERSION(expr_ty, 5, "Await expressions are", _PyAST_Await(a, EXTRA)) }
+    | crements
+
+crements[expr_ty] (memo):
+    | invalid_crements
+    | alternative_rules_crement
+    | a=primary '++' !primary { _PyAST_Increment(CHECK(expr_ty, _PyPegen_set_expr_context(p, a, Store)), 0, EXTRA) }
+    | a=primary '--' !primary { _PyAST_Decrement(CHECK(expr_ty, _PyPegen_set_expr_context(p, a, Store)), 0, EXTRA) }
+    | '++' a=primary { _PyAST_Increment(CHECK(expr_ty, _PyPegen_set_expr_context(p, a, Store)), 1, EXTRA) }
+    | '--' a=primary { _PyAST_Decrement(CHECK(expr_ty, _PyPegen_set_expr_context(p, a, Store)), 1, EXTRA) }
     | primary
 
 primary[expr_ty]:
@@ -1249,3 +1258,286 @@ invalid_kvpair:
         RAISE_ERROR_KNOWN_LOCATION(p, PyExc_SyntaxError, a->lineno, a->end_col_offset - 1, a->end_lineno, -1, "':' expected after dictionary key") }
     | expression ':' a='*' bitwise_or { RAISE_SYNTAX_ERROR_STARTING_FROM(a, "cannot use a starred expression in a dictionary value") }
     | expression a=':' {RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "expression expected after dictionary key and ':'") }
+
+invalid_crements:
+    | a=primary '++' b='++' !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "increment expression cannot be incremented") }
+    | a=primary '--' b='--' !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "decrement expression cannot be decremented") }
+    | a=primary '++' b='--' !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "increment expression cannot be decremented") }
+    | a=primary '--' b='++' !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "decrement expression cannot be incremented") }
+    | '++' a=primary ('++' | '--') !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
+    | '--' a=primary ('++' | '--') !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
+alternative_rules_crement:
+    | a=primary '++' b=primary !('++' | '--') {
+        _PyAST_BinOp(a, Add, _PyAST_UnaryOp(UAdd, b, EXTRA), EXTRA) }
+    | a=primary '--' b=primary !('++' | '--') {
+        _PyAST_BinOp(a, Sub, _PyAST_UnaryOp(USub, b, EXTRA), EXTRA) }
+    | a=primary '++' '++' '+' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Add,
+                     _PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '+' '--' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Add,
+                     _PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '++' '+' '--' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Add,
+                     _PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '++' '+' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Add,
+                     _PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '++' '-' '++' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Sub,
+                     _PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '--' '-' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Sub,
+                     _PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '++' '--' '-' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Sub,
+                     _PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '-' '++' b=primary !('++' | '--') {
+        (a->kind == Name_kind ||
+         a->kind == Attribute_kind ||
+         a->kind == Subscript_kind) ?
+        (b->kind == Name_kind ||
+         b->kind == Attribute_kind ||
+         b->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      a,
+                                                                      Store)),
+                                      0, EXTRA),
+                     Sub,
+                     _PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p,
+                                                                      b,
+                                                                      Store)),
+                                      1, EXTRA),
+                     EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b,
+                                       "%s cannot be incremented",
+                                       _PyPegen_get_expr_name(b)) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a,
+                                       "%s cannot be decremented",
+                                       _PyPegen_get_expr_name(a)) }
+    | a=primary '++' b=primary '++' !expression {
+        (b->kind == Name_kind || b->kind == Attribute_kind || b->kind == Subscript_kind) ?
+        _PyAST_BinOp(a, Add,
+                     _PyAST_UnaryOp(UAdd,
+                                    _PyAST_Increment(CHECK(expr_ty,
+                                                           _PyPegen_set_expr_context(p, b, Store)),
+                                                           0, EXTRA), EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "%s cannot be incremented", _PyPegen_get_expr_name(b)) }
+    | a=primary '++' b=primary '--' !expression {
+        (b->kind == Name_kind || b->kind == Attribute_kind || b->kind == Subscript_kind) ?
+        _PyAST_BinOp(a, Add,
+                     _PyAST_UnaryOp(UAdd,
+                                    _PyAST_Decrement(CHECK(expr_ty,
+                                                           _PyPegen_set_expr_context(p, b, Store)),
+                                                           0, EXTRA), EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "%s cannot be decremented", _PyPegen_get_expr_name(b)) }
+    | a=primary '--' b=primary '++' !expression {
+        (b->kind == Name_kind || b->kind == Attribute_kind || b->kind == Subscript_kind) ?
+        _PyAST_BinOp(a, Sub,
+                     _PyAST_UnaryOp(USub,
+                                    _PyAST_Increment(CHECK(expr_ty,
+                                                           _PyPegen_set_expr_context(p, b, Store)),
+                                                           0, EXTRA), EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "%s cannot be incremented", _PyPegen_get_expr_name(b)) }
+    | a=primary '--' b=primary '--' {
+        (b->kind == Name_kind || b->kind == Attribute_kind || b->kind == Subscript_kind) ?
+        _PyAST_BinOp(a, Sub,
+                     _PyAST_UnaryOp(USub,
+                                    _PyAST_Decrement(CHECK(expr_ty,
+                                                           _PyPegen_set_expr_context(p, b, Store)),
+                                                           0, EXTRA), EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "%s cannot be decremented", _PyPegen_get_expr_name(b)) }
+    | a=primary '++' '++' b=primary {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p, a, Store)),
+                                            0, EXTRA),
+                     Add,
+                     _PyAST_UnaryOp(UAdd, b, EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "%s cannot be incremented", _PyPegen_get_expr_name(a)) }
+    | a=primary '++' '--' b=primary {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p, a, Store)),
+                                            0, EXTRA),
+                     Sub,
+                     _PyAST_UnaryOp(USub, b, EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "%s cannot be incremented", _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '++' b=primary {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p, a, Store)),
+                                            0, EXTRA),
+                     Add,
+                     _PyAST_UnaryOp(UAdd, b, EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "%s cannot be decremented", _PyPegen_get_expr_name(a)) }
+    | a=primary '--' '--' b=primary {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                            _PyPegen_set_expr_context(p, a, Store)),
+                                            0, EXTRA),
+                     Sub,
+                     _PyAST_UnaryOp(USub, b, EXTRA), EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "%s cannot be decremented", _PyPegen_get_expr_name(a)) }
