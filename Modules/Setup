@@ -1,0 +1,319 @@
+# -*- makefile -*-
+# The file Setup is used by the makesetup script to construct the files
+# Makefile and config.c, from Makefile.pre and config.c.in,
+# respectively.  Note that Makefile.pre is created from Makefile.pre.in
+# by the toplevel configure script.
+
+# (VPATH notes: Setup and Makefile.pre are in the build directory, as
+# are Makefile and config.c; the *.in files are in the source directory.)
+
+# Each line in this file describes one or more optional modules.
+# Modules configured here will not be compiled by the setup.py script,
+# so the file can be used to override setup.py's behavior.
+# Tag lines containing just the word "*static*", "*shared*" or "*disabled*"
+# (without the quotes but with the stars) are used to tag the following module
+# descriptions. Tag lines may alternate throughout this file.  Modules are
+# built statically when they are preceded by a "*static*" tag line or when
+# there is no tag line between the start of the file and the module
+# description.  Modules are built as a shared library when they are preceded by
+# a "*shared*" tag line.  Modules are not built at all, not by the Makefile,
+# nor by the setup.py script, when they are preceded by a "*disabled*" tag
+# line.
+
+# Lines have the following structure:
+#
+# <module> ... [<sourcefile> ...] [<cpparg> ...] [<library> ...]
+#
+# <sourcefile> is anything ending in .c (.C, .cc, .c++ are C++ files)
+# <cpparg> is anything starting with -I, -D, -U or -C
+# <library> is anything ending in .a or beginning with -l or -L
+# <module> is anything else but should be a valid Python
+# identifier (letters, digits, underscores, beginning with non-digit)
+#
+# (As the makesetup script changes, it may recognize some other
+# arguments as well, e.g. *.so and *.sl as libraries.  See the big
+# case statement in the makesetup script.)
+#
+# Lines can also have the form
+#
+# <name> = <value>
+#
+# which defines a Make variable definition inserted into Makefile.in
+#
+# The build process works like this:
+#
+# 1. Build all modules that are declared as static in Modules/Setup,
+#    combine them into libpythonxy.a, combine that into python.
+# 2. Build all modules that are listed as shared in Modules/Setup.
+# 3. Invoke setup.py. That builds all modules that
+#    a) are not builtin, and
+#    b) are not listed in Modules/Setup, and
+#    c) can be build on the target
+#
+# Therefore, modules declared to be shared will not be
+# included in the config.c file, nor in the list of objects to be
+# added to the library archive, and their linker options won't be
+# added to the linker options. Rules to create their .o files and
+# their shared libraries will still be added to the Makefile, and
+# their names will be collected in the Make variable SHAREDMODS.  This
+# is used to build modules as shared libraries.  (They can be
+# installed using "make sharedinstall", which is implied by the
+# toplevel "make install" target.)  (For compatibility,
+# *noconfig* has the same effect as *shared*.)
+#
+# NOTE: As a standard policy, as many modules as can be supported by a
+# platform should be listed below.  The distribution comes with all
+# modules enabled that are supported by most platforms and don't
+# require you to download sources from elsewhere.
+
+
+# Some special rules to define PYTHONPATH.
+# Edit the definitions below to indicate which options you are using.
+# Don't add any whitespace or comments!
+
+# Directories where library files get installed.
+# DESTLIB is for Python modules; MACHDESTLIB for shared libraries.
+DESTLIB=$(LIBDEST)
+MACHDESTLIB=$(BINLIBDEST)
+
+# NOTE: all the paths are now relative to the prefix that is computed
+# at run time!
+
+# Standard path -- don't edit.
+# No leading colon since this is the first entry.
+# Empty since this is now just the runtime prefix.
+DESTPATH=
+
+# Site specific path components -- should begin with : if non-empty
+SITEPATH=
+
+# Standard path components for test modules
+TESTPATH=
+
+COREPYTHONPATH=$(DESTPATH)$(SITEPATH)$(TESTPATH)
+PYTHONPATH=$(COREPYTHONPATH)
+
+
+# ---
+# Built-in modules required to get a functioning interpreter;
+# cannot be built as shared!
+
+_collections _collectionsmodule.c
+_abc _abc.c
+_codecs _codecsmodule.c
+_functools _functoolsmodule.c
+_io -I$(srcdir)/Modules/_io _io/_iomodule.c _io/iobase.c _io/fileio.c _io/bytesio.c _io/bufferedio.c _io/textio.c _io/stringio.c
+_locale _localemodule.c  # -lintl
+_operator _operator.c
+_signal signalmodule.c
+_sre _sre.c
+_stat _stat.c
+_symtable symtablemodule.c  # setup.py can't track the .h file that _symtable depends on.
+_thread _threadmodule.c
+_tracemalloc _tracemalloc.c  # See bpo-35053 as to why this is built in.
+_weakref _weakref.c
+atexit atexitmodule.c
+errno errnomodule.c
+faulthandler faulthandler.c
+itertools itertoolsmodule.c
+posix posixmodule.c
+pwd pwdmodule.c
+time timemodule.c
+
+
+# ---
+# The rest of the modules listed in this file are all commented out by
+# default.  Usually they can be detected and built as dynamically
+# loaded modules by setup.py.  If you're on a platform that doesn't
+# support dynamic loading, want to compile modules statically into the
+# Python binary, or need to specify some odd set of compiler switches,
+# you can uncomment the appropriate lines below.
+
+# To enable all modules for testing, run
+# sed -n -E 's/^#([a-z_\*].*)$/\1/p' Modules/Setup > Modules/Setup.local
+
+# Uncommenting the following line tells makesetup that all following
+# modules are to be built as shared libraries (see above for more
+# detail; also note that *static* or *disabled* cancels this effect):
+
+#*shared*
+
+# Modules that should always be present (non UNIX dependent):
+
+#_asyncio _asynciomodule.c
+#_bisect _bisectmodule.c
+#_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
+#_codecs_cn cjkcodecs/_codecs_cn.c
+#_codecs_hk cjkcodecs/_codecs_hk.c
+#_codecs_iso2022 cjkcodecs/_codecs_iso2022.c
+#_codecs_jp cjkcodecs/_codecs_jp.c
+#_codecs_kr cjkcodecs/_codecs_kr.c
+#_codecs_tw cjkcodecs/_codecs_tw.c
+#_contextvars _contextvarsmodule.c
+#_csv _csv.c
+#_datetime _datetimemodule.c
+# UNIVERSAL: let mpdecimal.h detect settings
+#_decimal -DUNIVERSAL -I$(srcdir)/Modules/_decimal/libmpdec _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/mpalloc.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c
+#_elementtree -I$(srcdir)/Modules/expat _elementtree.c
+#_heapq _heapqmodule.c
+#_json _json.c
+#_lsprof _lsprof.c rotatingtree.c
+#_md5 md5module.c
+#_multibytecodec cjkcodecs/multibytecodec.c
+#_multiprocessing -I$(srcdir)/Modules/_multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
+#_opcode _opcode.c
+#_pickle _pickle.c
+#_posixsubprocess _posixsubprocess.c
+#_queue _queuemodule.c
+#_random _randommodule.c
+#_sha1 sha1module.c
+#_sha256 sha256module.c
+#_sha512 sha512module.c
+#_sha3 _sha3/sha3module.c
+#_statistics _statisticsmodule.c
+#_struct _struct.c
+#_typing _typingmodule.c
+#_zoneinfo _zoneinfo.c
+#array arraymodule.c
+#audioop audioop.c
+#binascii binascii.c
+#cmath cmathmodule.c
+#math mathmodule.c
+#pyexpat -I$(srcdir)/Modules/expat  expat/xmlparse.c expat/xmlrole.c expat/xmltok.c pyexpat.c
+#unicodedata  unicodedata.c
+
+# Modules with some UNIX dependencies -- on by default:
+# (If you have a really backward UNIX, select and socket may not be
+# supported...)
+
+#_posixshmem -I$(srcdir)/Modules/_multiprocessing _multiprocessing/posixshmem.c -lrt
+#_socket socketmodule.c  # socket(2)
+#fcntl fcntlmodule.c  # fcntl(2) and ioctl(2)
+#grp grpmodule.c  # grp(3)
+#mmap mmapmodule.c  # Also works on win32.
+#ossaudiodev ossaudiodev.c
+#select selectmodule.c  # select(2); not on ancient System V
+#spwd spwdmodule.c  # spwd(3)
+#syslog syslogmodule.c
+
+# Some more UNIX dependent modules -- off by default, since these
+# are not supported by all UNIX systems:
+
+#_crypt _cryptmodule.c -lcrypt	# crypt(3); breaks many builds.
+#nis nismodule.c -I/usr/include/tirpc -lnsl -ltirpc	# Sun yellow pages -- not everywhere
+#termios termios.c	# Steen Lumholt's termios module
+#resource resource.c	# Jeremy Hylton's rlimit interface
+
+# Modules that require external libraries.
+
+#_bz2 _bz2module.c -lbz2
+#_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c -ldl -lffi -DHAVE_FFI_PREP_CIF_VAR -DHAVE_FFI_PREP_CLOSURE_LOC -DHAVE_FFI_CLOSURE_ALLOC
+# _dbm _dbmmodule.c 	# -lndbm # dbm(3)
+#_gdbm _gdbmmodule.c -lgdbm
+#_lzma _lzmamodule.c -llzma
+#_sqlite3 _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -lsqlite3
+#_uuid _uuidmodule.c -luuid
+#zlib  zlibmodule.c -lz
+
+# GNU readline.  Unlike previous Python incarnations, GNU readline is
+# now incorporated in an optional module, configured in the Setup file
+# instead of by a configure script switch.  You may have to insert a
+# -L option pointing to the directory where libreadline.* lives,
+# and you may have to change -ltermcap to -ltermlib or perhaps remove
+# it, depending on your system -- see the GNU readline instructions.
+# It's okay for this to be a shared library, too.
+
+#readline readline.c -lreadline -ltermcap
+
+# To dynamically link OpenSSL:
+#_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) $(OPENSSL_LIBS)
+#_hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -lcrypto
+
+# To statically link OpenSSL:
+# _ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+#     -l:libssl.a -Wl,--exclude-libs,libssl.a \
+#     -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a
+# _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+#     -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a
+
+# The _tkinter module.
+#
+# The command for _tkinter is long and site specific.  Please
+# uncomment and/or edit those parts as indicated.  If you don't have a
+# specific extension (e.g. Tix or BLT), leave the corresponding line
+# commented out.  (Leave the trailing backslashes in!  If you
+# experience strange errors, you may want to join all uncommented
+# lines and remove the backslashes -- the backslash interpretation is
+# done by the shell's "read" command and it may not be implemented on
+# every system.
+
+# *** Always uncomment this (leave the leading underscore in!):
+#_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT $(TCLTK_INCLUDES) $(TCLTK_LIBS) \
+# *** Uncomment and edit to reflect where your Tcl/Tk libraries are:
+#	-L/usr/local/lib \
+# *** Uncomment and edit to reflect where your Tcl/Tk headers are:
+#	-I/usr/local/include \
+# *** Uncomment and edit to reflect where your X11 header files are:
+#	-I/usr/X11R6/include \
+# *** Or uncomment this for Solaris:
+#	-I/usr/openwin/include \
+# *** Uncomment and edit for Tix extension only:
+#	-DWITH_TIX -ltix8.1.8.2 \
+# *** Uncomment and edit for BLT extension only:
+#	-DWITH_BLT -I/usr/local/blt/blt8.0-unoff/include -lBLT8.0 \
+# *** Uncomment and edit for PIL (TkImaging) extension only:
+#     (See http://www.pythonware.com/products/pil/ for more info)
+#	-DWITH_PIL -I../Extensions/Imaging/libImaging  tkImaging.c \
+# *** Uncomment and edit for TOGL extension only:
+#	-DWITH_TOGL togl.c \
+# *** Uncomment and edit to reflect where your X11 libraries are:
+#	-L/usr/X11R6/lib \
+# *** Or uncomment this for Solaris:
+#	-L/usr/openwin/lib \
+# *** Uncomment these for TOGL extension only:
+#	-lGL -lGLU -lXext -lXmu \
+# *** Uncomment for AIX:
+#	-lld \
+# *** Always uncomment this; X11 libraries to link with:
+#	-lX11
+
+# Curses support, requiring the System V version of curses, often
+# provided by the ncurses library.  e.g. on Linux, link with -lncurses
+# instead of -lcurses).
+
+#_curses -lcurses -lcursesw -ltermcap _cursesmodule.c
+
+# Wrapper for the panel library that's part of ncurses and SYSV curses.
+#_curses_panel -lpanel -lncurses _curses_panel.c
+
+# macOS specific modules
+# _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
+
+# Examples
+
+#xx xxmodule.c
+#xxlimited xxlimited.c
+#xxlimited_35 xxlimited_35.c
+xxsubtype xxsubtype.c  # Required for the test suite to pass!
+
+# Testing
+
+#_xxsubinterpreters _xxsubinterpretersmodule.c
+#_xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
+#_ctypes_test _ctypes/_ctypes_test.c
+#_testbuffer _testbuffer.c
+#_testimportmultiple _testimportmultiple.c
+#_testinternalcapi _testinternalcapi.c
+#_testmultiphase _testmultiphase.c
+
+#*shared*
+#_testcapi _testcapimodule.c  # CANNOT be statically compiled!
+
+# ---
+# Uncommenting the following line tells makesetup that all following modules
+# are not built (see above for more detail).
+#
+#*disabled*
+#
+# _sqlite3 _tkinter _curses pyexpat
+# _codecs_jp _codecs_kr _codecs_tw unicodedata
