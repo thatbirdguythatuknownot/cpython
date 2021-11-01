@@ -3158,6 +3158,12 @@ long_add(PyLongObject *a, PyLongObject *b)
     return _PyLong_Add(a, b);
 }
 
+static PyObject *
+long_inc(PyLongObject *a)
+{
+    return _PyLong_Add(a, get_small_int(1));
+}
+
 
 static PyObject *
 long_sub(PyLongObject *a, PyLongObject *b)
@@ -3275,6 +3281,12 @@ x_mul(PyLongObject *a, PyLongObject *b)
         }
     }
     return long_normalize(z);
+}
+
+static PyObject *
+long_dec(PyLongObject *a)
+{
+    return long_sub(a, get_small_int(1));
 }
 
 /* A helper for Karatsuba multiplication (k_mul).
@@ -5741,6 +5753,8 @@ static PyNumberMethods long_as_number = {
     0,                          /* nb_inplace_floor_divide */
     0,                          /* nb_inplace_true_divide */
     long_long,                  /* nb_index */
+    .nb_increment = long_inc,   /* nb_increment */
+    .nb_decrement = long_dec,   /* nb_decrement */
 };
 
 PyTypeObject PyLong_Type = {
