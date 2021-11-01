@@ -659,6 +659,8 @@ class _Precedence:
     FACTOR = auto()          # unary '+', '-', '~'
     POWER = auto()           # '**'
     AWAIT = auto()           # 'await'
+    PREC = auto()            # prefix '++', '--'
+    POSTC = auto()           # postfix '++', '--'
     ATOM = auto()
 
     def next(self):
@@ -1340,6 +1342,36 @@ class _Unparser(NodeVisitor):
                 self.write(" ")
             self.set_precedence(operator_precedence, node.operand)
             self.traverse(node.operand)
+
+    crement_precedence = [
+        _Precedence.POSTC,
+        _Precedence.PREC,
+    ]
+
+    def visit_Increment(self, node):
+        operator_precedence = crement_precedence[node.is_prefix]
+        with self.require_parens(operator_precedence, node):
+            if node.is_prefix:
+                self.write("++")
+                self.set_precedence(operator_precedence, node.target)
+                self.traverse(node.target)
+            else:
+                self.set_precedence(operator_precedence, node.target)
+                self.traverse(node.target)
+                self.write("++")
+
+    def visit_Decrement(self, node):
+        operator_precedence = crement_precedence[node.is_prefix]
+        with self.require_parens(operator_precedence, node):
+            if node.is_prefix:
+                self.write("--")
+                self.set_precedence(operator_precedence, node.target)
+                self.traverse(node.target)
+            else:
+                self.set_precedence(operator_precedence, node.target)
+                self.traverse(node.target)
+                self.write("--")
+            
 
     binop = {
         "Add": "+",
