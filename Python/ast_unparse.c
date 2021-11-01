@@ -115,6 +115,8 @@ enum {
     PR_FACTOR,          /* unary '+', '-', '~' */
     PR_POWER,           /* '**' */
     PR_AWAIT,           /* 'await' */
+    PR_PREC,            /* prefix '++', '--' */
+    PR_POSTC,           /* postfix '++', '--' */
     PR_ATOM,
 };
 
@@ -173,6 +175,45 @@ append_ast_binop(_PyUnicodeWriter *writer, expr_ty e, int level)
     APPEND_EXPR(e->v.BinOp.right, pr + !rassoc);
     APPEND_STR_IF(level > pr, ")");
     return 0;
+}
+
+int crement_prs[2] = {
+    PR_POSTC,
+    PR_PREC
+}
+
+static int
+append_ast_increment(_PyUnicodeWriter *writer, expr_ty e, int level)
+{
+    int is_prefix = e->v.Increment.is_prefix;
+    int pr = crement_prs[is_prefix];
+    APPEND_STR_IF(level > pr, "(");
+    if (is_prefix) {
+        APPEND_STR("++");
+        APPEND_EXPR(e->v.Increment.target, pr);
+    }
+    else {
+        APPEND_EXPR(e->v.Increment.target, pr);
+        APPEND_STR("++");
+    }
+    APPEND_STR_IF(level > pr, ")");
+}
+
+static int
+append_ast_decrement(_PyUnicodeWriter *writer, expr_ty e, int level)
+{
+    int is_prefix = e->v.Decrement.is_prefix;
+    int pr = crement_prs[is_prefix];
+    APPEND_STR_IF(level > pr, "(");
+    if (is_prefix) {
+        APPEND_STR("--");
+        APPEND_EXPR(e->v.Decrement.target, pr);
+    }
+    else {
+        APPEND_EXPR(e->v.Decrement.target, pr);
+        APPEND_STR("--");
+    }
+    APPEND_STR_IF(level > pr, ")");
 }
 
 static int
@@ -917,6 +958,10 @@ append_ast_expr(_PyUnicodeWriter *writer, expr_ty e, int level)
         return append_ast_tuple(writer, e, level);
     case NamedExpr_kind:
         return append_named_expr(writer, e, level);
+    case Increment_kind:
+        return append_ast_increment(writer, e, level);
+    case Decrement_kind:
+        return append_ast_decrement(writer, e, level);
     // No default so compiler emits a warning for unhandled cases
     }
     PyErr_SetString(PyExc_SystemError,
