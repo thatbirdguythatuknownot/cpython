@@ -24,7 +24,7 @@ FORMAT_VALUE_CONVERTERS = (
     (ascii, 'ascii'),
 )
 MAKE_FUNCTION = opmap['MAKE_FUNCTION']
-MAKE_FUNCTION_FLAGS = ('defaults', 'kwdefaults', 'annotations', 'closure')
+MAKE_FUNCTION_FLAGS = ('defaults', 'kwdefaults', 'annotations', 'closure', 'dflt_extra', 'kwdflt_extra')
 
 LOAD_CONST = opmap['LOAD_CONST']
 
