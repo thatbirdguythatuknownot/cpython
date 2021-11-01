@@ -1573,6 +1573,102 @@ symtable_handle_namedexpr(struct symtable *st, expr_ty e)
 }
 
 static int
+symtable_extend_crement_scope(struct symtable *st, expr_ty e)
+{
+    assert(st->st_stack);
+
+    PyObject *target_name;
+    if (e->kind == Name_kind) {
+        target_name = e->v.Name.id;
+    }
+    else {
+        return 1;
+    }
+    Py_ssize_t i, size;
+    struct _symtable_entry *ste;
+    size = PyList_GET_SIZE(st->st_stack);
+    assert(size);
+
+    /* Iterate over the stack in reverse and add to the nearest adequate scope */
+    for (i = size - 1; i >= 0; i--) {
+        ste = (struct _symtable_entry *) PyList_GET_ITEM(st->st_stack, i);
+
+        /* If we find a FunctionBlock entry, add as GLOBAL/LOCAL or NONLOCAL/LOCAL */
+        if (ste->ste_type == FunctionBlock) {
+            long target_in_scope = _PyST_GetSymbol(ste, target_name);
+            if (target_in_scope & DEF_GLOBAL) {
+                if (!symtable_add_def(st, target_name, DEF_GLOBAL))
+                    VISIT_QUIT(st, 0);
+            } else {
+                if (!symtable_add_def(st, target_name, DEF_NONLOCAL))
+                    VISIT_QUIT(st, 0);
+            }
+            if (!symtable_record_directive(st, target_name, e->lineno, e->col_offset,
+                                           e->end_lineno, e->end_col_offset))
+                VISIT_QUIT(st, 0);
+
+            return symtable_add_def_helper(st, target_name, DEF_LOCAL, ste);
+        }
+        /* If we find a ModuleBlock entry, add as GLOBAL */
+        if (ste->ste_type == ModuleBlock) {
+            if (!symtable_add_def(st, target_name, DEF_GLOBAL))
+                VISIT_QUIT(st, 0);
+            if (!symtable_record_directive(st, target_name, e->lineno, e->col_offset,
+                                           e->end_lineno, e->end_col_offset))
+                VISIT_QUIT(st, 0);
+
+            return symtable_add_def_helper(st, target_name, DEF_GLOBAL, ste);
+        }
+        /* Disallow usage in ClassBlock */
+        if (ste->ste_type == ClassBlock) {
+            long target_in_scope = _PyST_GetSymbol(ste, target_name);
+            if (target_in_scope & DEF_GLOBAL) {
+                if (!symtable_add_def(st, target_name, DEF_GLOBAL))
+                    VISIT_QUIT(st, 0);
+            } else {
+                if (!symtable_add_def(st, target_name, DEF_NONLOCAL))
+                    VISIT_QUIT(st, 0);
+            }
+            if (!symtable_record_directive(st, target_name, e->lineno, e->col_offset,
+                                           e->end_lineno, e->end_col_offset))
+                VISIT_QUIT(st, 0);
+
+            return symtable_add_def_helper(st, target_name, DEF_LOCAL, ste);
+        }
+    }
+
+    /* We should always find either a FunctionBlock, ModuleBlock or ClassBlock
+       and should never fall to this case
+    */
+    assert(0);
+    return 0;
+}
+
+static int
+symtable_handle_increment(struct symtable *st, expr_ty e)
+{
+    if (st->st_cur->ste_comprehension) {
+        /* Inside a comprehension body, so find the right target scope */
+        if (!symtable_extend_crement_scope(st, e->v.Increment.target))
+            return 0;
+    }
+    VISIT(st, expr, e->v.Increment.target);
+    return 1;
+}
+
+static int
+symtable_handle_decrement(struct symtable *st, expr_ty e)
+{
+    if (st->st_cur->ste_comprehension) {
+        /* Inside a comprehension body, so find the right target scope */
+        if (!symtable_extend_crement_scope(st, e->v.Decrement.target))
+            return 0;
+    }
+    VISIT(st, expr, e->v.Decrement.target);
+    return 1;
+}
+
+static int
 symtable_visit_expr(struct symtable *st, expr_ty e)
 {
     if (++st->recursion_depth > st->recursion_limit) {
@@ -1586,6 +1682,20 @@ symtable_visit_expr(struct symtable *st, expr_ty e)
             VISIT_QUIT(st, 0);
         }
         if(!symtable_handle_namedexpr(st, e))
+            VISIT_QUIT(st, 0);
+        break;
+    case Increment_kind:
+        if (!symtable_raise_if_annotation_block(st, "increment", e)) {
+            VISIT_QUIT(st, 0);
+        }
+        if(!symtable_handle_increment(st, e))
+            VISIT_QUIT(st, 0);
+        break;
+    case Decrement_kind:
+        if (!symtable_raise_if_annotation_block(st, "decrement", e)) {
+            VISIT_QUIT(st, 0);
+        }
+        if(!symtable_handle_decrement(st, e))
             VISIT_QUIT(st, 0);
         break;
     case BoolOp_kind:
