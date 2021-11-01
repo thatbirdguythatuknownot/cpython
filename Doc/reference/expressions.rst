@@ -768,7 +768,33 @@ Primaries represent the most tightly bound operations of the language. Their
 syntax is:
 
 .. productionlist:: python-grammar
-   primary: `atom` | `attributeref` | `subscription` | `slicing` | `call`
+   primary: `atom` | `crements` | `attributeref` | `subscription` | `slicing` | `call`
+
+
+.. _crement-expressions:
+
+Crement expressions
+-------------------
+
+.. index::
+   pair: target
+   single: ++ (increment); target
+   single: -- (decrement); target
+
+An increment/decrement expression is a primary either suffixed or
+prefixed by a double plus or a double minus:
+
+.. productionlist:: python-grammar
+   crements: `primary` "++" | `primary` "--" | "++" `primary` | "--" `primary`
+
+.. index::
+   exception: TypeError
+
+The primary must evaluate to an assignable node. The object that the
+primary has must support the :meth:`__inc__` or :meth:`__dec__` method.
+Otherwise, a :exc:`TypeError` exception is raised. If it is available,
+the returned value is assigned and used if the increment/decrement
+operation is a prefix one.
 
 
 .. _attribute-references:
