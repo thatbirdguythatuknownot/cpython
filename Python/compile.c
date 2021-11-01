@@ -305,6 +305,8 @@ static int compiler_visit_stmt(struct compiler *, stmt_ty);
 static int compiler_visit_keyword(struct compiler *, keyword_ty);
 static int compiler_visit_expr(struct compiler *, expr_ty);
 static int compiler_augassign(struct compiler *, stmt_ty);
+static int compiler_increment(struct compiler *, expr_ty);
+static int compiler_decrement(struct compiler *, expr_ty);
 static int compiler_annassign(struct compiler *, stmt_ty);
 static int compiler_subscript(struct compiler *, expr_ty);
 static int compiler_slice(struct compiler *, expr_ty);
@@ -1015,6 +1017,9 @@ stack_effect(int opcode, int oparg, int jump)
         case UNARY_NOT:
         case UNARY_INVERT:
             return 0;
+        case INCREMENT:
+        case DECREMENT:
+            return 1;
 
         case SET_ADD:
         case LIST_APPEND:
@@ -5478,6 +5483,10 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
         return compiler_list(c, e);
     case Tuple_kind:
         return compiler_tuple(c, e);
+    case Increment_kind:
+        return compiler_increment(c, e);
+    case Decrement_kind:
+        return compiler_decrement(c, e);
     }
     return 1;
 }
@@ -5543,6 +5552,136 @@ compiler_augassign(struct compiler *c, stmt_ty s)
 
     VISIT(c, expr, s->v.AugAssign.value);
     ADDOP(c, inplace_binop(s->v.AugAssign.op));
+
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        c->u->u_lineno = e->end_lineno;
+        ADDOP(c, ROT_TWO);
+        ADDOP_NAME(c, STORE_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        ADDOP(c, ROT_THREE);
+        ADDOP(c, STORE_SUBSCR);
+        break;
+    case Name_kind:
+        return compiler_nameop(c, e->v.Name.id, Store);
+    default:
+        Py_UNREACHABLE();
+    }
+    return 1;
+}
+
+static int
+compiler_increment(struct compiler *c, expr_ty s)
+{
+    assert(s->kind == Increment_kind);
+    expr_ty e = s->v.Increment.target;
+
+    int old_lineno = c->u->u_lineno;
+    int old_end_lineno = c->u->u_end_lineno;
+    int old_col_offset = c->u->u_col_offset;
+    int old_end_col_offset = c->u->u_end_col_offset;
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        VISIT(c, expr, e->v.Attribute.value);
+        ADDOP(c, DUP_TOP);
+        int old_lineno = c->u->u_lineno;
+        c->u->u_lineno = e->end_lineno;
+        ADDOP_NAME(c, LOAD_ATTR, e->v.Attribute.attr, names);
+        c->u->u_lineno = old_lineno;
+        break;
+    case Subscript_kind:
+        VISIT(c, expr, e->v.Subscript.value);
+        VISIT(c, expr, e->v.Subscript.slice);
+        ADDOP(c, DUP_TOP_TWO);
+        ADDOP(c, BINARY_SUBSCR);
+        break;
+    case Name_kind:
+        if (!compiler_nameop(c, e->v.Name.id, Load))
+            return 0;
+        break;
+    default:
+        PyErr_Format(PyExc_SyntaxError,
+                     "cannot increment %s node",
+                     _PyPegen_get_expr_name(e));
+        return 0;
+    }
+
+    c->u->u_lineno = old_lineno;
+    c->u->u_end_lineno = old_end_lineno;
+    c->u->u_col_offset = old_col_offset;
+    c->u->u_end_col_offset = old_end_col_offset;
+
+    ADDOP_I(c, INCREMENT, s->v.Increment.is_prefix);
+
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        c->u->u_lineno = e->end_lineno;
+        ADDOP(c, ROT_TWO);
+        ADDOP_NAME(c, STORE_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        ADDOP(c, ROT_THREE);
+        ADDOP(c, STORE_SUBSCR);
+        break;
+    case Name_kind:
+        return compiler_nameop(c, e->v.Name.id, Store);
+    default:
+        Py_UNREACHABLE();
+    }
+    return 1;
+}
+
+static int
+compiler_decrement(struct compiler *c, expr_ty s)
+{
+    assert(s->kind == Decrement_kind);
+    expr_ty e = s->v.Decrement.target;
+
+    int old_lineno = c->u->u_lineno;
+    int old_end_lineno = c->u->u_end_lineno;
+    int old_col_offset = c->u->u_col_offset;
+    int old_end_col_offset = c->u->u_end_col_offset;
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        VISIT(c, expr, e->v.Attribute.value);
+        ADDOP(c, DUP_TOP);
+        int old_lineno = c->u->u_lineno;
+        c->u->u_lineno = e->end_lineno;
+        ADDOP_NAME(c, LOAD_ATTR, e->v.Attribute.attr, names);
+        c->u->u_lineno = old_lineno;
+        break;
+    case Subscript_kind:
+        VISIT(c, expr, e->v.Subscript.value);
+        VISIT(c, expr, e->v.Subscript.slice);
+        ADDOP(c, DUP_TOP_TWO);
+        ADDOP(c, BINARY_SUBSCR);
+        break;
+    case Name_kind:
+        if (!compiler_nameop(c, e->v.Name.id, Load))
+            return 0;
+        break;
+    default:
+        PyErr_Format(PyExc_SyntaxError,
+                     "cannot decrement %s node",
+                     _PyPegen_get_expr_name(e));
+        return 0;
+    }
+
+    c->u->u_lineno = old_lineno;
+    c->u->u_end_lineno = old_end_lineno;
+    c->u->u_col_offset = old_col_offset;
+    c->u->u_end_col_offset = old_end_col_offset;
+
+    ADDOP_I(c, DECREMENT, s->v.Decrement.is_prefix);
 
     SET_LOC(c, e);
 
