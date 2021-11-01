@@ -849,7 +849,7 @@ class TestClassesAndFunctions(unittest.TestCase):
                                     posonlyargs_e=[], kwonlyargs_e=[],
                                     kwonlydefaults_e=None,
                                     ann_e={}):
-        args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, ann = \
+        args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, ann, dflt_extra, kwdflt_extra = \
             inspect.getfullargspec(routine)
         self.assertEqual(args, args_e)
         self.assertEqual(varargs, varargs_e)
