@@ -467,6 +467,16 @@ PyAPI_FUNC(PyObject *) PyNumber_Divmod(PyObject *o1, PyObject *o2);
 PyAPI_FUNC(PyObject *) PyNumber_Power(PyObject *o1, PyObject *o2,
                                       PyObject *o3);
 
+/* Returns the incremented value of o on success, or NULL on failure.
+
+ This is the equivalent of the Python expression: ++o. */
+PyAPI_FUNC(PyObject *) PyNumber_Increment(PyObject *o);
+
+/* Returns the decremented value of o on success, or NULL on failure.
+
+ This is the equivalent of the Python expression: --o. */
+PyAPI_FUNC(PyObject *) PyNumber_Decrement(PyObject *o);
+
 /* Returns the negation of o on success, or NULL on failure.
 
  This is the equivalent of the Python expression: -o. */
