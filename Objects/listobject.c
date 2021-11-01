@@ -3147,6 +3147,74 @@ static PyMappingMethods list_as_mapping = {
     (objobjargproc)list_ass_subscript
 };
 
+static PyObject *
+list_increment(PyListObject *self)
+{
+    PyObject *original_list, *portion;
+    Py_ssize_t start = 1;
+
+    if (Py_SIZE(self) == 0) {
+        PyErr_SetString(PyExc_TypeError,
+                        "cannot increment list with size zero");
+            return NULL;
+    }
+    if (self->original_list) {
+        original_list = self->original_list;
+        if ((PyObject *)self != original_list) {
+            start = Py_SIZE(original_list) - Py_SIZE(self) + 1;
+        }
+    }
+    else {
+        original_list = (PyObject *)self;
+    }
+    portion = list_slice((PyListObject *)original_list, start, Py_SIZE(original_list));
+    if (portion == NULL) {
+        return NULL;
+    }
+    ((PyListObject *)portion)->original_list = original_list;
+    Py_INCREF(original_list);
+    return portion;
+}
+
+static PyObject *
+list_decrement(PyListObject *self)
+{
+    PyObject *original_list, *portion;
+    Py_ssize_t start;
+
+    if (self->original_list) {
+        original_list = self->original_list;
+        if (Py_SIZE(self) == Py_SIZE(original_list)) {
+            PyErr_SetString(PyExc_TypeError,
+                            "cannot decrement list that "
+                            "is not a portion of another");
+            return NULL;
+        }
+        else if (Py_SIZE(self) == Py_SIZE(original_list) - 1) {
+            return original_list;
+        }
+        start = Py_SIZE(original_list) - Py_SIZE(self) - 1;
+    }
+    else {
+        PyErr_SetString(PyExc_TypeError,
+                        "cannot decrement list that "
+                        "is not a portion of another");
+        return NULL;
+    }
+    portion = list_slice((PyListObject *)original_list, start, Py_SIZE(original_list));
+    if (portion == NULL) {
+        return NULL;
+    }
+    ((PyListObject *)portion)->original_list = original_list;
+    Py_INCREF(original_list);
+    return portion;
+}
+
+static PyNumberMethods list_as_number = {
+    .nb_increment = (unaryfunc)list_increment,
+    .nb_decrement = (unaryfunc)list_decrement,
+};
+
 PyTypeObject PyList_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "list",
@@ -3158,7 +3226,7 @@ PyTypeObject PyList_Type = {
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
     (reprfunc)list_repr,                        /* tp_repr */
-    0,                                          /* tp_as_number */
+    &list_as_number,                            /* tp_as_number */
     &list_as_sequence,                          /* tp_as_sequence */
     &list_as_mapping,                           /* tp_as_mapping */
     PyObject_HashNotImplemented,                /* tp_hash */
