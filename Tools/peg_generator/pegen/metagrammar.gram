@@ -128,4 +128,5 @@ target_atom[str]:
     | STRING { string.string }
     | "?" { "?" }
     | ":" { ":" }
+    | "|" "|" { "||" }
     | !"}" !"]" OP { op.string }
