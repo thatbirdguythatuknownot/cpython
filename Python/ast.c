@@ -354,8 +354,14 @@ validate_expr(struct validator *state, expr_ty exp, expr_context_ty ctx)
     case NamedExpr_kind:
         ret = validate_expr(state, exp->v.NamedExpr.value, Load);
         break;
-    /* This last case doesn't have any checking. */
+    /* These last cases doesn't have any checking. */
     case Name_kind:
+        ret = 1;
+        break;
+    case Increment_kind:
+        ret = 1;
+        break;
+    case Decrement_kind:
         ret = 1;
         break;
     // No default case so compiler emits warning for unhandled cases
