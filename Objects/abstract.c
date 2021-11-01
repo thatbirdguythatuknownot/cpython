@@ -1335,6 +1335,40 @@ PyNumber_InPlacePower(PyObject *v, PyObject *w, PyObject *z)
 /* Unary operators and functions */
 
 PyObject *
+PyNumber_Increment(PyObject *o)
+{
+    if (o == NULL) {
+        return null_error();
+    }
+
+    PyNumberMethods *m = Py_TYPE(o)->tp_as_number;
+    if (m && m->nb_increment) {
+        PyObject *res = (*m->nb_increment)(o);
+        assert(_Py_CheckSlotResult(o, "__inc__", res != NULL));
+        return res;
+    }
+
+    return type_error("bad operand type for increment: '%.200s'", o);
+}
+
+PyObject *
+PyNumber_Decrement(PyObject *o)
+{
+    if (o == NULL) {
+        return null_error();
+    }
+
+    PyNumberMethods *m = Py_TYPE(o)->tp_as_number;
+    if (m && m->nb_decrement) {
+        PyObject *res = (*m->nb_decrement)(o);
+        assert(_Py_CheckSlotResult(o, "__dec__", res != NULL));
+        return res;
+    }
+
+    return type_error("bad operand type for decrement: '%.200s'", o);
+}
+
+PyObject *
 PyNumber_Negative(PyObject *o)
 {
     if (o == NULL) {
