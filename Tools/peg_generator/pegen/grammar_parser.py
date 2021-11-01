@@ -636,6 +636,13 @@ class GeneratedParser(Parser):
             return ":"
         self._reset(mark)
         if (
+            (literal := self.expect("|"))
+            and
+            (literal1 := self.expect("|"))
+        ):
+            return "||"
+        self._reset(mark)
+        if (
             self.negative_lookahead(self.expect, "}")
             and
             self.negative_lookahead(self.expect, "]")
