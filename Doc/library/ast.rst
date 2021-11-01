@@ -566,6 +566,64 @@ Expressions
                 value=Constant(value=4)))
 
 
+Incrementing
+~~~~~~~~~~~~
+
+.. class:: Increment(target, is_prefix)
+
+   Prefix and postfix incrementing. ``target`` is the expression being incremented.
+
+   ``is_prefix`` tells if it is a prefix increment (using ``++target`` instead of
+   ``target++``). The value is an integer (either 0 or 1).
+
+   .. doctest::
+
+        >>> print(ast.dump(ast.parse('a++', mode='eval'),
+        ...                indent=4)) # Postfix increment
+        Expression(
+            body=Increment(
+                target=Name(id='a', ctx=Store()),
+                is_prefix=0))
+
+        >>> print(ast.dump(ast.parse('++a', mode='eval'),
+        ...                indent=4)) # Prefix increment
+        Expression(
+            body=Increment(
+                target=Name(id='a', ctx=Store()),
+                is_prefix=1))
+
+   .. versionadded:: 3.11
+
+
+Decrementing
+~~~~~~~~~~~~
+
+.. class:: Decrement(target, is_prefix)
+
+   Prefix and postfix decrementing. ``target`` is the expression being decremented.
+
+   ``is_prefix`` tells if it is a prefix decrement (using ``--target`` instead of
+   ``target--``). The value is an integer (either 0 or 1).
+
+   .. doctest::
+
+        >>> print(ast.dump(ast.parse('a--', mode='eval'),
+        ...                indent=4)) # Postfix decrement
+        Expression(
+            body=Decrement(
+                target=Name(id='a', ctx=Store()),
+                is_prefix=0))
+
+        >>> print(ast.dump(ast.parse('--a', mode='eval'),
+        ...                indent=4)) # Prefix decrement
+        Expression(
+            body=Decrement(
+                target=Name(id='a', ctx=Store()),
+                is_prefix=1))
+
+   .. versionadded:: 3.11
+
+
 Subscripting
 ~~~~~~~~~~~~
 
