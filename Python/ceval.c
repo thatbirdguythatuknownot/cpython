@@ -1873,6 +1873,104 @@ check_eval_breaker:
             DISPATCH();
         }
 
+        TARGET(INCREMENT) {
+            PyObject *value = TOP();
+            PyObject *res = PyNumber_Increment(value);
+            if (res == NULL) {
+                goto error;
+            }
+            PyObject *container, *sub;
+            int peek_op = _Py_OPCODE(*next_instr);
+            switch (peek_op) {
+            case ROT_TWO:
+                container = SECOND();
+                SET_TOP(container);
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_SECOND(res);
+                }
+                else {
+                    SET_SECOND(value);
+                }
+                PUSH(res);
+                DISPATCH();
+            case ROT_THREE:
+                container = THIRD();
+                sub = SECOND();
+                SET_TOP(container);
+                SET_SECOND(sub);
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_THIRD(res);
+                }
+                else {
+                    SET_THIRD(value);
+                }
+                PUSH(res);
+                DISPATCH();
+            default:
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_TOP(res);
+                }
+                PUSH(res);
+                DISPATCH();
+            }
+            Py_UNREACHABLE();
+        }
+
+        TARGET(DECREMENT) {
+            PyObject *value = TOP();
+            PyObject *res = PyNumber_Decrement(value);
+            if (res == NULL) {
+                goto error;
+            }
+            PyObject *container, *sub;
+            int peek_op = _Py_OPCODE(*next_instr);
+            switch (peek_op) {
+            case ROT_TWO:
+                container = SECOND();
+                SET_TOP(container);
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_SECOND(res);
+                }
+                else {
+                    SET_SECOND(value);
+                }
+                PUSH(res);
+                DISPATCH();
+            case ROT_THREE:
+                container = THIRD();
+                sub = SECOND();
+                SET_TOP(container);
+                SET_SECOND(sub);
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_THIRD(res);
+                }
+                else {
+                    SET_THIRD(value);
+                }
+                PUSH(res);
+                DISPATCH();
+            default:
+                if (oparg) {
+                    Py_DECREF(value);
+                    Py_INCREF(res);
+                    SET_TOP(res);
+                }
+                PUSH(res);
+                DISPATCH();
+            }
+            Py_UNREACHABLE();
+        }
+
         TARGET(UNARY_POSITIVE) {
             PyObject *value = TOP();
             PyObject *res = PyNumber_Positive(value);
