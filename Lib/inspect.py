@@ -2213,8 +2213,8 @@ def _signature_from_function(cls, func, skip_bound_arg=True,
     annotations = get_annotations(func, globals=globals, locals=locals, eval_str=eval_str)
     defaults = func.__defaults__
     kwdefaults = func.__kwdefaults__
-    defaults_extra = func.__defaults_extra__
-    kwdefaults_extra = func.__kwdefaults_extra__
+    defaults_extra = getattr(func, "__defaults_extra__", None)
+    kwdefaults_extra = getattr(func, "__kwdefaults_extra__", None)
 
     if defaults:
         pos_default_count = len(defaults)
