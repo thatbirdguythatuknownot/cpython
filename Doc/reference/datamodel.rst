@@ -2537,6 +2537,12 @@ left undefined.
    and ``~``).
 
 
+.. method:: object.__inc__(self)
+            object.__dec__(self)
+
+    Called to implement the other unary arithmetic operators (``++`` and ``--``).
+
+
 .. method:: object.__complex__(self)
             object.__int__(self)
             object.__float__(self)
