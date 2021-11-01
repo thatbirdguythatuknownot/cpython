@@ -125,6 +125,20 @@ The mathematical and bitwise operations are the most numerous:
    Return the bitwise inverse of the number *obj*.  This is equivalent to ``~obj``.
 
 
+.. function:: inc(obj)
+              increment(obj)
+              __inc__(obj)
+
+   Return the incremented version of the number *obj*. This is equivalent to ``++obj``.
+
+
+.. function:: dec(obj)
+              decrement(obj)
+              __dec__(obj)
+
+   Return the decremented version of the number *obj*. This is equivalent to ``--obj``.
+
+
 .. function:: lshift(a, b)
               __lshift__(a, b)
 
