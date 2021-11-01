@@ -742,7 +742,11 @@ term[expr_ty]:
 
 factor[expr_ty] (memo):
     | '+' a=factor { _PyAST_UnaryOp(UAdd, a, EXTRA) }
+    | '++' &('++' | '--') a=factor {
+        _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, a, EXTRA)) }
     | '-' a=factor { _PyAST_UnaryOp(USub, a, EXTRA) }
+    | '--' &('++' | '--') a=factor {
+        _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, a, EXTRA)) }
     | '~' a=factor { _PyAST_UnaryOp(Invert, a, EXTRA) }
     | power
 
@@ -1272,11 +1276,64 @@ invalid_crements:
         RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
     | '--' a=primary ('++' | '--') !expression {
         RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
+literal_await_primary (memo):
+    | AWAIT a=(literal_await_primary | primary) {
+        CHECK_VERSION(expr_ty, 5, "Await expressions are", _PyAST_Await(a, EXTRA)) }
 alternative_rules_crement:
     | a=primary '++' b=primary !('++' | '--') {
         _PyAST_BinOp(a, Add, _PyAST_UnaryOp(UAdd, b, EXTRA), EXTRA) }
     | a=primary '--' b=primary !('++' | '--') {
         _PyAST_BinOp(a, Sub, _PyAST_UnaryOp(USub, b, EXTRA), EXTRA) }
+    | '++' '-' a=literal_await_primary b=('**' c=factor { c }) {
+        _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(USub,
+                                      b ?
+                                      _PyAST_BinOp(a, Pow, b, EXTRA) :
+                                      a,
+                                      EXTRA),
+                               EXTRA),
+                       EXTRA) }
+    | '--' '-' a=literal_await_primary '**' b=factor {
+        _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub,
+                                      _PyAST_BinOp(a, Pow, b, EXTRA),
+                                      EXTRA),
+                               EXTRA),
+                       EXTRA) }
+    | '--' '-' a=primary '**' b=factor {
+        _PyAST_UnaryOp(USub, _PyAST_BinOp(_PyAST_Decrement(CHECK(expr_ty,
+                                 _PyPegen_set_expr_context(p, a, Store)),
+                                 1, EXTRA),
+                             Pow, b, EXTRA),
+                       EXTRA) }
+    | '--' '-' a=primary !('++' | '--') {
+        _PyAST_UnaryOp(USub, _PyAST_Decrement(CHECK(expr_ty,
+                                 _PyPegen_set_expr_context(p, a, Store)),
+                                 1, EXTRA),
+                       EXTRA) }
+    | '--' '+' a=literal_await_primary b=('**' c=factor { c }) {
+        _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, _PyAST_UnaryOp(UAdd,
+                                      b ?
+                                      _PyAST_BinOp(a, Pow, b, EXTRA) :
+                                      a,
+                                      EXTRA),
+                               EXTRA),
+                       EXTRA) }
+    | '++' '+' a=literal_await_primary '**' b=factor {
+        _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd,
+                                      _PyAST_BinOp(a, Pow, b, EXTRA),
+                                      EXTRA),
+                               EXTRA),
+                       EXTRA) }
+    | '++' '+' a=primary '**' b=factor {
+        _PyAST_UnaryOp(UAdd, _PyAST_BinOp(_PyAST_Increment(CHECK(expr_ty,
+                                 _PyPegen_set_expr_context(p, a, Store)),
+                                 1, EXTRA),
+                             Pow, b, EXTRA),
+                       EXTRA) }
+    | '++' '+' a=primary !('++' | '--') {
+        _PyAST_UnaryOp(UAdd, _PyAST_Increment(CHECK(expr_ty,
+                                 _PyPegen_set_expr_context(p, a, Store)),
+                                 1, EXTRA),
+                       EXTRA) }
     | a=primary '++' '++' '+' b=primary !('++' | '--') {
         (a->kind == Name_kind ||
          a->kind == Attribute_kind ||
