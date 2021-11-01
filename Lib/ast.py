@@ -1508,6 +1508,10 @@ class _Unparser(NodeVisitor):
             self.write(": ")
             self.traverse(node.annotation)
 
+    def visit_default(self, node):
+        self.write("=>" if isinstance(node.type, DfltExpr) else "=")
+        self.traverse(node.value)
+
     def visit_arguments(self, node):
         first = True
         # normal arguments
@@ -1521,7 +1525,6 @@ class _Unparser(NodeVisitor):
                 self.write(", ")
             self.traverse(a)
             if d:
-                self.write("=")
                 self.traverse(d)
             if index == len(node.posonlyargs):
                 self.write(", /")
@@ -1545,7 +1548,6 @@ class _Unparser(NodeVisitor):
                 self.write(", ")
                 self.traverse(a)
                 if d:
-                    self.write("=")
                     self.traverse(d)
 
         # kwargs
