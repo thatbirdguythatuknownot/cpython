@@ -181,6 +181,8 @@ Other CPython Implementation Changes
   hash-based pyc files now use ``siphash13``, too.
   (Contributed by Inada Naoki in :issue:`29410`.)
 
+* New magic methods :meth:`__inc__` and `__dec__` for incrementing and decrementing.
+
 New Modules
 ===========
 
@@ -277,6 +279,16 @@ unicodedata
 
 * The Unicode database has been updated to version 14.0.0. (:issue:`45190`).
 
+dis
+---
+
+* Added documentation for new opcodes :opcode:`INCREMENT` and :opcode:`DECREMENT`.
+
+ast
+---
+
+* Added documentation for new nodes :class:`ast.Increment` and :class:`ast.Decrement`.
+
 
 Optimizations
 =============
@@ -317,6 +329,11 @@ CPython bytecode changes
 
 * Added :opcode:`COPY`, which pushes the *i*-th item to the top of the stack.
   The item is not removed from its original location.
+
+* Added new :opcode:`INCREMENT` and :opcode:`DECREMENT` opcodes. Used to
+  increment/decrement a value. If *i* is 1, ``TOS`` will get set to the result
+  of incrementing/decrementing. The result will also be pushed to the stack for
+  assignment.
 
 
 Deprecated
@@ -530,6 +547,9 @@ New Features
   :c:func:`PyThreadState_LeaveTracing` functions to the limited C API to
   suspend and resume tracing and profiling.
   (Contributed by Victor Stinner in :issue:`43760`.)
+
+* Add new :c:func:`PyNumber_Increment` and :c:func:`PyNumber_Decrement` functions
+  for incrementing and decrementing.
 
 Porting to Python 3.11
 ----------------------
