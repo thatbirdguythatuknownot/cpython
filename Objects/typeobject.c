@@ -5877,6 +5877,8 @@ inherit_slots(PyTypeObject *type, PyTypeObject *base)
         COPYNUM(nb_index);
         COPYNUM(nb_matrix_multiply);
         COPYNUM(nb_inplace_matrix_multiply);
+        COPYNUM(nb_increment);
+        COPYNUM(nb_decrement);
     }
 
     if (type->tp_as_async != NULL && base->tp_as_async != NULL) {
@@ -7382,6 +7384,8 @@ slot_nb_power(PyObject *self, PyObject *other, PyObject *modulus)
     Py_RETURN_NOTIMPLEMENTED;
 }
 
+SLOT0(slot_nb_increment, "__inc__")
+SLOT0(slot_nb_decrement, "__dec__")
 SLOT0(slot_nb_negative, "__neg__")
 SLOT0(slot_nb_positive, "__pos__")
 SLOT0(slot_nb_absolute, "__abs__")
@@ -8128,6 +8132,10 @@ static slotdef slotdefs[] = {
              "@"),
     IBSLOT("__imatmul__", nb_inplace_matrix_multiply, slot_nb_inplace_matrix_multiply,
            wrap_binaryfunc, "@="),
+    UNSLOT("__inc__", nb_increment, slot_nb_increment, wrap_unaryfunc,
+           "++self"),
+    UNSLOT("__dec__", nb_decrement, slot_nb_decrement, wrap_unaryfunc,
+           "--self"),
     MPSLOT("__len__", mp_length, slot_mp_length, wrap_lenfunc,
            "__len__($self, /)\n--\n\nReturn len(self)."),
     MPSLOT("__getitem__", mp_subscript, slot_mp_subscript,
