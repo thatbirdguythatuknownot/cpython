@@ -2103,16 +2103,21 @@ def _signature_fromstr(cls, obj, s, skip_bound_arg=True):
         name = parse_name(name_node)
         if name is invalid:
             return None
+        extra = None
         if default_node and default_node is not _empty:
             try:
-                default_node = RewriteSymbolics().visit(default_node)
-                o = ast.literal_eval(default_node)
+                value = RewriteSymbolics().visit(default_node.value)
+                if default_node.type is ast.DfltExpr:
+                    extra = ast.unparse(value)
+                    o = ...
+                else:
+                    o = ast.literal_eval(value)
             except ValueError:
                 o = invalid
             if o is invalid:
                 return None
             default = o if o is not invalid else default
-        parameters.append(Parameter(name, kind, default=default, annotation=empty))
+        parameters.append(Parameter(name, kind, default=default, extra=extra, annotation=empty))
 
     # non-keyword-only parameters
     args = reversed(f.args.args)
