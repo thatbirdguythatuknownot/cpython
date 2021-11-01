@@ -213,6 +213,15 @@ append_ast_arg(_PyUnicodeWriter *writer, arg_ty arg)
 }
 
 static int
+append_ast_argument_default(_PyUnicodeWriter *writer, default_ty e)
+{
+    APPEND_STR_IF(e->type == DfltExpr, "=>");
+    APPEND_STR_IF(e->type == DfltValue, "=");
+    APPEND_EXPR(e->value, PR_TEST);
+    return 0;
+}
+
+static int
 append_ast_args(_PyUnicodeWriter *writer, arguments_ty args)
 {
     bool first;
@@ -234,8 +243,7 @@ append_ast_args(_PyUnicodeWriter *writer, arguments_ty args)
 
         di = i - posonlyarg_count - arg_count + default_count;
         if (di >= 0) {
-            APPEND_STR("=");
-            APPEND_EXPR((expr_ty)asdl_seq_GET(args->defaults, di), PR_TEST);
+            APPEND(argument_default, (default_ty)asdl_seq_GET(args->defaults, di));
         }
         if (posonlyarg_count && i + 1 == posonlyarg_count) {
             APPEND_STR(", /");
@@ -260,10 +268,9 @@ append_ast_args(_PyUnicodeWriter *writer, arguments_ty args)
 
         di = i - arg_count + default_count;
         if (di >= 0) {
-            expr_ty default_ = (expr_ty)asdl_seq_GET(args->kw_defaults, di);
+            default_ty default_ = (default_ty)asdl_seq_GET(args->kw_defaults, di);
             if (default_) {
-                APPEND_STR("=");
-                APPEND_EXPR(default_, PR_TEST);
+                APPEND(argument_default, default_);
             }
         }
     }
