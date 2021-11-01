@@ -831,6 +831,9 @@ astfold_expr(expr_ty node_, PyArena *ctx_, _PyASTOptimizeState *state)
         break;
     case Constant_kind:
         // Already a constant, nothing further to do
+    case Increment_kind:
+    case Decrement_kind:
+        // These cases have no need for handling
         break;
     // No default case, so the compiler will emit a warning if new expression
     // kinds are added without being handled here
