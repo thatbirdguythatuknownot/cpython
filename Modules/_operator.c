@@ -159,6 +159,32 @@ _operator_neg(PyObject *module, PyObject *a)
 }
 
 /*[clinic input]
+_operator.inc = _operator.neg
+
+Same as ++a.
+[clinic start generated code]*/
+
+static PyObject *
+_operator_inc(PyObject *module, PyObject *a)
+/*[clinic end generated code: output=9882ce5d2a0245d9 input=5748db7dd0f733db]*/
+{
+    return PyNumber_Increment(a);
+}
+
+/*[clinic input]
+_operator.dec = _operator.neg
+
+Same as --a.
+[clinic start generated code]*/
+
+static PyObject *
+_operator_dec(PyObject *module, PyObject *a)
+/*[clinic end generated code: output=423f260509a0abd2 input=a25473219eb567fb]*/
+{
+    return PyNumber_Decrement(a);
+}
+
+/*[clinic input]
 _operator.pos = _operator.neg
 
 Same as +a.
