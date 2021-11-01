@@ -1272,14 +1272,56 @@ invalid_crements:
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "increment expression cannot be decremented") }
     | a=primary '--' b='++' !expression {
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "decrement expression cannot be incremented") }
-    | '++' a=primary ('++' | '--') !expression {
-        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
-    | '--' a=primary ('++' | '--') !expression {
-        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
 literal_await_primary (memo):
     | AWAIT a=(literal_await_primary | primary) {
         CHECK_VERSION(expr_ty, 5, "Await expressions are", _PyAST_Await(a, EXTRA)) }
 alternative_rules_crement:
+    | b='++' a=primary c='++' !expression {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_UnaryOp(UAdd,
+                       _PyAST_UnaryOp(UAdd,
+                                      _PyAST_Increment(CHECK(expr_ty,
+                                                             _PyPegen_set_expr_context(p, a, Store)),
+                                                       1,
+                                                       EXTRA),
+                                      EXTRA),
+                       EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(b, c, "increment expression cannot be incremented") }
+    | b='++' a=primary c='--' !expression {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_UnaryOp(UAdd,
+                       _PyAST_UnaryOp(UAdd,
+                                      _PyAST_Decrement(CHECK(expr_ty,
+                                                             _PyPegen_set_expr_context(p, a, Store)),
+                                                       1,
+                                                       EXTRA),
+                                      EXTRA),
+                       EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(b, c, "decrement expression cannot be incremented") }
+    | b='--' a=primary c='++' !expression {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_UnaryOp(USub,
+                       _PyAST_UnaryOp(USub,
+                                      _PyAST_Increment(CHECK(expr_ty,
+                                                             _PyPegen_set_expr_context(p, a, Store)),
+                                                       1,
+                                                       EXTRA),
+                                      EXTRA),
+                       EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(b, c, "increment expression cannot be decremented") }
+    | b='--' a=primary c='--' !expression {
+        (a->kind == Name_kind || a->kind == Attribute_kind || a->kind == Subscript_kind) ?
+        _PyAST_UnaryOp(USub,
+                       _PyAST_UnaryOp(USub,
+                                      _PyAST_Decrement(CHECK(expr_ty,
+                                                             _PyPegen_set_expr_context(p, a, Store)),
+                                                       1,
+                                                       EXTRA),
+                                      EXTRA),
+                       EXTRA) :
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(b, c, "decrement expression cannot be decremented") }
+    | '--' a=primary ('++' | '--') !expression {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "increment or decrement expression cannot be incremented") }
     | a=primary '++' b=primary !('++' | '--') {
         _PyAST_BinOp(a, Add, _PyAST_UnaryOp(UAdd, b, EXTRA), EXTRA) }
     | a=primary '--' b=primary !('++' | '--') {
