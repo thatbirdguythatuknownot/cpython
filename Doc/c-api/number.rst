@@ -80,6 +80,18 @@ Number Protocol
    *o3* would cause an illegal memory access).
 
 
+.. c:function:: PyObject* PyNumber_Increment(PyObject *o)
+
+   Returns the incremented value of *o* on success, or ``NULL`` on failure.
+   This is the equivalent of the Python expression ``++o``.
+
+
+.. c:function:: PyObject* PyNumber_Decrement(PyObject *o)
+
+   Returns the decremented value of *o* on success, or ``NULL`` on failure.
+   This is the equivalent of the Python expression ``--o``.
+
+
 .. c:function:: PyObject* PyNumber_Negative(PyObject *o)
 
    Returns the negation of *o* on success, or ``NULL`` on failure. This is the
