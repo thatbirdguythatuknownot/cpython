@@ -743,10 +743,10 @@ term[expr_ty]:
 factor[expr_ty] (memo):
     | '+' a=factor { _PyAST_UnaryOp(UAdd, a, EXTRA) }
     | '++' &('++' | '--') a=factor {
-        _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, a, EXTRA)) }
+        _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, a, EXTRA), EXTRA) }
     | '-' a=factor { _PyAST_UnaryOp(USub, a, EXTRA) }
     | '--' &('++' | '--') a=factor {
-        _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, a, EXTRA)) }
+        _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, a, EXTRA), EXTRA) }
     | '~' a=factor { _PyAST_UnaryOp(Invert, a, EXTRA) }
     | power
 
