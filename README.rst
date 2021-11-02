@@ -28,7 +28,7 @@ General Information
 -------------------
 
 - Website: https://www.python.org
-- Source code: https://github.com/python/cpython
+- Source code: https://github.com/thatbirdguythatuknownot/cpython
 - Issue tracker: https://bugs.python.org
 - Documentation: https://docs.python.org
 - Developer's Guide: https://devguide.python.org/
@@ -61,6 +61,8 @@ On Unix, Linux, BSD, macOS, and Cygwin::
 
 This will install Python as ``python3``.
 
+**NOTE YOU MUST REGENERATE BEFORE BUILDING**
+
 You can pass many options to the configure script; run ``./configure --help``
 to find out more.  On macOS case-insensitive file systems and on Cygwin,
 the executable is called ``python.exe``; elsewhere it's just ``python``.
@@ -75,10 +77,10 @@ dependencies for various Linux distributions and macOS.
 
 On macOS, there are additional configure and build options related
 to macOS framework and universal builds.  Refer to `Mac/README.rst
-<https://github.com/python/cpython/blob/main/Mac/README.rst>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/main/Mac/README.rst>`_.
 
 On Windows, see `PCbuild/readme.txt
-<https://github.com/python/cpython/blob/main/PCbuild/readme.txt>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/main/PCbuild/readme.txt>`_.
 
 If you wish, you can create a subdirectory and invoke configure from there.
 For example::
@@ -159,7 +161,7 @@ is primarily for documentation authors, translators, and people with special
 formatting requirements.
 
 For information about building Python's documentation, refer to `Doc/README.rst
-<https://github.com/python/cpython/blob/main/Doc/README.rst>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/main/Doc/README.rst>`_.
 
 
 Converting From Python 2.x to 3.x
@@ -219,7 +221,7 @@ Issue Tracker and Mailing List
 
 Bug reports are welcome!  You can use the `issue tracker
 <https://bugs.python.org>`_ to report bugs, and/or submit pull requests `on
-GitHub <https://github.com/python/cpython>`_.
+GitHub <https://github.com/thatbirdguythatuknownot/cpython>`_.
 
 You can also follow development discussion on the `python-dev mailing list
 <https://mail.python.org/mailman/listinfo/python-dev/>`_.
@@ -256,7 +258,7 @@ rights reserved.
 
 Copyright (c) 1991-1995 Stichting Mathematisch Centrum.  All rights reserved.
 
-See the `LICENSE <https://github.com/python/cpython/blob/main/LICENSE>`_ for
+See the `LICENSE <https://github.com/thatbirdguythatuknownot/cpython/blob/main/LICENSE>`_ for
 information on the history of this software, terms & conditions for usage, and a
 DISCLAIMER OF ALL WARRANTIES.
 
