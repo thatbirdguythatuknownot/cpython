@@ -180,7 +180,7 @@ append_ast_binop(_PyUnicodeWriter *writer, expr_ty e, int level)
 int crement_prs[2] = {
     PR_POSTC,
     PR_PREC
-}
+};
 
 static int
 append_ast_increment(_PyUnicodeWriter *writer, expr_ty e, int level)
