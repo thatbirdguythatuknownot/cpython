@@ -28,7 +28,7 @@ General Information
 -------------------
 
 - Website: https://www.python.org
-- Source code: https://github.com/thatbirdguythatuknownot/cpython
+- Source code: https://github.com/thatbirdguythatuknownot/cpython/tree/modified
 - Issue tracker: https://bugs.python.org
 - Documentation: https://docs.python.org
 - Developer's Guide: https://devguide.python.org/
@@ -77,10 +77,10 @@ dependencies for various Linux distributions and macOS.
 
 On macOS, there are additional configure and build options related
 to macOS framework and universal builds.  Refer to `Mac/README.rst
-<https://github.com/thatbirdguythatuknownot/cpython/blob/main/Mac/README.rst>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/modified/Mac/README.rst>`_.
 
 On Windows, see `PCbuild/readme.txt
-<https://github.com/thatbirdguythatuknownot/cpython/blob/main/PCbuild/readme.txt>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/modified/PCbuild/readme.txt>`_.
 
 If you wish, you can create a subdirectory and invoke configure from there.
 For example::
@@ -141,9 +141,9 @@ What's New
 We have a comprehensive overview of the changes in the `What's New in Python
 3.10 <https://docs.python.org/3.10/whatsnew/3.10.html>`_ document.  For a more
 detailed change log, read `Misc/NEWS
-<https://github.com/python/cpython/blob/main/Misc/NEWS.d>`_, but a full
+<https://github.com/thatbirdguythatuknownot/cpython/blob/modified/Misc/NEWS.d>`_, but a full
 accounting of changes can only be gleaned from the `commit history
-<https://github.com/python/cpython/commits/main>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/commits/modified>`_.
 
 If you want to install multiple versions of Python, see the section below
 entitled "Installing multiple versions".
@@ -161,7 +161,7 @@ is primarily for documentation authors, translators, and people with special
 formatting requirements.
 
 For information about building Python's documentation, refer to `Doc/README.rst
-<https://github.com/thatbirdguythatuknownot/cpython/blob/main/Doc/README.rst>`_.
+<https://github.com/thatbirdguythatuknownot/cpython/blob/modified/Doc/README.rst>`_.
 
 
 Converting From Python 2.x to 3.x
@@ -221,7 +221,7 @@ Issue Tracker and Mailing List
 
 Bug reports are welcome!  You can use the `issue tracker
 <https://bugs.python.org>`_ to report bugs, and/or submit pull requests `on
-GitHub <https://github.com/thatbirdguythatuknownot/cpython>`_.
+GitHub <https://github.com/thatbirdguythatuknownot/cpython/tree/modified>`_.
 
 You can also follow development discussion on the `python-dev mailing list
 <https://mail.python.org/mailman/listinfo/python-dev/>`_.
@@ -258,7 +258,7 @@ rights reserved.
 
 Copyright (c) 1991-1995 Stichting Mathematisch Centrum.  All rights reserved.
 
-See the `LICENSE <https://github.com/thatbirdguythatuknownot/cpython/blob/main/LICENSE>`_ for
+See the `LICENSE <https://github.com/thatbirdguythatuknownot/cpython/blob/modified/LICENSE>`_ for
 information on the history of this software, terms & conditions for usage, and a
 DISCLAIMER OF ALL WARRANTIES.
 
