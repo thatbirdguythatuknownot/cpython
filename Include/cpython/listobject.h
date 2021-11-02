@@ -18,6 +18,8 @@ typedef struct {
      * Items must normally not be NULL, except during construction when
      * the list is not yet visible outside the function that builds it.
      */
+    /* original list before incrementing. Default to self. */
+    PyObject *original_list;
     Py_ssize_t allocated;
 } PyListObject;
 
