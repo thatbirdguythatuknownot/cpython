@@ -197,6 +197,7 @@ append_ast_increment(_PyUnicodeWriter *writer, expr_ty e, int level)
         APPEND_STR("++");
     }
     APPEND_STR_IF(level > pr, ")");
+    return 0;
 }
 
 static int
@@ -214,6 +215,7 @@ append_ast_decrement(_PyUnicodeWriter *writer, expr_ty e, int level)
         APPEND_STR("--");
     }
     APPEND_STR_IF(level > pr, ")");
+    return 0;
 }
 
 static int
