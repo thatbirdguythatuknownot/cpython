@@ -336,7 +336,8 @@ enum _expr_kind {BoolOp_kind=1, NamedExpr_kind=2, BinOp_kind=3, UnaryOp_kind=4,
                   YieldFrom_kind=15, Compare_kind=16, Call_kind=17,
                   FormattedValue_kind=18, JoinedStr_kind=19, Constant_kind=20,
                   Attribute_kind=21, Subscript_kind=22, Starred_kind=23,
-                  Name_kind=24, List_kind=25, Tuple_kind=26, Slice_kind=27};
+                  Name_kind=24, List_kind=25, Tuple_kind=26, Increment_kind=27,
+                  Decrement_kind=28, Slice_kind=29};
 struct _expr {
     enum _expr_kind kind;
     union {
@@ -472,6 +473,16 @@ struct _expr {
             asdl_expr_seq *elts;
             expr_context_ty ctx;
         } Tuple;
+
+        struct {
+            expr_ty target;
+            int is_prefix;
+        } Increment;
+
+        struct {
+            expr_ty target;
+            int is_prefix;
+        } Decrement;
 
         struct {
             expr_ty lower;
@@ -781,6 +792,12 @@ expr_ty _PyAST_List(asdl_expr_seq * elts, expr_context_ty ctx, int lineno, int
 expr_ty _PyAST_Tuple(asdl_expr_seq * elts, expr_context_ty ctx, int lineno, int
                      col_offset, int end_lineno, int end_col_offset, PyArena
                      *arena);
+expr_ty _PyAST_Increment(expr_ty target, int is_prefix, int lineno, int
+                         col_offset, int end_lineno, int end_col_offset,
+                         PyArena *arena);
+expr_ty _PyAST_Decrement(expr_ty target, int is_prefix, int lineno, int
+                         col_offset, int end_lineno, int end_col_offset,
+                         PyArena *arena);
 expr_ty _PyAST_Slice(expr_ty lower, expr_ty upper, expr_ty step, int lineno,
                      int col_offset, int end_lineno, int end_col_offset,
                      PyArena *arena);
