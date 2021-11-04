@@ -40,6 +40,7 @@ struct ast_state {
     PyObject *Compare_type;
     PyObject *Constant_type;
     PyObject *Continue_type;
+    PyObject *Decrement_type;
     PyObject *Del_singleton;
     PyObject *Del_type;
     PyObject *Delete_type;
@@ -70,6 +71,7 @@ struct ast_state {
     PyObject *Import_type;
     PyObject *In_singleton;
     PyObject *In_type;
+    PyObject *Increment_type;
     PyObject *Interactive_type;
     PyObject *Invert_singleton;
     PyObject *Invert_type;
@@ -192,6 +194,7 @@ struct ast_state {
     PyObject *id;
     PyObject *ifs;
     PyObject *is_async;
+    PyObject *is_prefix;
     PyObject *items;
     PyObject *iter;
     PyObject *key;
