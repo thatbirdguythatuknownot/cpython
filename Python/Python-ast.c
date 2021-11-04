@@ -54,6 +54,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Compare_type);
     Py_CLEAR(state->Constant_type);
     Py_CLEAR(state->Continue_type);
+    Py_CLEAR(state->Decrement_type);
     Py_CLEAR(state->Del_singleton);
     Py_CLEAR(state->Del_type);
     Py_CLEAR(state->Delete_type);
@@ -84,6 +85,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Import_type);
     Py_CLEAR(state->In_singleton);
     Py_CLEAR(state->In_type);
+    Py_CLEAR(state->Increment_type);
     Py_CLEAR(state->Interactive_type);
     Py_CLEAR(state->Invert_singleton);
     Py_CLEAR(state->Invert_type);
@@ -206,6 +208,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->id);
     Py_CLEAR(state->ifs);
     Py_CLEAR(state->is_async);
+    Py_CLEAR(state->is_prefix);
     Py_CLEAR(state->items);
     Py_CLEAR(state->iter);
     Py_CLEAR(state->key);
@@ -309,6 +312,7 @@ static int init_identifiers(struct ast_state *state)
     if ((state->id = PyUnicode_InternFromString("id")) == NULL) return 0;
     if ((state->ifs = PyUnicode_InternFromString("ifs")) == NULL) return 0;
     if ((state->is_async = PyUnicode_InternFromString("is_async")) == NULL) return 0;
+    if ((state->is_prefix = PyUnicode_InternFromString("is_prefix")) == NULL) return 0;
     if ((state->items = PyUnicode_InternFromString("items")) == NULL) return 0;
     if ((state->iter = PyUnicode_InternFromString("iter")) == NULL) return 0;
     if ((state->key = PyUnicode_InternFromString("key")) == NULL) return 0;
@@ -620,6 +624,14 @@ static const char * const List_fields[]={
 static const char * const Tuple_fields[]={
     "elts",
     "ctx",
+};
+static const char * const Increment_fields[]={
+    "target",
+    "is_prefix",
+};
+static const char * const Decrement_fields[]={
+    "target",
+    "is_prefix",
 };
 static const char * const Slice_fields[]={
     "lower",
@@ -1321,6 +1333,8 @@ init_types(struct ast_state *state)
         "     | Name(identifier id, expr_context ctx)\n"
         "     | List(expr* elts, expr_context ctx)\n"
         "     | Tuple(expr* elts, expr_context ctx)\n"
+        "     | Increment(expr target, int is_prefix)\n"
+        "     | Decrement(expr target, int is_prefix)\n"
         "     | Slice(expr? lower, expr? upper, expr? step)");
     if (!state->expr_type) return 0;
     if (!add_attributes(state, state->expr_type, expr_attributes, 4)) return 0;
@@ -1444,6 +1458,14 @@ init_types(struct ast_state *state)
                                   Tuple_fields, 2,
         "Tuple(expr* elts, expr_context ctx)");
     if (!state->Tuple_type) return 0;
+    state->Increment_type = make_type(state, "Increment", state->expr_type,
+                                      Increment_fields, 2,
+        "Increment(expr target, int is_prefix)");
+    if (!state->Increment_type) return 0;
+    state->Decrement_type = make_type(state, "Decrement", state->expr_type,
+                                      Decrement_fields, 2,
+        "Decrement(expr target, int is_prefix)");
+    if (!state->Decrement_type) return 0;
     state->Slice_type = make_type(state, "Slice", state->expr_type,
                                   Slice_fields, 3,
         "Slice(expr? lower, expr? upper, expr? step)");
@@ -3204,6 +3226,52 @@ _PyAST_Tuple(asdl_expr_seq * elts, expr_context_ty ctx, int lineno, int
 }
 
 expr_ty
+_PyAST_Increment(expr_ty target, int is_prefix, int lineno, int col_offset, int
+                 end_lineno, int end_col_offset, PyArena *arena)
+{
+    expr_ty p;
+    if (!target) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'target' is required for Increment");
+        return NULL;
+    }
+    p = (expr_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->kind = Increment_kind;
+    p->v.Increment.target = target;
+    p->v.Increment.is_prefix = is_prefix;
+    p->lineno = lineno;
+    p->col_offset = col_offset;
+    p->end_lineno = end_lineno;
+    p->end_col_offset = end_col_offset;
+    return p;
+}
+
+expr_ty
+_PyAST_Decrement(expr_ty target, int is_prefix, int lineno, int col_offset, int
+                 end_lineno, int end_col_offset, PyArena *arena)
+{
+    expr_ty p;
+    if (!target) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'target' is required for Decrement");
+        return NULL;
+    }
+    p = (expr_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->kind = Decrement_kind;
+    p->v.Decrement.target = target;
+    p->v.Decrement.is_prefix = is_prefix;
+    p->lineno = lineno;
+    p->col_offset = col_offset;
+    p->end_lineno = end_lineno;
+    p->end_col_offset = end_col_offset;
+    return p;
+}
+
+expr_ty
 _PyAST_Slice(expr_ty lower, expr_ty upper, expr_ty step, int lineno, int
              col_offset, int end_lineno, int end_col_offset, PyArena *arena)
 {
@@ -4597,6 +4665,36 @@ ast2obj_expr(struct ast_state *state, void* _o)
         value = ast2obj_expr_context(state, o->v.Tuple.ctx);
         if (!value) goto failed;
         if (PyObject_SetAttr(result, state->ctx, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        break;
+    case Increment_kind:
+        tp = (PyTypeObject *)state->Increment_type;
+        result = PyType_GenericNew(tp, NULL, NULL);
+        if (!result) goto failed;
+        value = ast2obj_expr(state, o->v.Increment.target);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->target, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_int(state, o->v.Increment.is_prefix);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->is_prefix, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        break;
+    case Decrement_kind:
+        tp = (PyTypeObject *)state->Decrement_type;
+        result = PyType_GenericNew(tp, NULL, NULL);
+        if (!result) goto failed;
+        value = ast2obj_expr(state, o->v.Decrement.target);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->target, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_int(state, o->v.Decrement.is_prefix);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->is_prefix, value) == -1)
             goto failed;
         Py_DECREF(value);
         break;
@@ -9522,6 +9620,102 @@ obj2ast_expr(struct ast_state *state, PyObject* obj, expr_ty* out, PyArena*
         if (*out == NULL) goto failed;
         return 0;
     }
+    tp = state->Increment_type;
+    isinstance = PyObject_IsInstance(obj, tp);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        expr_ty target;
+        int is_prefix;
+
+        if (_PyObject_LookupAttr(obj, state->target, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"target\" missing from Increment");
+            return 1;
+        }
+        else {
+            int res;
+            if (Py_EnterRecursiveCall(" while traversing 'Increment' node")) {
+                goto failed;
+            }
+            res = obj2ast_expr(state, tmp, &target, arena);
+            Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (_PyObject_LookupAttr(obj, state->is_prefix, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"is_prefix\" missing from Increment");
+            return 1;
+        }
+        else {
+            int res;
+            if (Py_EnterRecursiveCall(" while traversing 'Increment' node")) {
+                goto failed;
+            }
+            res = obj2ast_int(state, tmp, &is_prefix, arena);
+            Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        *out = _PyAST_Increment(target, is_prefix, lineno, col_offset,
+                                end_lineno, end_col_offset, arena);
+        if (*out == NULL) goto failed;
+        return 0;
+    }
+    tp = state->Decrement_type;
+    isinstance = PyObject_IsInstance(obj, tp);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        expr_ty target;
+        int is_prefix;
+
+        if (_PyObject_LookupAttr(obj, state->target, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"target\" missing from Decrement");
+            return 1;
+        }
+        else {
+            int res;
+            if (Py_EnterRecursiveCall(" while traversing 'Decrement' node")) {
+                goto failed;
+            }
+            res = obj2ast_expr(state, tmp, &target, arena);
+            Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (_PyObject_LookupAttr(obj, state->is_prefix, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"is_prefix\" missing from Decrement");
+            return 1;
+        }
+        else {
+            int res;
+            if (Py_EnterRecursiveCall(" while traversing 'Decrement' node")) {
+                goto failed;
+            }
+            res = obj2ast_int(state, tmp, &is_prefix, arena);
+            Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        *out = _PyAST_Decrement(target, is_prefix, lineno, col_offset,
+                                end_lineno, end_col_offset, arena);
+        if (*out == NULL) goto failed;
+        return 0;
+    }
     tp = state->Slice_type;
     isinstance = PyObject_IsInstance(obj, tp);
     if (isinstance == -1) {
@@ -11795,6 +11989,12 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "Tuple", state->Tuple_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Increment", state->Increment_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Decrement", state->Decrement_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "Slice", state->Slice_type) < 0) {
