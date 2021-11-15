@@ -670,6 +670,53 @@ cereal_resize_overflow_impl(PyCerealObject *self, Py_ssize_t size)
     return res;
 }
 
+static PyObject *
+cereal_addition(PyObject *self, PyObject *other)
+{
+    if (!PyCereal_Check(self) || !PyLong_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return PyCereal_Add((PyCerealObject *)self,
+                        PyLong_AsSsize_t(other));
+}
+
+static PyObject *
+cereal_subtraction(PyObject *self, PyObject *other)
+{
+    if (!PyCereal_Check(self) || !PyLong_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return PyCereal_Subtract((PyCerealObject *)self,
+                             PyLong_AsSsize_t(other));
+}
+
+static PyObject *
+cereal_multiplication(PyObject *self, PyObject *other)
+{
+    if (!PyCereal_Check(self) || !PyLong_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return PyCereal_Multiply((PyCerealObject *)self,
+                             PyLong_AsSsize_t(other));
+}
+
+static PyObject *
+cereal_division(PyObject *self, PyObject *other)
+{
+    if (!PyCereal_Check(self) || !PyLong_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return PyCereal_Divide((PyCerealObject *)self,
+                           PyLong_AsSsize_t(other));
+}
+
+static PyNumberMethods cereal_as_number = {
+    .nb_add = (binaryfunc)cereal_addition,
+    .nb_subtract = (binaryfunc)cereal_subtraction,
+    .nb_multiply = (binaryfunc)cereal_multiplication,
+    .nb_divide = (binaryfunc)cereal_division,
+};
+
 static PyMethodDef cereal_methods[] = {
     CEREAL_PREPARE_METHODDEF
     CEREAL_EAT_METHODDEF
@@ -707,7 +754,7 @@ PyTypeObject PyCereal_Type = {
     0,                                  /* tp_setattr */
     0,                                  /* tp_as_async */
     (reprfunc)cereal_repr,              /* tp_repr */
-    0,                                  /* tp_as_number */
+    &cereal_as_number,                  /* tp_as_number */
     0,                                  /* tp_as_sequence */
     0,                                  /* tp_as_mapping */
     0,                                  /* tp_hash */
