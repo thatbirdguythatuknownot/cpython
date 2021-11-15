@@ -115,6 +115,7 @@
     <ClInclude Include="..\Include\boolobject.h" />
     <ClInclude Include="..\Include\bytearrayobject.h" />
     <ClInclude Include="..\Include\bytesobject.h" />
+    <CLInclude Include="..\Include\cerealobject.h" />
     <ClInclude Include="..\Include\ceval.h" />
     <ClInclude Include="..\Include\code.h" />
     <ClInclude Include="..\Include\codecs.h" />
@@ -124,6 +125,7 @@
     <ClInclude Include="..\Include\cpython\bytearrayobject.h" />
     <ClInclude Include="..\Include\cpython\bytesobject.h" />
     <ClInclude Include="..\Include\cpython\cellobject.h" />
+    <ClInclude Include="..\Include\cpython\cerealobject.h" />
     <ClInclude Include="..\Include\cpython\ceval.h" />
     <ClInclude Include="..\Include\cpython\classobject.h" />
     <ClInclude Include="..\Include\cpython\code.h" />
@@ -394,6 +396,7 @@
     <ClCompile Include="..\Objects\call.c" />
     <ClCompile Include="..\Objects\capsule.c" />
     <ClCompile Include="..\Objects\cellobject.c" />
+    <ClCompile Include="..\Objects\cerealobject.c" />
     <ClCompile Include="..\Objects\classobject.c" />
     <ClCompile Include="..\Objects\codeobject.c" />
     <ClCompile Include="..\Objects\complexobject.c" />
