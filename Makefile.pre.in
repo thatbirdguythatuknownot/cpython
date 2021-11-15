@@ -413,6 +413,7 @@ OBJECT_OBJS=	\
 		Objects/call.o \
 		Objects/capsule.o \
 		Objects/cellobject.o \
+		Objects/cerealobject.o \
 		Objects/classobject.o \
 		Objects/codeobject.o \
 		Objects/complexobject.o \
@@ -1456,6 +1457,7 @@ PYTHON_HEADERS= \
 		$(srcdir)/Include/boolobject.h \
 		$(srcdir)/Include/bytearrayobject.h \
 		$(srcdir)/Include/bytesobject.h \
+		$(srcdir)/Include/cerealobject.h \
 		$(srcdir)/Include/ceval.h \
 		$(srcdir)/Include/code.h \
 		$(srcdir)/Include/codecs.h \
@@ -1523,6 +1525,7 @@ PYTHON_HEADERS= \
 		$(srcdir)/Include/cpython/bytearrayobject.h \
 		$(srcdir)/Include/cpython/bytesobject.h \
 		$(srcdir)/Include/cpython/cellobject.h \
+		$(srcdir)/Include/cpython/cerealobject.h \
 		$(srcdir)/Include/cpython/ceval.h \
 		$(srcdir)/Include/cpython/classobject.h \
 		$(srcdir)/Include/cpython/code.h \
