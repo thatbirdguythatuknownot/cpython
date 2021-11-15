@@ -675,6 +675,7 @@ Objects/bytearrayobject.c	-	bytearray_methods	-
 Objects/bytearrayobject.c	-	bytearrayiter_methods	-
 Objects/bytesobject.c	-	bytes_methods	-
 Objects/bytesobject.c	-	striter_methods	-
+Objects/cerealobject.c  - cereal_methods  -
 Objects/classobject.c	-	method_methods	-
 Objects/codeobject.c	-	code_methods	-
 Objects/complexobject.c	-	complex_methods	-
@@ -806,6 +807,7 @@ Modules/_winapi.c	-	overlapped_members	-
 Modules/xxsubtype.c	-	spamdict_members	-
 Modules/zlibmodule.c	-	Decomp_members	-
 Modules/_zoneinfo.c	-	zoneinfo_members	-
+Objects/cerealobject.c  - cereal_members  -
 Objects/classobject.c	-	method_memberlist	-
 Objects/classobject.c	-	instancemethod_memberlist	-
 Objects/codeobject.c	-	code_memberlist	-
