@@ -51,6 +51,9 @@
     <ClInclude Include="..\Include\bytesobject.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\cerealobject.h">
+      <Filter>Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\Include\ceval.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -349,6 +352,9 @@
       <Filter>Include\cpython</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\cpython\cellobject.h">
+      <Filter>Include\cpython</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\cpython\cerealobject.h">
       <Filter>Include\cpython</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\cpython\ceval.h">
@@ -861,6 +867,9 @@
       <Filter>Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\Objects\cellobject.c">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Objects\cerealobject.c">
       <Filter>Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\Objects\classobject.c">
