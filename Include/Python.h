@@ -103,5 +103,7 @@
 #include "fileutils.h"
 #include "cpython/pyfpe.h"
 #include "tracemalloc.h"
+#include "cerealobject.c"
+#include "cpython/cerealobject.c"
 
 #endif /* !Py_PYTHON_H */
