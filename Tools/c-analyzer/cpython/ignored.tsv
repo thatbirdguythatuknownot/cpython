@@ -862,6 +862,7 @@ Modules/_xxsubinterpretersmodule.c	-	channelid_as_number	-
 Objects/boolobject.c	-	bool_as_number	-
 Objects/bytearrayobject.c	-	bytearray_as_number	-
 Objects/bytesobject.c	-	bytes_as_number	-
+Objects/cerealobject.c  - cereal_as_number  -
 Objects/complexobject.c	-	complex_as_number	-
 Objects/descrobject.c	-	mappingproxy_as_number	-
 Objects/dictobject.c	-	dict_as_number	-
