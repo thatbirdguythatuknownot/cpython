@@ -165,6 +165,7 @@ Modules/_testinternalcapi.c	Py_BUILD_CORE_BUILTIN	1
 Include/cpython/abstract.h	Py_CPYTHON_ABSTRACTOBJECT_H	1
 Include/cpython/bytearrayobject.h	Py_CPYTHON_BYTEARRAYOBJECT_H	1
 Include/cpython/bytesobject.h	Py_CPYTHON_BYTESOBJECT_H	1
+Include/cpython/cerealobject.h  Py_CPYTHON_CEREALOBJECT_H   1
 Include/cpython/ceval.h	Py_CPYTHON_CEVAL_H	1
 Include/cpython/code.h	Py_CPYTHON_CODE_H	1
 Include/cpython/dictobject.h	Py_CPYTHON_DICTOBJECT_H	1
