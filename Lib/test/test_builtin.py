@@ -320,6 +320,94 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(ValueError, chr, 0x00110000)
         self.assertRaises((OverflowError, ValueError), chr, 2**32)
 
+    def test_cereal(self):
+        a = cereal(100, 20)
+        self.assertEqual(a.size, 100)
+        self.assertEqual(a.capacity, a.size)
+        self.assertEqual(a.milliliters, 20)
+        self.assertTrue(bool(a.is_prepared))
+        self.assertRaises(TypeError, a.prepare, 20)
+        self.assertRaises(ZeroDivisionError, a.divide, 0)
+        self.assertRaises(ValueError, a.resize, 10)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.add(): -5",
+                               a.add, -5)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.subtract(): -10",
+                               a.subtract, -10)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.multiply(): -15",
+                               a.multiply, -15)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.divide(): -25",
+                               a.divide, -25)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.eat(): -20",
+                               a.eat, -20)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.resize(): -30",
+                               a.resize, -30)
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.resize_overflow(): -35",
+                               a.resize_overflow, -35)
+        self.assertRaisesRegex(ValueError,
+                               "cannot eat 33 milliliters of cereal, "
+                               "cereal bowl only has 20 milliliters",
+                               a.eat, 33)
+        self.assertRaisesRegex(ValueError,
+                               "cannot add 95 milliliters of cereal to "
+                               "cereal bowl with 20 milliliters already "
+                               "in it (max capacity 100 milliliters)",
+                               a.add, 95)
+        self.assertRaisesRegex(ValueError,
+                               "cannot subtract 27 milliliters of cereal "
+                               "from cereal bowl with 20 milliliters in it",
+                               a.subtract, 27)
+        self.assertRaisesRegex(ValueError,
+                               "cannot multiply 20 milliliters of cereal "
+                               "with 8 (max capacity 100 milliliters)",
+                               a.multiply, 8)
+        self.assertRaisesRegex(ValueError,
+                               "cannot finish a non-empty cereal bowl with "
+                               "20 milliliters of cereal still in it",
+                               a.finish)
+        self.assertEqual(repr(a), "cereal(capacity=100, milliliters=20)")
+        self.assertEqual(str(a),
+                         "Cereal bowl that can hold 100 milliliters "
+                         "with 20 milliliters of cereal in it")
+        self.assertTrue(a == cereal(100))
+        self.assertTrue(a != cereal(55))
+        self.assertTrue(a < cereal(1200))
+        self.assertTrue(a > cereal(50))
+        self.assertTrue(a <= cereal(200))
+        self.assertTrue(a <= cereal(100))
+        self.assertTrue(a >= cereal(20))
+        self.assertTrue(a >= cereal(100))
+        a.eat()
+        self.assertTrue(bool(a.is_prepared))
+        self.assertEqual(a.milliliters, 0)
+        a.finish()
+        self.assertFalse(bool(a.is_prepared))
+        self.assertRaisesRegex(TypeError,
+                               "invalid argument 2 to cereal.prepare(): -5",
+                               a.prepare, -5)
+        self.assertRaisesRegex(ValueError,
+                               "cereal bowl cannot hold 205 milliliters of cereal, "
+                               "it can only hold 100 milliliters",
+                               a.prepare, 205)
+        self.assertRaises(TypeError, cereal.eat, 50)
+        self.assertRaises(TypeError, cereal.finish, 20)
+        self.assertRaises(TypeError, cereal.add, 269)
+        self.assertRaises(TypeError, cereal.subtract, 21)
+        self.assertRaises(TypeError, cereal.multiply, 35)
+        self.assertRaises(TypeError, cereal.divide, 10)
+        self.assertEqual(repr(a), "cereal(capacity=100, milliliters=0)")
+        self.assertEqual(str(a),
+                         "Cereal bowl that can hold 100 milliliters "
+                         "with 0 milliliters of cereal in it")
+        a.prepare(0)
+        self.assertFalse(bool(a.is_prepared))
+
     def test_cmp(self):
         self.assertTrue(not hasattr(builtins, "cmp"))
 
