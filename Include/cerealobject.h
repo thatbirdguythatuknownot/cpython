@@ -13,6 +13,12 @@ extern "C" {
  * PyCerealObject inspired by <@235904856106336257> (Cypheriel#3463)
  */
 
+#ifndef Py_LIMITED_API
+#  define Py_CPYTHON_CEREALOBJECT_H
+#  include "cpython/cerealobject.h"
+#  undef Py_CPYTHON_CEREALOBJECT_H
+#endif
+
 /* Type object */
 PyAPI_DATA(PyTypeObject) PyCereal_Type;
 
@@ -160,12 +166,6 @@ PyAPI_FUNC(PyObject *) PyCereal_AddSizeRelative(PyCerealObject *cereal, Py_ssize
  *   ``ml`` can never be negative.
  */
 PyAPI_FUNC(PyObject *) PyCereal_MultiplySizeRelative(PyCerealObject *cereal, Py_ssize_t ml);
-
-#ifndef Py_LIMITED_API
-#  define Py_CPYTHON_CEREALOBJECT_H
-#  include "cpython/cerealobject.h"
-#  undef Py_CPYTHON_CEREALOBJECT_H
-#endif
 
 #ifdef __cplusplus
 }
