@@ -131,14 +131,12 @@ PyCereal_Prepare(PyCerealObject *cereal, Py_ssize_t ml)
 
     if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Prepare(): %zd",
+                     "invalid argument 2 to cereal.prepare(): %zd",
                      size);
         return -1;
     }
     else if (ml == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "cannot prepare 0 milliliters of cereal");
-        return -1;
+        return 0;
     }
     else if (ml > cereal->size) {
         PyErr_Format(PyExc_ValueError,
@@ -170,7 +168,7 @@ PyCereal_Eat(PyCerealObject *cereal, Py_ssize_t ml)
     }
     else if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Eat(): %zd",
+                     "invalid argument 2 to cereal.eat(): %zd",
                      size);
         return -1;
     }
@@ -196,7 +194,7 @@ PyCereal_Finish(PyCerealObject *cereal)
         return NULL;
     }
     if (cereal->milliliters > 0) {
-        PyErr_Format(PyExc_TypeError,
+        PyErr_Format(PyExc_ValueError,
                      "cannot finish a non-empty cereal bowl with "
                      "%zd milliliters of cereal still in it",
                      cereal->milliliters);
@@ -220,14 +218,14 @@ PyCereal_Add(PyCerealObject *cereal, Py_ssize_t ml)
 
     if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Add(): %zd",
+                     "invalid argument 2 to cereal.add(): %zd",
                      ml);
         return NULL;
     }
     if ((milliliters = cereal->milliliters + ml) >
         (size = cereal->size))
     {
-        PyErr_Format(PyExc_TypeError,
+        PyErr_Format(PyExc_ValueError,
                      "cannot add %zd milliliters of cereal to "
                      "cereal bowl with %zd milliliters already "
                      "in it (max capacity %zd milliliters)",
@@ -249,13 +247,13 @@ PyCereal_Subtract(PyCerealObject *cereal, Py_ssize_t ml)
 
     if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Subtract(): %zd",
+                     "invalid argument 2 to cereal.subtract(): %zd",
                      ml);
         return NULL;
     }
     if (ml > cereal->milliliters)
     {
-        PyErr_Format(PyExc_TypeError,
+        PyErr_Format(PyExc_ValueError,
                      "cannot subtract %zd milliliters of cereal "
                      "from cereal bowl with %zd milliliters in it",
                      ml, cereal->milliliters);
@@ -278,14 +276,14 @@ PyCereal_Multiply(PyCerealObject *cereal, Py_ssize_t size)
 
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Multiply(): %zd",
+                     "invalid argument 2 to cereal.multiply(): %zd",
                      size);
         return NULL;
     }
     if ((milliliters = cereal->milliliters * size) >
         (size_bowl = cereal->size))
     {
-        PyErr_Format(PyExc_TypeError,
+        PyErr_Format(PyExc_ValueError,
                      "cannot multiply %zd milliliters of cereal "
                      "with %zd (max capacity %zd milliliters)",
                      cereal->milliliters, ml, size_bowl);
@@ -308,7 +306,7 @@ PyCereal_Divide(PyCerealObject *cereal, Py_ssize_t size)
 
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Divide(): %zd",
+                     "invalid argument 2 to cereal.divide(): %zd",
                      size);
         return NULL;
     }
@@ -326,7 +324,7 @@ PyCereal_Resize(PyCerealObject *cereal, Py_ssize_t size)
 {
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_Resize(): %zd",
+                     "invalid argument 2 to cereal.resize(): %zd",
                      size);
         return NULL;
     }
@@ -344,7 +342,7 @@ PyCereal_ResizeOverflow(PyCerealObject *cereal, Py_ssize_t size)
 {
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
-                     "invalid argument 2 to PyCereal_ResizeOverflow(): %zd",
+                     "invalid argument 2 to cereal.resize_overflow(): %zd",
                      size);
         return NULL;
     }
@@ -442,6 +440,25 @@ cereal___init___impl(PyCerealObject *self, Py_ssize_t capacity,
                      Py_ssize_t milliliters)
 /*[clinic end generated code: output=0f3b87a8fbc62644 input=b53d6e062e3f81ae]*/
 {
+    if (capacity < 0) {
+        PyErr_Format(PyExc_TypeError,
+                     "invalid argument 2 to cereal(): %zd",
+                     milliliters);
+        return NULL;
+    }
+    else if (ml == 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "cereal bowl cannot have a capacity of 0");
+        return NULL;
+    }
+
+    if (milliliters < 0) {
+        PyErr_Format(PyExc_TypeError,
+                     "invalid argument 3 to cereal(): %zd",
+                     milliliters);
+        return NULL;
+    }
+
     Py_SET_SIZE(cereal, capacity);
     cereal->size = capacity;
     cereal->milliliters = milliliters > capacity ? capacity : milliliters;
@@ -468,15 +485,13 @@ cereal_str(PyCerealObject *cereal)
 static PyObject *
 cereal_richcompare(PyObject *self, PyObject *other, int op)
 {
-    PyCerealObject *v, *w;
-
     if (!PyCereal_Check(self) || !PyCereal_Check(other)) {
         Py_RETURN_NOTIMPLEMENTED;
     }
 
-    v = (PyCerealObject *)self;
-    w = (PyCerealObject *)other;
-    Py_RETURN_RICHCOMPARE(v->size, w->size, op);
+    Py_RETURN_RICHCOMPARE(_PyCerealObject_CAST_CONST(self)->size,
+                          _PyCerealObject_CAST_CONST(other)->size,
+                          op);
 }
 
 static void
