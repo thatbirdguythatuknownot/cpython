@@ -502,9 +502,7 @@ static PyObject *
 cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters)
 /*[clinic end generated code: output=ad92a05b88f5445a input=e8e7a926f5b9ebdd]*/
 {
-    int status;
-    status = PyCereal_Prepare(self, milliliters);
-    if (status == -1) {
+    if (PyCereal_Prepare(self, milliliters) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -525,9 +523,7 @@ static PyObject *
 cereal_eat_impl(PyCerealObject *self, Py_ssize_t milliliters)
 /*[clinic end generated code: output=1c05e21cf6361b45 input=c523f7db8bd75812]*/
 {
-    int status;
-    status = PyCereal_Eat(self, milliliters);
-    if (status == -1) {
+    if (PyCereal_Eat(self, milliliters) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -543,9 +539,7 @@ static PyObject *
 cereal_finish_impl(PyCerealObject *self)
 /*[clinic end generated code: output=5bb510ac53e65f97 input=67321439ec3d3027]*/
 {
-    int status;
-    status = PyCereal_Finish(self);
-    if (status == -1) {
+    if (PyCereal_Finish(self) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -566,9 +560,7 @@ static PyObject *
 cereal_add_impl(PyCerealObject *self, Py_ssize_t milliliters)
 /*[clinic end generated code: output=898eeec572cf21e2 input=f888aff99e790f55]*/
 {
-    PyObject *res;
-    res = PyCereal_Add(self, milliliters);
-    return res;
+    return PyCereal_Add(self, milliliters);
 }
 
 /*[clinic input]
@@ -586,9 +578,7 @@ static PyObject *
 cereal_subtract_impl(PyCerealObject *self, Py_ssize_t milliliters)
 /*[clinic end generated code: output=958be41cb8f665bf input=8230388ccc49c6b9]*/
 {
-    PyObject *res;
-    res = PyCereal_Subtract(self, milliliters);
-    return res;
+    return PyCereal_Subtract(self, milliliters);
 }
 
 /*[clinic input]
@@ -606,9 +596,7 @@ static PyObject *
 cereal_multiply_impl(PyCerealObject *self, Py_ssize_t num)
 /*[clinic end generated code: output=ce73db43e4fc1ee2 input=a48a6814b973b588]*/
 {
-    PyObject *res;
-    res = PyCereal_Multiply(self, num);
-    return res;
+    return PyCereal_Multiply(self, num);
 }
 
 /*[clinic input]
@@ -626,9 +614,7 @@ static PyObject *
 cereal_divide_impl(PyCerealObject *self, Py_ssize_t num)
 /*[clinic end generated code: output=344f7077fc5191ae input=5d67df1ef7d49693]*/
 {
-    PyObject *res;
-    res = PyCereal_Divide(self, num);
-    return res;
+    return PyCereal_Divide(self, num);
 }
 
 /*[clinic input]
@@ -646,9 +632,7 @@ static PyObject *
 cereal_resize_impl(PyCerealObject *self, Py_ssize_t size)
 /*[clinic end generated code: output=18bddfe74a44bbb5 input=b34b2a64f9cffb4e]*/
 {
-    PyObject *res;
-    res = PyCereal_Resize(self, size);
-    return res;
+    return PyCereal_Resize(self, size);
 }
 
 /*[clinic input]
@@ -665,9 +649,7 @@ static PyObject *
 cereal_resize_overflow_impl(PyCerealObject *self, Py_ssize_t size)
 /*[clinic end generated code: output=b88688c03373346d input=c62c66fe7a1797c8]*/
 {
-    PyObject *res;
-    res = PyCereal_ResizeOverflow(self, size);
-    return res;
+    return PyCereal_ResizeOverflow(self, size);
 }
 
 static PyObject *
