@@ -445,7 +445,7 @@ cereal___init___impl(PyCerealObject *self, Py_ssize_t capacity,
                      milliliters);
         return -1;
     }
-    else if (milliliters == 0) {
+    else if (cereal == 0) {
         PyErr_SetString(PyExc_ValueError,
                         "cereal bowl cannot have a capacity of 0");
         return -1;
