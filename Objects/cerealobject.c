@@ -2,6 +2,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "structmember.h" // PyMember_Def
 
 /*[clinic input]
 class cereal "PyCerealObject *" "&PyCereal_Type"
@@ -126,13 +127,13 @@ PyCereal_Prepare(PyCerealObject *cereal, Py_ssize_t ml)
     if (cereal->is_prepared) {
         PyErr_SetString(PyExc_TypeError,
                         "cannot prepare an already prepared cereal bowl");
-        return NULL;
+        return -1;
     }
 
     if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
                      "invalid argument 2 to cereal.prepare(): %zd",
-                     size);
+                     ml);
         return -1;
     }
     else if (ml == 0) {
@@ -157,7 +158,7 @@ PyCereal_Eat(PyCerealObject *cereal, Py_ssize_t ml)
     if (cereal->is_prepared == 0) {
         PyErr_SetString(PyExc_TypeError,
                         "cannot eat from unprepared cereal bowl");
-        return NULL;
+        return -1;
     }
 
     if (ml == 0) {
@@ -169,7 +170,7 @@ PyCereal_Eat(PyCerealObject *cereal, Py_ssize_t ml)
     else if (ml < 0) {
         PyErr_Format(PyExc_TypeError,
                      "invalid argument 2 to cereal.eat(): %zd",
-                     size);
+                     ml);
         return -1;
     }
     else if (ml > cereal->milliliters) {
@@ -191,7 +192,7 @@ PyCereal_Finish(PyCerealObject *cereal)
     if (cereal->is_prepared == 0) {
         PyErr_SetString(PyExc_TypeError,
                         "cannot finish an unprepared cereal bowl");
-        return NULL;
+        return -1;
     }
     if (cereal->milliliters > 0) {
         PyErr_Format(PyExc_ValueError,
@@ -286,7 +287,7 @@ PyCereal_Multiply(PyCerealObject *cereal, Py_ssize_t size)
         PyErr_Format(PyExc_ValueError,
                      "cannot multiply %zd milliliters of cereal "
                      "with %zd (max capacity %zd milliliters)",
-                     cereal->milliliters, ml, size_bowl);
+                     cereal->milliliters, size, size_bowl);
         return NULL;
     }
 
@@ -296,8 +297,6 @@ PyCereal_Multiply(PyCerealObject *cereal, Py_ssize_t size)
 PyObject *
 PyCereal_Divide(PyCerealObject *cereal, Py_ssize_t size)
 {
-    Py_ssize_t milliliters;
-
     if (cereal->is_prepared == 0) {
         PyErr_SetString(PyExc_TypeError,
                         "cannot divide unprepared cereal bowl");
@@ -444,25 +443,25 @@ cereal___init___impl(PyCerealObject *self, Py_ssize_t capacity,
         PyErr_Format(PyExc_TypeError,
                      "invalid argument 2 to cereal(): %zd",
                      milliliters);
-        return NULL;
+        return -1;
     }
-    else if (ml == 0) {
+    else if (milliliters == 0) {
         PyErr_SetString(PyExc_ValueError,
                         "cereal bowl cannot have a capacity of 0");
-        return NULL;
+        return -1;
     }
 
     if (milliliters < 0) {
         PyErr_Format(PyExc_TypeError,
                      "invalid argument 3 to cereal(): %zd",
                      milliliters);
-        return NULL;
+        return -1;
     }
 
-    Py_SET_SIZE(cereal, capacity);
-    cereal->size = capacity;
-    cereal->milliliters = milliliters > capacity ? capacity : milliliters;
-    cereal->is_prepared = milliliters ? 1 : 0;
+    Py_SET_SIZE(self, capacity);
+    self->size = capacity;
+    self->milliliters = milliliters > capacity ? capacity : milliliters;
+    self->is_prepared = milliliters ? 1 : 0;
     return 0;
 }
 
@@ -711,7 +710,8 @@ static PyNumberMethods cereal_as_number = {
     .nb_add = (binaryfunc)cereal_addition,
     .nb_subtract = (binaryfunc)cereal_subtraction,
     .nb_multiply = (binaryfunc)cereal_multiplication,
-    .nb_divide = (binaryfunc)cereal_division,
+    .nb_true_divide = (binaryfunc)cereal_division,
+    .nb_floor_divide = (binaryfunc)cereal_division,
 };
 
 static PyMethodDef cereal_methods[] = {
