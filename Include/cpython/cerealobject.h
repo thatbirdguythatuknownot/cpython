@@ -15,7 +15,7 @@ typedef struct {
     int is_full;             /* If the cereal bowl is full */
 } PyCerealObject;
 
-/* Macros and static inlines */
+/* Macros and static inlines, trading safety for speed */
 
 /* Check if the cereal bowl is empty */
 static inline int _PyCereal_IS_EMPTY(const PyCerealObject *cereal) {
@@ -32,14 +32,18 @@ static inline int _PyCereal_IS_FULL(const PyCerealObject *cereal) {
     (assert(PyCereal_Check(ob)), _PyCereal_IS_FULL(_PyCerealObject_CAST_CONST(ob)))
 
 /* Check if the cereal bowl is prepared (unfinished) */
-#define _PyCereal_IS_PREPARED(ob) (ob->is_prepared)
+static inline int _PyCereal_IS_PREPARED(const PyCerealObject *cereal) {
+    return cereal->is_prepared;
+}
 #define PyCereal_IS_PREPARED(ob) \
     (assert(PyCereal_Check(ob)), _PyCereal_IS_PREPARED(_PyCerealObject_CAST_CONST(ob)))
 #define _PyCereal_IS_UNFINISHED _PyCereal_IS_PREPARED
 #define PyCereal_IS_UNFINISHED PyCereal_IS_PREPARED
 
 /* Check if the cereal bowl is finished (unprepared) */
-#define _PyCereal_IS_FINISHED(ob) (ob->is_prepared == 0)
+static inline int _PyCereal_IS_FINISHED(const PyCerealObject *cereal) {
+    return cereal->is_prepared == 0;
+}
 #define PyCereal_IS_FINISHED(ob) \
     (assert(PyCereal_Check(ob)), _PyCereal_IS_FINISHED(_PyCerealObject_CAST_CONST(ob)))
 #define _PyCereal_IS_UNPREPARED _PyCereal_IS_FINISHED
@@ -67,7 +71,7 @@ static inline int _PyCereal_RESIZE_OVERFLOW(PyCerealObject *cereal, Py_ssize_t s
 /* Finish the cereal bowl. Bowl must have been prepared and must have no more cereal remaining. */
 static inline int _PyCereal_FINISH(PyCerealObject *cereal) {
     assert(cereal->is_prepared);
-    assert(cereal->milliliters > 0);
+    assert(cereal->milliliters == 0);
     cereal->is_prepared = 0;
 }
 #define PyCereal_FINISH(ob) \
@@ -84,3 +88,11 @@ static inline int _PyCereal_PREPARE(PyCerealObject *cereal, Py_ssize_t size) {
 }
 #define PyCereal_PREPARE(ob) \
     (assert(PyCereal_Check(ob)), _PyCereal_PREPARE(_PyCerealObject_CAST(ob)))
+
+static inline int _PyCereal_EAT(PyCerealObject *cereal, Py_ssize_t size) {
+    assert(cereal->is_prepared);
+    assert(size <= cereal->milliliters);
+    cereal->milliliters -= size;
+}
+#define PyCereal_EAT(ob) \
+    (assert(PyCereal_Check(ob)), _PyCereal_EAT(_PyCerealObject_CAST(ob)))
