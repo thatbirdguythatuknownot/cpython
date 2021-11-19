@@ -71,7 +71,6 @@
  */
 #define MAX_ALLOWED_STACK_USE (STACK_USE_GUIDELINE * 100)
 
-
 /* Pseudo-instructions used in the compiler,
  * but turned into NOPs by the assembler. */
 #define SETUP_FINALLY 255
