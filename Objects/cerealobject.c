@@ -69,6 +69,7 @@ PyCereal_FromFields(Py_ssize_t size, Py_ssize_t ml)
     else if (ml > size) {
         PyErr_SetString(PyExc_ValueError,
                         "cannot overflow cereal bowl");
+        return NULL;
     }
 
     new = PyObject_New(PyCerealObject, &PyCereal_Type);
@@ -234,7 +235,7 @@ PyCereal_Add(PyCerealObject *cereal, Py_ssize_t ml)
         return NULL;
     }
 
-    return PyCereal_FromFields(milliliters, size);
+    return PyCereal_FromFields(size, milliliters);
 }
 
 PyObject *
@@ -261,7 +262,7 @@ PyCereal_Subtract(PyCerealObject *cereal, Py_ssize_t ml)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->milliliters - ml, cereal->size);
+    return PyCereal_FromFields(cereal->size, cereal->milliliters - ml);
 }
 
 PyObject *
@@ -291,7 +292,7 @@ PyCereal_Multiply(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(milliliters, size_bowl);
+    return PyCereal_FromFields(size_bowl, milliliters);
 }
 
 PyObject *
@@ -315,7 +316,7 @@ PyCereal_Divide(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->milliliters / size, cereal->size);
+    return PyCereal_FromFields(cereal->size, cereal->milliliters / size);
 }
 
 PyObject *
