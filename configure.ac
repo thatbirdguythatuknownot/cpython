@@ -465,6 +465,12 @@ then
 	*-*-vxworks*)
 	    ac_sys_system=VxWorks
 	    ;;
+	*-*-emscripten)
+	    ac_sys_system=Emscripten
+	    ;;
+	*-*-wasi)
+	    ac_sys_system=WASI
+	    ;;
 	*)
 		# for now, limit cross builds to known configurations
 		MACHDEP="unknown"
@@ -512,6 +518,9 @@ if test "$cross_compiling" = yes; then
 		_host_cpu=
 		;;
 	*-*-vxworks*)
+		_host_cpu=$host_cpu
+		;;
+	wasm32-*-* | wasm64-*-*)
 		_host_cpu=$host_cpu
 		;;
 	*)
@@ -6175,6 +6184,13 @@ AS_CASE([$ac_sys_system],
   [FreeBSD*], [py_stdlib_not_available="_scproxy spwd"],
   [py_stdlib_not_available="_scproxy"]
 )
+
+dnl Default value for Modules/Setup.stdlib build type
+AS_CASE([$host_cpu],
+  [wasm32|wasm64], [MODULE_BUILDTYPE=static],
+  [MODULE_BUILDTYPE=${MODULE_BUILDTYPE:-shared}]
+)
+AC_SUBST([MODULE_BUILDTYPE])
 
 dnl _MODULE_BLOCK_ADD([VAR], [VALUE])
 dnl internal: adds $1=quote($2) to MODULE_BLOCK
