@@ -610,15 +610,13 @@ fold_iter(expr_ty arg, PyArena *arena, _PyASTOptimizeState *state)
     return make_const(arg, newval, arena);
 }
 
-/* Fold all constant comparisons and contains by pointer
-   logic and PyObject_RichCompareBool (PySequence_Contains for
-   "in" or "not in"). Short circuit all remaining values
-   if the comparison returns 0 (False).
-   If there are constant comparisons, set node to a "and" chain
+/* Fold and optimize all constant comparisons/contains.
+
+   If there are non-constant comparisons, set node to a "and" chain
    containing all the non-constant comparisons.
-   If there are no non-constant comparisons or no non-constant
-   comparisons are found before a constant comparison returns False,
-   set a boolean instead.
+
+   If no non-constant comparisons are found before short circuiting
+   or after iterating over every comparison, set node to a boolean instead.
 */
 static int
 fold_compare(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
@@ -627,34 +625,34 @@ fold_compare(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
     asdl_expr_seq *result, *cut_args;
     expr_ty left, right, node_copy, bool_const;
     expr_ty *args;
-    Py_ssize_t i, j, real_index = 0, unchanged = 0;
-    Py_ssize_t ops_length, args_size, ops_size;
-    int res, op, has_unchanged;
+    Py_ssize_t i, j, k, real_index = 0, unchanged = 0;
+    Py_ssize_t ops_length;
+    Py_ssize_t args_size, ops_size;
+    int res, op, has_unchanged = 0;
     int *ops;
 
     ops = node->v.Compare.ops->typed_elements;
     args = node->v.Compare.comparators->typed_elements;
     assert(args != NULL && ops != NULL);
     ops_length = asdl_seq_LEN(node->v.Compare.ops);
-    args_size = ops_size = ops_length;
+    ops_size = asdl_seq_LEN(node->v.Compare.ops);
+    args_size = asdl_seq_LEN(node->v.Compare.comparators);
     result = _Py_asdl_expr_seq_new(ops_length, arena);
     /* Iterate over each comparison. */
     for (i = 0; i < ops_length; i++) {
-        right = args[0];
+        right = args_size == ops_length ? args[i] : args[0];
         op = (ops_size == ops_length) ? ops[i] : ops[0];
         if (i != 0) {
-            left = (args_size == ops_length) ? args[i] : args[-1];
+            left = args_size == ops_length ? args[i-1] : args[-1];
         }
         else {
             left = node->v.Compare.left;
         }
-        /* If possible and the operator is "in" or "not in",
-           convert lists or sets to constant tuples or frozensets.
+        /* Convert all lists and sets with constant elements
+           to tuples and frozensets.
         */
-        if (op == In || op == NotIn) {
-            if (!fold_iter(right, arena, state)) {
-                return 0;
-            }
+        if (!fold_iter(right, arena, state)) {
+            return 0;
         }
         if (left->kind != Constant_kind || right->kind != Constant_kind) {
             unchanged++;
@@ -722,13 +720,13 @@ fold_compare(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
         if (res == -1) {
             return 0;
         }
-        else if (res == 0) {
+        if (res == 0) {
             /* Short circuit. If there is a non-constant
-               value, make False a part of the "and" chain
-               and break out of the loop, disregarding all the
-               other comparisons after.
-               If all values before are constants, set node to
-               False and return.
+               value found before this part, make False a
+               part of the "and" chain then break out of the loop,
+               disregarding all the other comparisons after.
+               If there is no non-constant value found, set the
+               node to False and return.
             */
             if (has_unchanged) {
                 bool_const = _PyAST_Constant(
@@ -751,18 +749,31 @@ fold_compare(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
             if (unchanged != 0) {
                 cut_args = _Py_asdl_expr_seq_new(unchanged, arena);
                 cut_ops = _Py_asdl_int_seq_new(unchanged, arena);
-                j = (args_size == ops_length);
-                if (j == 1) {
-                    asdl_seq_SET(cut_args, 0, node->v.Compare.left);
-                    asdl_seq_SET(cut_ops, 0, ops[0]);
-                }
-                for (; j < unchanged; j++) {
+                k = (args_size == ops_length);
+                Py_ssize_t compare_to;
+                if (k) {
+                    j = i-unchanged;
+                    compare_to = i;
                     asdl_seq_SET(
-                        cut_args,
-                        j,
+                        cut_args, 0,
+                        j == 0 ?
+                        node->v.Compare.left :
                         args[j-1]
                     );
-                    asdl_seq_SET(cut_ops, j, ops[j]);
+                    asdl_seq_SET(cut_ops, 0, ops[j]);
+                    j++;
+                }
+                else {
+                    j = 0;
+                    compare_to = unchanged;
+                }
+                for (; j < compare_to; j++, k++) {
+                    asdl_seq_SET(
+                        cut_args,
+                        k,
+                        args[j-1]
+                    );
+                    asdl_seq_SET(cut_ops, k, ops[j]);
                 }
                 node_copy = _PyAST_Compare(
                     left, cut_ops,
@@ -783,15 +794,40 @@ fold_compare(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
             unchanged = 0;
         }
     }
+    /* Handle non-constant values in case there are any left. */
+    if (unchanged != 0 && unchanged != i) {
+        cut_args = _Py_asdl_expr_seq_new(unchanged, arena);
+        cut_ops = _Py_asdl_int_seq_new(unchanged, arena);
+        for (j = 0; j < unchanged; j++) {
+            asdl_seq_SET(
+                cut_args,
+                j,
+                args[j]
+            );
+            asdl_seq_SET(cut_ops, j, ops[j]);
+        }
+        node_copy = _PyAST_Compare(
+            left, cut_ops,
+            cut_args, node->lineno,
+            node->col_offset, node->end_lineno,
+            node->end_col_offset, arena
+        );
+        asdl_seq_SET(result, real_index, node_copy);
+        result->size++;
+        real_index++;
+        has_unchanged = 1;
+        unchanged++;
+        args_size -= unchanged;
+    }
+    if (args_size == ops_length) {
+        return 1;
+    }
     if (!has_unchanged) {
         /* All comparisons are constants and no
            short-circuiting happened, so set node to True.
         */
         Py_INCREF(Py_True);
         return make_const(node, Py_True, arena);
-    }
-    if (real_index == 0) {
-        return 1;
     }
     result->size = real_index;
     node->kind = BoolOp_kind;
