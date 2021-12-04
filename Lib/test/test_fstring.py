@@ -944,8 +944,10 @@ x = (
                              "Bf''",
                              "BF''",]
         double_quote_cases = [case.replace("'", '"') for case in single_quote_cases]
-        self.assertAllRaise(SyntaxError, 'invalid syntax',
-                            single_quote_cases + double_quote_cases)
+        for cases in single_quote_cases + double_quote_cases:
+            error_msg = f"invalid string prefix {cases[:2]}"
+            with self.assertRaisesRegex(SyntaxError, error_msg):
+                compile(cases, "?", "exec")
 
     def test_leading_trailing_spaces(self):
         self.assertEqual(f'{ 3}', '3')
