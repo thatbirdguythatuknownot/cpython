@@ -1082,15 +1082,15 @@ invalid_legacy_expression:
 
 invalid_expression:
     # Soft keywords need to be ignored in these errors because they can be parsed as NAME NAME
+    # Literals are not matched in this error because an attribute access to a literal would be very much useless
+   | !(SOFT_KEYWORD|STRING|NUMBER|'True'|'False'|'None') a=primary b=NAME {
+        p->tokens[p->mark-1]->level == 0 ?
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a dot?") :
+        RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a comma?") }
     # !(NAME STRING) is not matched so we don't show this error with some invalid string prefixes like: kf"dsfsdf"
    | !(NAME STRING | SOFT_KEYWORD) a=disjunction b=expression_without_invalid {
         _PyPegen_check_legacy_stmt(p, a) ? NULL : p->tokens[p->mark-1]->level == 0 ? NULL :
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a comma?") }
-    # Literals are also ignored in this error because an attribute access to a literal would be very much useless
-   | !(SOFT_KEYWORD|STRING|NUMBER|'True'|'False'|'None') a=primary b=NAME {
-       RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a dot?") }
-   | !("b" "r"? | "f" "r"? | "r" ("b"|"f")?) a=NAME STRING {
-        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "invalid string prefix '%U'", a->v.Name.id) }
    | a=disjunction 'if' b=disjunction !('else'|':') { RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "expected 'else' after 'if' expression") }
 
 invalid_named_expression:
