@@ -235,6 +235,7 @@ class ExceptionTests(unittest.TestCase):
         check('match ...:\n    case {**rest, "key": value}:\n        ...', 2, 19)
         check("[a b c d e f]", 1, 2)
         check('if datetime.now()strftime(...) != "19:50:00": pass', 1, 4)
+        check('kf"dsdfksdf"', 1, 1)
 
         # Errors thrown by compile.c
         check('class foo:return 1', 1, 11)
