@@ -1318,6 +1318,23 @@ Corner-cases that used to crash:
     ...     ...
     Traceback (most recent call last):
     SyntaxError: positional patterns follow keyword patterns
+
+Potential attribute accesses (not in any brackets):
+
+    >>> if datetime.now()strftime(...) != ...:
+    Traceback (most recent call last):
+    SyntaxError: invalid syntax. Perhaps you forgot a dot?
+
+Invalid string prefixes:
+
+    >>> kf'dsasfsfff'
+    Traceback (most recent call last):
+    SyntaxError: invalid string prefix 'kf'
+
+    >>> (baf'skajzkds')
+    Traceback (most recent call last):
+    SyntaxError: invalid string prefix 'baf'. Perhaps you forgot a comma?
+
 """
 
 import re
@@ -1628,6 +1645,15 @@ while 1:
                      break
 """
         self._check_error(source, "too many statically nested blocks")
+
+        def test_potential_attribute_access(self):
+            self._check_error("a()b", "invalid syntax. Perhaps you forgot a dot?")
+            self._check_error("[a()b]", "invalid syntax. Perhaps you forgot a comma?")
+
+        def test_invalid_prefixes(self):
+            self._check_error("kf'zdsjfzsf'", "invalid string prefix 'kf'")
+            self._check_error("[asfl'gakggjasiq']",
+                              "invalid string prefix 'asfl'. Perhaps you forgot a comma?")
 
 
 def load_tests(loader, tests, pattern):
