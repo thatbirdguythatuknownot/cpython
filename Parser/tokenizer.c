@@ -1970,10 +1970,10 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
         if (hasid) {
             const char *msg;
             if (tok->level == 0) {
-                msg = "invalid string prefix '%s'";
+                msg = "invalid string prefix '%.200s'";
             }
             else {
-                msg = "invalid string prefix '%s'. Perhaps you forgot a comma?";
+                msg = "invalid string prefix '%.200s'. Perhaps you forgot a comma?";
             }
             size_t length = prefix_end - tok->start;
             char *prefix = PyMem_Malloc(length + 1);
