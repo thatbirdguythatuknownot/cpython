@@ -1354,7 +1354,8 @@ static int
 tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
 {
     int c;
-    int blankline, nonascii;
+    int blankline, nonascii, hasid = 0;
+    const char *prefix_end;
 
     *p_start = *p_end = NULL;
   nextline:
@@ -1603,6 +1604,12 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
         tok_backup(tok, c);
         if (nonascii && !verify_identifier(tok)) {
             return ERRORTOKEN;
+        }
+
+        if (c == '"' || c == '\'') {
+            hasid = 1;
+            prefix_end = tok->cur;
+            goto letter_quote;
         }
 
         *p_start = tok->start;
@@ -1958,6 +1965,26 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
                     tok_nextc(tok);  /* skip escaped char */
                 }
             }
+        }
+
+        if (hasid) {
+            const char *msg;
+            if (tok->level == 0) {
+                msg = "invalid string prefix '%s'";
+            }
+            else {
+                msg = "invalid string prefix '%s'. Perhaps you forgot a comma?";
+            }
+            size_t length = prefix_end - tok->start;
+            char *prefix = PyMem_Malloc(length + 1);
+            strncpy(prefix, tok->start, length);
+            prefix[length] = '\0';
+            int status = syntaxerror_known_range(
+                    tok, (int)(tok->start + 1 - tok->line_start),
+                    (int)(prefix_end + 1 - tok->line_start),
+                    msg, prefix);
+            PyMem_Free(prefix);
+            return status;
         }
 
         *p_start = tok->start;
