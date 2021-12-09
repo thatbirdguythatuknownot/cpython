@@ -125,16 +125,16 @@ AC_ARG_WITH(
 )
 AC_SUBST([FREEZE_MODULE])
 
+dnl build-python is used for cross compiling and macOS framework builds.
 AC_ARG_WITH(
   [build-python],
   [AS_HELP_STRING([--with-build-python=python]PYTHON_VERSION,
-                  [path to build python binary for cross compiling (default: python]PYTHON_VERSION[)])],
+                  [path to build python binary for cross compiling (default: _bootstrap_python or python]PYTHON_VERSION[)])],
   [
     AC_MSG_CHECKING([for --with-build-python])
 
-    AS_VAR_IF([cross_compiling], [no], AC_MSG_ERROR([--with-build-python only applies to cross compiling]))
     AS_VAR_IF([with_build_python], [yes], [with_build_python=python$PACKAGE_VERSION])
-    AS_VAR_IF([with_build_python], [no], [AC_MSG_ERROR([invalid --with-build-python option: expected path, not "no"])])
+    AS_VAR_IF([with_build_python], [no], [AC_MSG_ERROR([invalid --with-build-python option: expected path or "yes", not "no"])])
 
     if ! $(command -v "$with_build_python" >/dev/null 2>&1); then
       AC_MSG_ERROR([invalid or missing build python binary "$with_build_python"])
@@ -143,8 +143,9 @@ AC_ARG_WITH(
     if test "$build_python_ver" != "$PACKAGE_VERSION"; then
       AC_MSG_ERROR(["$with_build_python" has incompatible version $build_python_ver (expected: $PACKAGE_VERSION)])
     fi
-    dnl use build Python for regeneration, too
+    dnl Build Python interpreter is used for regeneration and freezing.
     ac_cv_prog_PYTHON_FOR_REGEN=$with_build_python
+    PYTHON_FOR_FREEZE="$with_build_python"
     PYTHON_FOR_BUILD='_PYTHON_PROJECT_BASE=$(abs_builddir) _PYTHON_HOST_PLATFORM=$(_PYTHON_HOST_PLATFORM) PYTHONPATH=$(shell test -f pybuilddir.txt && echo $(abs_builddir)/`cat pybuilddir.txt`:)$(srcdir)/Lib _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata_$(ABIFLAGS)_$(MACHDEP)_$(MULTIARCH) '$with_build_python
     AC_MSG_RESULT([$with_build_python])
   ], [
@@ -152,9 +153,14 @@ AC_ARG_WITH(
       [AC_MSG_ERROR([Cross compiling requires --with-build-python])]
     )
     PYTHON_FOR_BUILD='./$(BUILDPYTHON) -E'
+    PYTHON_FOR_FREEZE="./_bootstrap_python"
   ]
 )
 AC_SUBST([PYTHON_FOR_BUILD])
+
+AC_MSG_CHECKING([for Python interpreter freezing])
+AC_MSG_RESULT([$PYTHON_FOR_FREEZE])
+AC_SUBST([PYTHON_FOR_FREEZE])
 
 AC_CHECK_PROGS([PYTHON_FOR_REGEN],
   [python$PACKAGE_VERSION python3.10 python3.9 python3.8 python3.7 python3.6 python3 python],
@@ -162,7 +168,7 @@ AC_CHECK_PROGS([PYTHON_FOR_REGEN],
 AC_SUBST(PYTHON_FOR_REGEN)
 
 AC_MSG_CHECKING([Python for regen version])
-if command -v $PYTHON_FOR_REGEN >/dev/null 2>&1; then
+if command -v "$PYTHON_FOR_REGEN" >/dev/null 2>&1; then
   AC_MSG_RESULT([$($PYTHON_FOR_REGEN -V 2>/dev/null)])
 else
   AC_MSG_RESULT([missing])
@@ -1510,6 +1516,8 @@ esac
 if test "$Py_LTO" = 'true' ; then
   case $CC in
     *clang*)
+      dnl flag to disable lto during linking
+      LDFLAGS_NOLTO="-fno-lto"
       AC_SUBST(LLVM_AR)
       AC_PATH_TOOL(LLVM_AR, llvm-ar, '', ${llvm_path})
       AC_SUBST(LLVM_AR_FOUND)
@@ -1565,6 +1573,8 @@ if test "$Py_LTO" = 'true' ; then
       then
         AC_MSG_ERROR([thin lto is not supported under gcc compiler.])
       fi
+      dnl flag to disable lto during linking
+      LDFLAGS_NOLTO="-fno-lto"
       case $ac_sys_system in
         Darwin*)
           LTOFLAGS="-flto -Wl,-export_dynamic"
@@ -1746,6 +1756,7 @@ fi
 AC_SUBST(BASECFLAGS)
 AC_SUBST(CFLAGS_NODIST)
 AC_SUBST(LDFLAGS_NODIST)
+AC_SUBST(LDFLAGS_NOLTO)
 
 # The -arch flags for universal builds on macOS
 UNIVERSAL_ARCH_FLAGS=
@@ -2936,8 +2947,8 @@ dnl stream in big-endian byte-order
 AC_CHECK_HEADERS([uuid.h], [
   AC_CHECK_FUNCS([uuid_create uuid_enc_be], [
     have_uuid=yes
-    LIBUUID_CFLAGS=
-    LIBUUID_LIBS=
+    LIBUUID_CFLAGS=${LIBUUID_CFLAGS-""}
+    LIBUUID_LIBS=${LIBUUID_LIBS-""}
   ])
 ])
 
@@ -2950,9 +2961,6 @@ AS_VAR_IF([have_uuid], [missing], [
       AC_DEFINE([HAVE_UUID_H], [1])
       AC_DEFINE([HAVE_UUID_GENERATE_TIME_SAFE], [1])
     ], [
-      LIBUUID_LIBS="-luuid"
-      LIBUUID_CFLAGS=
-      have_uuid=no
       AC_CHECK_HEADERS([uuid/uuid.h], [
         WITH_SAVE_ENV(
           [AC_CHECK_LIB([uuid], [uuid_generate_time], [have_uuid=yes])
@@ -2963,10 +2971,27 @@ AS_VAR_IF([have_uuid], [missing], [
             AC_DEFINE([HAVE_UUID_GENERATE_TIME_SAFE], [1])
           ])
         ])
+        AS_VAR_IF([have_uuid], [yes], [
+          LIBUUID_CFLAGS=${LIBUUID_CFLAGS-""}
+          LIBUUID_LIBS=${LIBUUID_LIBS-"-luuid"}
+        ])
       ])
     ]
   )
 ])
+
+dnl macOS has uuid/uuid.h but uuid_generate_time is in libc
+AS_VAR_IF([have_uuid], [missing], [
+  AC_CHECK_HEADERS([uuid/uuid.h], [
+    AC_CHECK_FUNC([uuid_generate_time], [
+      have_uuid=yes
+      LIBUUID_CFLAGS=${LIBUUID_CFLAGS-""}
+      LIBUUID_LIBS=${LIBUUID_LIBS-""}
+    ])
+  ])
+])
+
+AS_VAR_IF([have_uuid], [missing], [have_uuid=no])
 
 # 'Real Time' functions on Solaris
 # posix4 on Solaris 2.6
@@ -3124,8 +3149,8 @@ AC_ARG_WITH(system_expat,
 AC_MSG_RESULT($with_system_expat)
 
 AS_VAR_IF([with_system_expat], [yes], [
-  LIBEXPAT_CFLAGS=""
-  LIBEXPAT_LDFLAGS="-lexpat"
+  LIBEXPAT_CFLAGS=${LIBEXPAT_CFLAGS-""}
+  LIBEXPAT_LDFLAGS=${LIBEXPAT_LDFLAGS-"-lexpat"}
   LIBEXPAT_INTERNAL=
 ], [
   LIBEXPAT_CFLAGS="-I\$(srcdir)/Modules/expat"
@@ -3180,8 +3205,8 @@ AC_ARG_WITH(system_libmpdec,
 AC_MSG_RESULT($with_system_libmpdec)
 
 AS_VAR_IF([with_system_libmpdec], [yes], [
-  LIBMPDEC_CFLAGS=""
-  LIBMPDEC_LDFLAGS="-lmpdec"
+  LIBMPDEC_CFLAGS=${LIBMPDEC_CFLAGS-""}
+  LIBMPDEC_LDFLAGS=${LIBMPDEC_LDFLAGS-"-lmpdec"}
   LIBMPDEC_INTERNAL=
 ], [
   LIBMPDEC_CFLAGS="-I\$(srcdir)/Modules/_decimal/libmpdec"
@@ -3218,14 +3243,9 @@ AS_CASE([$ac_sys_system],
 
 libmpdec_machine=unknown
 if test "$libmpdec_system" = Darwin; then
-    AS_CASE([$MACOSX_DEFAULT_ARCH],
-      [i386],   [libmpdec_machine=ansi32],
-      [ppc],    [libmpdec_machine=ansi32],
-      [x86_64], [libmpdec_machine=x64],
-      [ppc64],  [libmpdec_machine=ansi64],
-      [arm64],  [libmpdec_machine=ansi64],
-      [libmpdec_machine=universal]
-    )
+    # universal here means: build libmpdec with the same arch options
+    # the python interpreter was built with
+    libmpdec_machine=universal
 elif test $ac_cv_sizeof_size_t -eq 8; then
     if test "$ac_cv_gcc_asm_for_x64" = yes; then
         libmpdec_machine=x64
@@ -3275,15 +3295,16 @@ fi
 dnl check for NIS / libnsl dependencies
 dnl libnsl dependencies include tirpc includes and lib
 PKG_CHECK_MODULES([LIBNSL], [libnsl], [have_nis=yes], [
-  LIBNSL_CFLAGS=
+  LIBNSL_CFLAGS=${LIBNSL_CFLAGS-""}
   WITH_SAVE_ENV([
     AC_SEARCH_LIBS([yp_match], [nsl], [have_nis=yes], [have_nis=no])
   ])
   AS_CASE([$ac_cv_search_yp_match],
-    [no], [LIBNSL_LIBS=],
-    ["none required"], [LIBNSL_LIBS=],
-    [LIBNSL_LIBS=$ac_cv_search_yp_match]
+    [no], [libnsl=""],
+    ["none required"], [libnsl=""],
+    [libnsl="$ac_cv_search_yp_match"]
   )
+  LIBNSL_LIBS=${LIBNSL_LIBS-$libnsl}
 ])
 
 AS_VAR_IF([have_nis], [yes], [
@@ -3296,8 +3317,8 @@ AS_VAR_IF([have_nis], [yes], [
 dnl Check for SQLite library. Use pkg-config if available.
 PKG_CHECK_MODULES(
   [LIBSQLITE3], [sqlite3 >= 3.7.15], [], [
-    LIBSQLITE3_LIBS="-lsqlite3"
-    LIBSQLITE3_CFLAGS=
+    LIBSQLITE3_CFLAGS=${LIBSQLITE3_CFLAGS-""}
+    LIBSQLITE3_LIBS=${LIBSQLITE3_LIBS-"-lsqlite3"}
   ]
 )
 AS_VAR_APPEND([LIBSQLITE3_CFLAGS], [' -I$(srcdir)/Modules/_sqlite'])
@@ -3384,7 +3405,7 @@ WITH_SAVE_ENV([
   AC_CHECK_HEADERS([gdbm.h], [
     AC_CHECK_LIB([gdbm], [gdbm_open], [
       have_gdbm=yes
-      GDBM_LIBS="$GDBM_LIBS -lgdbm"
+      GDBM_LIBS=${GDBM_LIBS-"-lgdbm"}
     ], [have_gdbm=no])
   ], [have_gdbm=no])
 ])
@@ -4178,8 +4199,8 @@ PKG_CHECK_MODULES([ZLIB], [zlib >= 1.2.0], [
     WITH_SAVE_ENV([
       AC_CHECK_LIB([z], [gzread], [
         have_zlib=yes
-        ZLIB_CFLAGS=
-        ZLIB_LIBS=-lz
+        ZLIB_CFLAGS=${ZLIB_CFLAGS-""}
+        ZLIB_LIBS=${ZLIB_LIBS-"-lz"}
         AC_CHECK_LIB([z], [inflateCopy], [AC_DEFINE([HAVE_ZLIB_COPY], [1])])
       ], [
         have_zlib=no
@@ -4199,8 +4220,8 @@ PKG_CHECK_MODULES([BZIP2], [bzip2], [have_bzip2=yes], [
     WITH_SAVE_ENV([
       AC_CHECK_LIB([bz2], [BZ2_bzCompress], [
         have_bzip2=yes
-        BZIP2_CFLAGS=
-        BZIP2_LIBS=-lbz2
+        BZIP2_CFLAGS=${BZIP2_CFLAGS-""}
+        BZIP2_LIBS=${BZIP2_LIBS-"-lbz2"}
       ], [have_bzip2=no])
     ])
   ], [have_bzip2=no])
@@ -4211,8 +4232,8 @@ PKG_CHECK_MODULES([LIBLZMA], [liblzma], [have_liblzma=yes], [
     WITH_SAVE_ENV([
       AC_CHECK_LIB([lzma], [lzma_easy_encoder], [
         have_liblzma=yes
-        LIBLZMA_CFLAGS=
-        LIBLZMA_LIBS=-llzma
+        LIBLZMA_CFLAGS=${LIBLZMA_CFLAGS-""}
+        LIBLZMA_LIBS=${LIBLZMA_LIBS-"-llzma"}
       ], [have_liblzma=no])
     ])
   ], [have_liblzma=no])
@@ -4285,10 +4306,11 @@ PKG_CHECK_MODULES([LIBCRYPT], [libxcrypt >= 3.1.1], [
     AC_SEARCH_LIBS([crypt_r], [crypt], [
       AC_DEFINE([HAVE_CRYPT_R], [1])
       if test "$ac_cv_search_crypt_r" = "none required"; then
-        LIBCRYPT_LIBS=
+        libcrypt=
       else
-        LIBCRYPT_LIBS="$ac_cv_search_crypt_r"
+        libcrypt="$ac_cv_search_crypt_r"
       fi
+      LIBCRYPT_LIBS=${LIBCRYPT_LIBS-$libcrypt}
     ])
   ])
 ])
@@ -5871,7 +5893,12 @@ AC_ARG_WITH(ensurepip,
     [AS_HELP_STRING([--with-ensurepip@<:@=install|upgrade|no@:>@],
         ["install" or "upgrade" using bundled pip (default is upgrade)])],
     [],
-    [with_ensurepip=upgrade])
+    [
+      AS_CASE([$ac_sys_system],
+        [Emscripten], [with_ensurepip=no],
+        [with_ensurepip=upgrade]
+      )
+    ])
 AS_CASE($with_ensurepip,
     [yes|upgrade],[ENSUREPIP=upgrade],
     [install],[ENSUREPIP=install],
@@ -6407,17 +6434,23 @@ PY_STDLIB_MOD([_blake2], [test "$with_builtin_blake2" = yes])
 PY_STDLIB_MOD([_crypt],
   [], [test "$ac_cv_crypt_crypt" = yes],
   [$LIBCRYPT_CFLAGS], [$LIBCRYPT_LIBS])
+dnl PY_STDLIB_MOD([_ctypes], [], [], [], [])
+dnl PY_STDLIB_MOD([_curses], [], [], [], [])
+dnl PY_STDLIB_MOD([_curses_panel], [], [], [], [])
 PY_STDLIB_MOD([_decimal], [], [], [$LIBMPDEC_CFLAGS], [$LIBMPDEC_LDFLAGS])
+dnl PY_STDLIB_MOD([_dbm], [], [], [], [])
 PY_STDLIB_MOD([_gdbm],
   [test "$have_gdbm_dbmliborder" = yes], [test "$have_gdbm" = yes],
   [$GDBM_CFLAGS], [$GDBM_LIBS])
 PY_STDLIB_MOD([nis],
   [], [test "$have_nis" = yes -a "$ac_cv_header_rpc_rpc_h" = yes],
   [$LIBNSL_CFLAGS], [$LIBNSL_LIBS])
+dnl PY_STDLIB_MOD([readline], [], [], [], [])
 PY_STDLIB_MOD([_sqlite3],
   [test "$have_sqlite3" = "yes"],
   [test "$have_supported_sqlite3" = "yes"],
   [$LIBSQLITE3_CFLAGS], [$LIBSQLITE3_LIBS])
+dnl PY_STDLIB_MOD([_tkinter], [], [], [], [])
 PY_STDLIB_MOD([_uuid],
   [], [test "$have_uuid" = "yes"],
   [$LIBUUID_CFLAGS], [$LIBUUID_LIBS])
