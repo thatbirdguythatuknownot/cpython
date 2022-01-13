@@ -631,140 +631,6 @@ compiler_unit_free(struct compiler_unit *u)
 }
 
 static int
-compiler_enter_scope(struct compiler *c, identifier name,
-                     int scope_type, void *key, int lineno)
-{
-    struct compiler_unit *u;
-    basicblock *block;
-
-    u = (struct compiler_unit *)PyObject_Calloc(1, sizeof(
-                                            struct compiler_unit));
-    if (!u) {
-        PyErr_NoMemory();
-        return 0;
-    }
-    u->u_scope_type = scope_type;
-    u->u_argcount = 0;
-    u->u_posonlyargcount = 0;
-    u->u_kwonlyargcount = 0;
-    u->u_ste = PySymtable_Lookup(c->c_st, key);
-    if (!u->u_ste) {
-        compiler_unit_free(u);
-        return 0;
-    }
-    Py_INCREF(name);
-    u->u_name = name;
-    u->u_varnames = list2dict(u->u_ste->ste_varnames);
-    u->u_cellvars = dictbytype(u->u_ste->ste_symbols, CELL, 0, 0);
-    if (!u->u_varnames || !u->u_cellvars) {
-        compiler_unit_free(u);
-        return 0;
-    }
-    if (u->u_ste->ste_needs_class_closure) {
-        /* Cook up an implicit __class__ cell. */
-        _Py_IDENTIFIER(__class__);
-        PyObject *name;
-        int res;
-        assert(u->u_scope_type == COMPILER_SCOPE_CLASS);
-        assert(PyDict_GET_SIZE(u->u_cellvars) == 0);
-        name = _PyUnicode_FromId(&PyId___class__);
-        if (!name) {
-            compiler_unit_free(u);
-            return 0;
-        }
-        res = PyDict_SetItem(u->u_cellvars, name, _PyLong_GetZero());
-        if (res < 0) {
-            compiler_unit_free(u);
-            return 0;
-        }
-    }
-
-    u->u_freevars = dictbytype(u->u_ste->ste_symbols, FREE, DEF_FREE_CLASS,
-                               PyDict_GET_SIZE(u->u_cellvars));
-    if (!u->u_freevars) {
-        compiler_unit_free(u);
-        return 0;
-    }
-
-    u->u_blocks = NULL;
-    u->u_nfblocks = 0;
-    u->u_firstlineno = lineno;
-    u->u_lineno = 0;
-    u->u_col_offset = 0;
-    u->u_end_lineno = 0;
-    u->u_end_col_offset = 0;
-    u->u_consts = PyDict_New();
-    if (!u->u_consts) {
-        compiler_unit_free(u);
-        return 0;
-    }
-    u->u_names = PyDict_New();
-    if (!u->u_names) {
-        compiler_unit_free(u);
-        return 0;
-    }
-
-    u->u_private = NULL;
-
-    /* Push the old compiler_unit on the stack. */
-    if (c->u) {
-        PyObject *capsule = PyCapsule_New(c->u, CAPSULE_NAME, NULL);
-        if (!capsule || PyList_Append(c->c_stack, capsule) < 0) {
-            Py_XDECREF(capsule);
-            compiler_unit_free(u);
-            return 0;
-        }
-        Py_DECREF(capsule);
-        u->u_private = c->u->u_private;
-        Py_XINCREF(u->u_private);
-    }
-    c->u = u;
-
-    c->c_nestlevel++;
-
-    block = compiler_new_block(c);
-    if (block == NULL)
-        return 0;
-    c->u->u_curblock = block;
-
-    if (u->u_scope_type != COMPILER_SCOPE_MODULE) {
-        if (!compiler_set_qualname(c))
-            return 0;
-    }
-
-    return 1;
-}
-
-static void
-compiler_exit_scope(struct compiler *c)
-{
-    // Don't call PySequence_DelItem() with an exception raised
-    PyObject *exc_type, *exc_val, *exc_tb;
-    PyErr_Fetch(&exc_type, &exc_val, &exc_tb);
-
-    c->c_nestlevel--;
-    compiler_unit_free(c->u);
-    /* Restore c->u to the parent unit. */
-    Py_ssize_t n = PyList_GET_SIZE(c->c_stack) - 1;
-    if (n >= 0) {
-        PyObject *capsule = PyList_GET_ITEM(c->c_stack, n);
-        c->u = (struct compiler_unit *)PyCapsule_GetPointer(capsule, CAPSULE_NAME);
-        assert(c->u);
-        /* we are deleting from a list so this really shouldn't fail */
-        if (PySequence_DelItem(c->c_stack, n) < 0) {
-            _PyErr_WriteUnraisableMsg("on removing the last compiler "
-                                      "stack item", NULL);
-        }
-        compiler_unit_check(c->u);
-    }
-    else {
-        c->u = NULL;
-    }
-
-    PyErr_Restore(exc_type, exc_val, exc_tb);
-}
-
-static int
 compiler_set_qualname(struct compiler *c)
 {
     _Py_static_string(dot, ".");
@@ -995,6 +861,7 @@ stack_effect(int opcode, int oparg, int jump)
     switch (opcode) {
         case NOP:
         case EXTENDED_ARG:
+        case RESUME:
             return 0;
 
         /* Stack manipulation */
@@ -1664,8 +1531,8 @@ compiler_addop_j_noline(struct compiler *c, int opcode, basicblock *b)
    the ASDL name to synthesize the name of the C type and the visit function.
 */
 
-#define ADD_YIELD_FROM(C) \
-    RETURN_IF_FALSE(compiler_add_yield_from((C)))
+#define ADD_YIELD_FROM(C, await) \
+    RETURN_IF_FALSE(compiler_add_yield_from((C), (await)))
 
 #define POP_EXCEPT_AND_RERAISE(C) \
     RETURN_IF_FALSE(compiler_pop_except_and_reraise((C)))
@@ -1713,6 +1580,144 @@ compiler_addop_j_noline(struct compiler *c, int opcode, basicblock *b)
     if (!(X)) {             \
         return 0;           \
     }
+
+static int
+compiler_enter_scope(struct compiler *c, identifier name,
+                     int scope_type, void *key, int lineno)
+{
+    struct compiler_unit *u;
+    basicblock *block;
+
+    u = (struct compiler_unit *)PyObject_Calloc(1, sizeof(
+                                            struct compiler_unit));
+    if (!u) {
+        PyErr_NoMemory();
+        return 0;
+    }
+    u->u_scope_type = scope_type;
+    u->u_argcount = 0;
+    u->u_posonlyargcount = 0;
+    u->u_kwonlyargcount = 0;
+    u->u_ste = PySymtable_Lookup(c->c_st, key);
+    if (!u->u_ste) {
+        compiler_unit_free(u);
+        return 0;
+    }
+    Py_INCREF(name);
+    u->u_name = name;
+    u->u_varnames = list2dict(u->u_ste->ste_varnames);
+    u->u_cellvars = dictbytype(u->u_ste->ste_symbols, CELL, 0, 0);
+    if (!u->u_varnames || !u->u_cellvars) {
+        compiler_unit_free(u);
+        return 0;
+    }
+    if (u->u_ste->ste_needs_class_closure) {
+        /* Cook up an implicit __class__ cell. */
+        _Py_IDENTIFIER(__class__);
+        PyObject *name;
+        int res;
+        assert(u->u_scope_type == COMPILER_SCOPE_CLASS);
+        assert(PyDict_GET_SIZE(u->u_cellvars) == 0);
+        name = _PyUnicode_FromId(&PyId___class__);
+        if (!name) {
+            compiler_unit_free(u);
+            return 0;
+        }
+        res = PyDict_SetItem(u->u_cellvars, name, _PyLong_GetZero());
+        if (res < 0) {
+            compiler_unit_free(u);
+            return 0;
+        }
+    }
+
+    u->u_freevars = dictbytype(u->u_ste->ste_symbols, FREE, DEF_FREE_CLASS,
+                               PyDict_GET_SIZE(u->u_cellvars));
+    if (!u->u_freevars) {
+        compiler_unit_free(u);
+        return 0;
+    }
+
+    u->u_blocks = NULL;
+    u->u_nfblocks = 0;
+    u->u_firstlineno = lineno;
+    u->u_lineno = lineno;
+    u->u_col_offset = 0;
+    u->u_end_lineno = lineno;
+    u->u_end_col_offset = 0;
+    u->u_consts = PyDict_New();
+    if (!u->u_consts) {
+        compiler_unit_free(u);
+        return 0;
+    }
+    u->u_names = PyDict_New();
+    if (!u->u_names) {
+        compiler_unit_free(u);
+        return 0;
+    }
+
+    u->u_private = NULL;
+
+    /* Push the old compiler_unit on the stack. */
+    if (c->u) {
+        PyObject *capsule = PyCapsule_New(c->u, CAPSULE_NAME, NULL);
+        if (!capsule || PyList_Append(c->c_stack, capsule) < 0) {
+            Py_XDECREF(capsule);
+            compiler_unit_free(u);
+            return 0;
+        }
+        Py_DECREF(capsule);
+        u->u_private = c->u->u_private;
+        Py_XINCREF(u->u_private);
+    }
+    c->u = u;
+
+    c->c_nestlevel++;
+
+    block = compiler_new_block(c);
+    if (block == NULL)
+        return 0;
+    c->u->u_curblock = block;
+
+    if (u->u_scope_type == COMPILER_SCOPE_MODULE) {
+        c->u->u_lineno = -1;
+    }
+    else {
+        if (!compiler_set_qualname(c))
+            return 0;
+    }
+    ADDOP_I(c, RESUME, 0);
+
+    return 1;
+}
+
+static void
+compiler_exit_scope(struct compiler *c)
+{
+    // Don't call PySequence_DelItem() with an exception raised
+    PyObject *exc_type, *exc_val, *exc_tb;
+    PyErr_Fetch(&exc_type, &exc_val, &exc_tb);
+
+    c->c_nestlevel--;
+    compiler_unit_free(c->u);
+    /* Restore c->u to the parent unit. */
+    Py_ssize_t n = PyList_GET_SIZE(c->c_stack) - 1;
+    if (n >= 0) {
+        PyObject *capsule = PyList_GET_ITEM(c->c_stack, n);
+        c->u = (struct compiler_unit *)PyCapsule_GetPointer(capsule, CAPSULE_NAME);
+        assert(c->u);
+        /* we are deleting from a list so this really shouldn't fail */
+        if (PySequence_DelItem(c->c_stack, n) < 0) {
+            _PyErr_WriteUnraisableMsg("on removing the last compiler "
+                                      "stack item", NULL);
+        }
+        compiler_unit_check(c->u);
+    }
+    else {
+        c->u = NULL;
+    }
+
+    PyErr_Restore(exc_type, exc_val, exc_tb);
+}
 
 /* Search if variable annotations are present statically in a block. */
 
@@ -1823,18 +1828,19 @@ compiler_call_exit_with_nones(struct compiler *c) {
 }
 
 static int
-compiler_add_yield_from(struct compiler *c)
+compiler_add_yield_from(struct compiler *c, int await)
 {
-    basicblock *start, *jump, *exit;
+    basicblock *start, *resume, *exit;
     start = compiler_new_block(c);
-    jump = compiler_new_block(c);
+    resume = compiler_new_block(c);
     exit = compiler_new_block(c);
-    if (start == NULL || jump == NULL || exit == NULL) {
+    if (start == NULL || resume == NULL || exit == NULL) {
         return 0;
     }
     compiler_use_next_block(c, start);
     ADDOP_JUMP(c, SEND, exit);
-    compiler_use_next_block(c, jump);
+    compiler_use_next_block(c, resume);
+    ADDOP_I(c, RESUME, await ? 3 : 2);
     ADDOP_JUMP(c, JUMP_ABSOLUTE, start);
     compiler_use_next_block(c, exit);
     return 1;
@@ -1928,7 +1934,7 @@ compiler_unwind_fblock(struct compiler *c, struct fblockinfo *info,
             if (info->fb_type == ASYNC_WITH) {
                 ADDOP(c, GET_AWAITABLE);
                 ADDOP_LOAD_CONST(c, Py_None);
-                ADD_YIELD_FROM(c);
+                ADD_YIELD_FROM(c, 1);
             }
             ADDOP(c, POP_TOP);
             /* The exit block should appear to execute after the
@@ -2028,6 +2034,7 @@ compiler_body(struct compiler *c, asdl_stmt_seq *stmts)
             st = (stmt_ty)asdl_seq_GET(stmts, 0);
             assert(st->kind == Expr_kind);
             VISIT(c, expr, st->v.Expr.value);
+            UNSET_LOC(c);
             if (!compiler_nameop(c, __doc__, Store))
                 return 0;
         }
@@ -2047,9 +2054,10 @@ compiler_mod(struct compiler *c, mod_ty mod)
     if (module == NULL) {
         return 0;
     }
-    /* Use 0 for firstlineno initially, will fixup in assemble(). */
-    if (!compiler_enter_scope(c, module, COMPILER_SCOPE_MODULE, mod, 1))
+    if (!compiler_enter_scope(c, module, COMPILER_SCOPE_MODULE, mod, 1)) {
         return NULL;
+    }
+    c->u->u_lineno = 1;
     switch (mod->kind) {
     case Module_kind:
         if (!compiler_body(c, mod->v.Module.body)) {
@@ -2573,8 +2581,9 @@ compiler_class(struct compiler *c, stmt_ty s)
 
     /* 1. compile the class body into a code object */
     if (!compiler_enter_scope(c, s->v.ClassDef.name,
-                              COMPILER_SCOPE_CLASS, (void *)s, firstlineno))
+                              COMPILER_SCOPE_CLASS, (void *)s, firstlineno)) {
         return 0;
+    }
     /* this block represents what we do in the new scope */
     {
         /* use the class name for name mangling */
@@ -2909,9 +2918,9 @@ compiler_lambda(struct compiler *c, expr_ty e)
     }
 
     if (!compiler_enter_scope(c, name, COMPILER_SCOPE_LAMBDA,
-                              (void *)e, e->lineno))
+                              (void *)e, e->lineno)) {
         return 0;
-
+    }
     /* Make None the first constant, so the lambda can't have a
        docstring. */
     if (compiler_add_const(c, Py_None) < 0)
@@ -3041,7 +3050,7 @@ compiler_async_for(struct compiler *c, stmt_ty s)
     ADDOP_JUMP(c, SETUP_FINALLY, except);
     ADDOP(c, GET_ANEXT);
     ADDOP_LOAD_CONST(c, Py_None);
-    ADD_YIELD_FROM(c);
+    ADD_YIELD_FROM(c, 1);
     ADDOP(c, POP_BLOCK);  /* for SETUP_FINALLY */
 
     /* Success block for __anext__ */
@@ -3466,7 +3475,6 @@ compiler_try_except(struct compiler *c, stmt_ty s)
     POP_EXCEPT_AND_RERAISE(c);
     compiler_use_next_block(c, orelse);
     VISIT_SEQ(c, stmt, s->v.Try.orelse);
-    ADDOP_JUMP(c, JUMP_FORWARD, end);
     compiler_use_next_block(c, end);
     return 1;
 }
@@ -3506,9 +3514,7 @@ compiler_try_except(struct compiler *c, stmt_ty s)
 
    [orig, res]                                PREP_RERAISE_STAR
    [exc]                                      DUP_TOP
-   [exc, exc]                                 LOAD_CONST            None
-   [exc, exc, None]                           COMPARE_IS
-   [exc, is_none]                             POP_JUMP_IF_FALSE     RER
+   [exc, exc]                                 POP_JUMP_IF_NOT_NONE  RER
    [exc]                                      POP_TOP
    []                                         JUMP_FORWARD          L0
 
@@ -3678,9 +3684,7 @@ compiler_try_star_except(struct compiler *c, stmt_ty s)
     compiler_use_next_block(c, reraise_star);
     ADDOP(c, PREP_RERAISE_STAR);
     ADDOP(c, DUP_TOP);
-    ADDOP_LOAD_CONST(c, Py_None);
-    ADDOP_COMPARE(c, Is);
-    ADDOP_JUMP(c, POP_JUMP_IF_FALSE, reraise);
+    ADDOP_JUMP(c, POP_JUMP_IF_NOT_NONE, reraise);
     NEXT_BLOCK(c);
 
     /* Nothing to reraise */
@@ -3697,7 +3701,6 @@ compiler_try_star_except(struct compiler *c, stmt_ty s)
     POP_EXCEPT_AND_RERAISE(c);
     compiler_use_next_block(c, orelse);
     VISIT_SEQ(c, stmt, s->v.TryStar.orelse);
-    ADDOP_JUMP(c, JUMP_FORWARD, end);
     compiler_use_next_block(c, end);
     return 1;
 }
@@ -5135,6 +5138,7 @@ compiler_sync_comprehension_generator(struct compiler *c,
         case COMP_GENEXP:
             VISIT(c, expr, elt);
             ADDOP(c, YIELD_VALUE);
+            ADDOP_I(c, RESUME, 1);
             ADDOP(c, POP_TOP);
             break;
         case COMP_LISTCOMP:
@@ -5207,7 +5211,7 @@ compiler_async_comprehension_generator(struct compiler *c,
     ADDOP_JUMP(c, SETUP_FINALLY, except);
     ADDOP(c, GET_ANEXT);
     ADDOP_LOAD_CONST(c, Py_None);
-    ADD_YIELD_FROM(c);
+    ADD_YIELD_FROM(c, 1);
     ADDOP(c, POP_BLOCK);
     VISIT(c, expr, gen->target);
 
@@ -5233,6 +5237,7 @@ compiler_async_comprehension_generator(struct compiler *c,
         case COMP_GENEXP:
             VISIT(c, expr, elt);
             ADDOP(c, YIELD_VALUE);
+            ADDOP_I(c, RESUME, 1);
             ADDOP(c, POP_TOP);
             break;
         case COMP_LISTCOMP:
@@ -5357,7 +5362,7 @@ compiler_comprehension(struct compiler *c, expr_ty e, int type,
     if (is_async_generator && type != COMP_GENEXP) {
         ADDOP(c, GET_AWAITABLE);
         ADDOP_LOAD_CONST(c, Py_None);
-        ADD_YIELD_FROM(c);
+        ADD_YIELD_FROM(c, 1);
     }
 
     return 1;
@@ -5506,7 +5511,7 @@ compiler_async_with(struct compiler *c, stmt_ty s, int pos)
     ADDOP(c, BEFORE_ASYNC_WITH);
     ADDOP(c, GET_AWAITABLE);
     ADDOP_LOAD_CONST(c, Py_None);
-    ADD_YIELD_FROM(c);
+    ADD_YIELD_FROM(c, 1);
 
     ADDOP_JUMP(c, SETUP_WITH, final);
 
@@ -5543,7 +5548,7 @@ compiler_async_with(struct compiler *c, stmt_ty s, int pos)
         return 0;
     ADDOP(c, GET_AWAITABLE);
     ADDOP_LOAD_CONST(c, Py_None);
-    ADD_YIELD_FROM(c);
+    ADD_YIELD_FROM(c, 1);
 
     ADDOP(c, POP_TOP);
 
@@ -5557,7 +5562,7 @@ compiler_async_with(struct compiler *c, stmt_ty s, int pos)
     ADDOP(c, WITH_EXCEPT_START);
     ADDOP(c, GET_AWAITABLE);
     ADDOP_LOAD_CONST(c, Py_None);
-    ADD_YIELD_FROM(c);
+    ADD_YIELD_FROM(c, 1);
     compiler_with_except_finish(c, cleanup);
 
     compiler_use_next_block(c, exit);
@@ -5703,6 +5708,7 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
             ADDOP_LOAD_CONST(c, Py_None);
         }
         ADDOP(c, YIELD_VALUE);
+        ADDOP_I(c, RESUME, 1);
         break;
     case YieldFrom_kind:
         if (c->u->u_ste->ste_type != FunctionBlock)
@@ -5714,7 +5720,7 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
         VISIT(c, expr, e->v.YieldFrom.value);
         ADDOP(c, GET_YIELD_FROM_ITER);
         ADDOP_LOAD_CONST(c, Py_None);
-        ADD_YIELD_FROM(c);
+        ADD_YIELD_FROM(c, 0);
         break;
     case Await_kind:
         if (!IS_TOP_LEVEL_AWAIT(c)){
@@ -5731,7 +5737,7 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
         VISIT(c, expr, e->v.Await.value);
         ADDOP(c, GET_AWAITABLE);
         ADDOP_LOAD_CONST(c, Py_None);
-        ADD_YIELD_FROM(c);
+        ADD_YIELD_FROM(c, 1);
         break;
     case Compare_kind:
         return compiler_compare(c, e);
@@ -7987,6 +7993,7 @@ insert_prefix_instructions(struct compiler *c, basicblock *entryblock,
     if (flags < 0) {
         return -1;
     }
+    assert(c->u->u_firstlineno > 0);
 
     /* Set up cells for any variable that escapes, to be put in a closure. */
     const int ncellvars = (int)PyDict_GET_SIZE(c->u->u_cellvars);
@@ -8191,17 +8198,19 @@ assemble(struct compiler *c, int addNone)
         goto error;
     }
 
+    /* Set firstlineno if it wasn't explicitly set. */
+    if (!c->u->u_firstlineno) {
+        if (entryblock->b_instr && entryblock->b_instr->i_lineno) {
+            c->u->u_firstlineno = entryblock->b_instr->i_lineno;
+        }
+        else {
+            c->u->u_firstlineno = 1;
+        }
+    }
+
     // This must be called before fix_cell_offsets().
     if (insert_prefix_instructions(c, entryblock, cellfixedoffsets, nfreevars)) {
         goto error;
-    }
-
-    /* Set firstlineno if it wasn't explicitly set. */
-    if (!c->u->u_firstlineno) {
-        if (entryblock->b_instr && entryblock->b_instr->i_lineno)
-            c->u->u_firstlineno = entryblock->b_instr->i_lineno;
-       else
-            c->u->u_firstlineno = 1;
     }
 
     if (!assemble_init(&a, nblocks, c->u->u_firstlineno))

@@ -10,6 +10,7 @@
 #include "pycore_pylifecycle.h"
 #include "pycore_pymem.h"         // _PyMem_SetDefaultAllocator()
 #include "pycore_pystate.h"       // _PyThreadState_GET()
+#include "pycore_runtime_init.h"  // _PyRuntimeState_INIT
 #include "pycore_sysmodule.h"
 
 /* --------------------------------------------------------------------------
@@ -45,6 +46,10 @@ extern "C" {
 static PyThreadState *_PyGILState_GetThisThreadState(struct _gilstate_runtime_state *gilstate);
 static void _PyThreadState_Delete(PyThreadState *tstate, int check_current);
 
+
+/* We use "initial" if the runtime gets re-used
+   (e.g. Py_Finalize() followed by Py_Initialize(). */
+static const _PyRuntimeState initial = _PyRuntimeState_INIT;
 
 static int
 alloc_for_runtime(PyThread_type_lock *plock1, PyThread_type_lock *plock2,
@@ -91,9 +96,12 @@ init_runtime(_PyRuntimeState *runtime,
              PyThread_type_lock xidregistry_mutex)
 {
     if (runtime->_initialized) {
-        _PyRuntimeState_reset(runtime);
-        assert(!runtime->initialized);
+        Py_FatalError("runtime already initialized");
     }
+    assert(!runtime->preinitializing &&
+           !runtime->preinitialized &&
+           !runtime->core_initialized &&
+           !runtime->initialized);
 
     runtime->open_code_hook = open_code_hook;
     runtime->open_code_userdata = open_code_userdata;
@@ -144,6 +152,11 @@ _PyRuntimeState_Init(_PyRuntimeState *runtime)
         return _PyStatus_NO_MEMORY();
     }
 
+    if (runtime->_initialized) {
+        // Py_Initialize() must be running again.
+        // Reset to _PyRuntimeState_INIT.
+        memcpy(runtime, &initial, sizeof(*runtime));
+    }
     init_runtime(runtime, open_code_hook, open_code_userdata, audit_hook_head,
                  unicode_next_index, lock1, lock2, lock3);
 
@@ -250,13 +263,15 @@ alloc_interpreter(void)
 static void
 free_interpreter(PyInterpreterState *interp)
 {
-    PyMem_RawFree(interp);
+    if (!interp->_static) {
+        PyMem_RawFree(interp);
+    }
 }
 
 /* Get the interpreter state to a minimal consistent state.
    Further init happens in pylifecycle.c before it can be used.
    All fields not initialized here are expected to be zeroed out,
-   e.g. by PyMem_RawCalloc() or memset().
+   e.g. by PyMem_RawCalloc() or memset(), or otherwise pre-initialized.
    The runtime state is not manipulated.  Instead it is assumed that
    the interpreter is getting added to the runtime.
   */
@@ -338,23 +353,23 @@ PyInterpreterState_New(void)
         assert(interpreters->main == NULL);
         assert(id == 0);
 
-        interp = alloc_interpreter();
-        if (interp == NULL) {
-            goto error;
-        }
+        interp = &runtime->_main_interpreter;
         assert(interp->id == 0);
         assert(interp->next == NULL);
 
         interpreters->main = interp;
     }
     else {
-        assert(id != 0);
         assert(interpreters->main != NULL);
+        assert(id != 0);
 
         interp = alloc_interpreter();
         if (interp == NULL) {
             goto error;
         }
+        // Set to _PyInterpreterState_INIT.
+        memcpy(interp, &initial._main_interpreter,
+               sizeof(*interp));
 
         if (id < 0) {
             /* overflow or Py_Initialize() not called yet! */
@@ -735,13 +750,15 @@ alloc_threadstate(void)
 static void
 free_threadstate(PyThreadState *tstate)
 {
-    PyMem_RawFree(tstate);
+    if (!tstate->_static) {
+        PyMem_RawFree(tstate);
+    }
 }
 
 /* Get the thread state to a minimal consistent state.
    Further init happens in pylifecycle.c before it can be used.
    All fields not initialized here are expected to be zeroed out,
-   e.g. by PyMem_RawCalloc() or memset().
+   e.g. by PyMem_RawCalloc() or memset(), or otherwise pre-initialized.
    The interpreter state is not manipulated.  Instead it is assumed that
    the thread is getting added to the interpreter.
   */
@@ -808,10 +825,7 @@ new_threadstate(PyInterpreterState *interp)
         // It's the interpreter's initial thread state.
         assert(id == 1);
 
-        tstate = alloc_threadstate();
-        if (tstate == NULL) {
-            goto error;
-        }
+        tstate = &interp->_initial_thread;
     }
     else {
         // Every valid interpreter must have at least one thread.
@@ -822,6 +836,10 @@ new_threadstate(PyInterpreterState *interp)
         if (tstate == NULL) {
             goto error;
         }
+        // Set to _PyThreadState_INIT.
+        memcpy(tstate,
+               &initial._main_interpreter._initial_thread,
+               sizeof(*tstate));
     }
     interp->threads.head = tstate;
 
@@ -1159,7 +1177,7 @@ _PyThreadState_DeleteExcept(_PyRuntimeState *runtime, PyThreadState *tstate)
     for (p = list; p; p = next) {
         next = p->next;
         PyThreadState_Clear(p);
-        PyMem_RawFree(p);
+        free_threadstate(p);
     }
 }
 
