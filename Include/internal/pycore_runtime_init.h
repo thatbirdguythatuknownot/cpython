@@ -17,19 +17,59 @@ extern "C" {
 
 #define _PyRuntimeState_INIT \
     { \
+        .gilstate = { \
+            .check_enabled = 1, \
+            /* A TSS key must be initialized with Py_tss_NEEDS_INIT \
+               in accordance with the specification. */ \
+            .autoTSSkey = Py_tss_NEEDS_INIT, \
+        }, \
+        .interpreters = { \
+            /* This prevents interpreters from getting created \
+              until _PyInterpreterState_Enable() is called. */ \
+            .next_id = -1, \
+        }, \
         .global_objects = _Py_global_objects_INIT, \
         ._main_interpreter = _PyInterpreterState_INIT, \
     }
 
+#ifdef HAVE_DLOPEN
+#  include <dlfcn.h>
+#  if HAVE_DECL_RTLD_NOW
+#    define _Py_DLOPEN_FLAGS RTLD_NOW
+#  else
+#    define _Py_DLOPEN_FLAGS RTLD_LAZY
+#  endif
+#  define DLOPENFLAGS_INIT .dlopenflags = _Py_DLOPEN_FLAGS,
+#else
+#  define _Py_DLOPEN_FLAGS 0
+#  define DLOPENFLAGS_INIT
+#endif
+
 #define _PyInterpreterState_INIT \
     { \
         ._static = 1, \
+        .id_refcount = -1, \
+        DLOPENFLAGS_INIT \
+        .ceval = { \
+            .recursion_limit = Py_DEFAULT_RECURSION_LIMIT, \
+        }, \
+        .gc = { \
+            .enabled = 1, \
+            .generations = { \
+                /* .head is set in _PyGC_InitState(). */ \
+                { .threshold = 700, }, \
+                { .threshold = 10, }, \
+                { .threshold = 10, }, \
+            }, \
+        }, \
         ._initial_thread = _PyThreadState_INIT, \
     }
 
 #define _PyThreadState_INIT \
     { \
         ._static = 1, \
+        .recursion_limit = Py_DEFAULT_RECURSION_LIMIT, \
+        .context_ver = 1, \
     }
 
 
