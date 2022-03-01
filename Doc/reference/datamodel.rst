@@ -2710,11 +2710,13 @@ left undefined.
             object.__pos__(self)
             object.__abs__(self)
             object.__invert__(self)
+            object.__inc__(self)
+            object.__dec__(self)
 
    .. index:: builtin: abs
 
-   Called to implement the unary arithmetic operations (``-``, ``+``, :func:`abs`
-   and ``~``).
+   Called to implement the unary arithmetic operations (``-``, ``+``, :func:`abs`,
+   ``~``, ``++``, and ``--``).
 
 
 .. method:: object.__complex__(self)
