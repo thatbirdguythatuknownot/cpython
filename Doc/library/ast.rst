@@ -376,9 +376,15 @@ Expressions
            USub
            Not
            Invert
+           PreIncr
+           PreDecr
+           PostIncr
+           PostDecr
 
    Unary operator tokens. :class:`Not` is the ``not`` keyword, :class:`Invert`
-   is the ``~`` operator.
+   is the ``~`` operator. :class:`PreIncr` and :class:`PostIncr` represent the
+   same symbol ``++``, but the former is prefix and the latter is postfix. Also
+   true for :class:`PreDecr` and :class:`PostDecr` but they represent ``--``.
 
    .. doctest::
 
