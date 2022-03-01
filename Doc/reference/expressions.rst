@@ -1193,6 +1193,24 @@ argument.  The bitwise inversion of ``x`` is defined as ``-(x+1)``.  It only
 applies to integral numbers or to custom objects that override the
 :meth:`__invert__` special method.
 
+.. index::
+   single: increment
+   operator: ++ (increment)
+
+The unary ``++`` (increment) operator yields the incremented value of its
+integer argument. The increment of ``x`` is defined as ``x+1``. It can apply
+to any number or custom object that ovverrides the :meth:`__inc__` special
+method.
+
+.. index::
+   single: decrement
+   operator: -- (decrement)
+
+The unary ``--`` (decrement) operator yields the decremented value of its
+integer argument. The decrement of ``x`` is defined as ``x-1``. It can apply
+to any number or custom object that ovverrides the :meth:`__dec__` special
+method.
+
 
 
 .. index:: exception: TypeError
