@@ -425,6 +425,16 @@ result back on the stack.
    Implements ``TOS = ~TOS``.
 
 
+.. opcode:: UNARY_INCREMENT
+
+      Implements ``++TOS``.
+
+
+.. opcode:: UNARY_DECREMENT
+   
+         Implements ``--TOS``.
+
+
 .. opcode:: GET_ITER
 
    Implements ``TOS = iter(TOS)``.
