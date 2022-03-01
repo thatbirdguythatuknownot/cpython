@@ -106,6 +106,18 @@ Number Protocol
    the equivalent of the Python expression ``~o``.
 
 
+.. c:function:: PyObject* PyNumber_Increment(PyObject *o)
+   
+      Returns the value of *o* incremented on success, or ``NULL`` on failure.
+      This is the equivalent of the Python expression ``++o``.
+
+
+.. c:function:: PyObject* PyNumber_Decrement(PyObject *o)
+   
+      Returns the value of *o* decremented on success, or ``NULL`` on failure.
+      This is the equivalent of the Python expression ``--o``.
+
+
 .. c:function:: PyObject* PyNumber_Lshift(PyObject *o1, PyObject *o2)
 
    Returns the result of left shifting *o1* by *o2* on success, or ``NULL`` on
