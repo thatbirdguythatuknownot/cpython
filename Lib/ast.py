@@ -658,6 +658,8 @@ class _Precedence:
     TERM = auto()            # '*', '@', '/', '%', '//'
     FACTOR = auto()          # unary '+', '-', '~'
     POWER = auto()           # '**'
+    PRECREMENT = auto()      # prefix '++', '--'
+    POSTCREMENT = auto()     # postfix '++', '--'
     AWAIT = auto()           # 'await'
     ATOM = auto()
 
@@ -1338,25 +1340,41 @@ class _Unparser(NodeVisitor):
         with self.require_parens(_Precedence.TUPLE, node):
             self.items_view(self.traverse, node.elts)
 
-    unop = {"Invert": "~", "Not": "not", "UAdd": "+", "USub": "-"}
+    unop = {"Invert": "~", "Not": "not", "UAdd": "+", "USub": "-",
+            "PreIncr": "++", "PreDecr": "--", "PostIncr": "++", "PostDecr": "--"}
     unop_precedence = {
-        "not": _Precedence.NOT,
-        "~": _Precedence.FACTOR,
-        "+": _Precedence.FACTOR,
-        "-": _Precedence.FACTOR,
+        "Invert": _Precedence.NOT,
+        "Not": _Precedence.FACTOR,
+        "UAdd": _Precedence.FACTOR,
+        "USub": _Precedence.FACTOR,
+        "PreIncr": _Precedence.PRECREMENT,
+        "PreDecr": _Precedence.PRECREMENT,
+        "PostIncr": _Precedence.POSTCREMENT,
+        "PostDecr": _Precedence.POSTCREMENT,
+    }
+    is_prefix = {
+        _Precedence.NOT: True,
+        _Precedence.FACTOR: True,
+        _Precedence.PRECREMENT: True,
+        _Precedence.POSTCREMENT: False,
     }
 
     def visit_UnaryOp(self, node):
         operator = self.unop[node.op.__class__.__name__]
-        operator_precedence = self.unop_precedence[operator]
+        operator_precedence = self.unop_precedence[node.op.__class__.__name__]
         with self.require_parens(operator_precedence, node):
-            self.write(operator)
-            # factor prefixes (+, -, ~) shouldn't be separated
-            # from the value they belong, (e.g: +1 instead of + 1)
-            if operator_precedence is not _Precedence.FACTOR:
-                self.write(" ")
-            self.set_precedence(operator_precedence, node.operand)
-            self.traverse(node.operand)
+            if self.is_prefix[operator_precedence]:
+                self.write(operator)
+                # factor prefixes (+, -, ~) shouldn't be separated
+                # from the value they belong, (e.g: +1 instead of + 1)
+                if operator_precedence is not _Precedence.FACTOR:
+                    self.write(" ")
+                self.set_precedence(operator_precedence, node.operand)
+                self.traverse(node.operand)
+            else:
+                self.set_precedence(operator_precedence, node.operand)
+                self.traverse(node.operand)
+                self.write(operator)
 
     binop = {
         "Add": "+",
