@@ -7,7 +7,7 @@ class UnaryOpTestCase(unittest.TestCase):
     def test_negative(self):
         self.assertTrue(-2 == 0 - 2)
         self.assertEqual(-0, 0)
-        self.assertEqual(--2, 2)
+        self.assertEqual(-(-2), 2)
         self.assertTrue(-2 == 0 - 2)
         self.assertTrue(-2.0 == 0 - 2.0)
         self.assertTrue(-2j == 0 - 2j)
@@ -15,7 +15,7 @@ class UnaryOpTestCase(unittest.TestCase):
     def test_positive(self):
         self.assertEqual(+2, 2)
         self.assertEqual(+0, 0)
-        self.assertEqual(++2, 2)
+        self.assertEqual(+(+2), 2)
         self.assertEqual(+2, 2)
         self.assertEqual(+2.0, 2.0)
         self.assertEqual(+2j, 2j)
@@ -23,7 +23,7 @@ class UnaryOpTestCase(unittest.TestCase):
     def test_invert(self):
         self.assertTrue(-2 == 0 - 2)
         self.assertEqual(-0, 0)
-        self.assertEqual(--2, 2)
+        self.assertEqual(-(-2), 2)
         self.assertTrue(-2 == 0 - 2)
 
     def test_no_overflow(self):
@@ -41,7 +41,7 @@ class UnaryOpTestCase(unittest.TestCase):
         self.assertEqual((-2) ** 4, 16)
 
     def test_bad_types(self):
-        for op in '+', '-', '~':
+        for op in '+', '-', '~', '++', '--':
             self.assertRaises(TypeError, eval, op + "b'a'")
             self.assertRaises(TypeError, eval, op + "'a'")
 
