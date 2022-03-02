@@ -114,6 +114,8 @@ enum {
     PR_TERM,            /* '*', '@', '/', '%', '//' */
     PR_FACTOR,          /* unary '+', '-', '~' */
     PR_POWER,           /* '**' */
+    PR_PRECREMENT,      /* prefix '++', '--' */
+    PR_POSTCREMENT,     /* postfix '++', '--' */
     PR_AWAIT,           /* 'await' */
     PR_ATOM,
 };
@@ -186,6 +188,10 @@ append_ast_unaryop(_PyUnicodeWriter *writer, expr_ty e, int level)
     case Not: op = "not "; pr = PR_NOT; break;
     case UAdd: op = "+"; pr = PR_FACTOR; break;
     case USub: op = "-"; pr = PR_FACTOR; break;
+    case PreIncr: op = "++"; pr = PR_PRECREMENT; break;
+    case PreDecr: op = "--"; pr = PR_PRECREMENT; break;
+    case PostIncr: op = "++"; pr = PR_POSTCREMENT; break;
+    case PostDecr: op = "--"; pr = PR_POSTCREMENT; break;
     default:
         PyErr_SetString(PyExc_SystemError,
                         "unknown unary operator");
@@ -193,8 +199,14 @@ append_ast_unaryop(_PyUnicodeWriter *writer, expr_ty e, int level)
     }
 
     APPEND_STR_IF(level > pr, "(");
-    APPEND_STR(op);
-    APPEND_EXPR(e->v.UnaryOp.operand, pr);
+    if (pr == PR_POSTCREMENT) {
+    	APPEND_EXPR(e->v.UnaryOp.operand, pr);
+    	APPEND_STR(op);
+	}
+	else {
+    	APPEND_STR(op);
+    	APPEND_EXPR(e->v.UnaryOp.operand, pr);
+	}
     APPEND_STR_IF(level > pr, ")");
     return 0;
 }
