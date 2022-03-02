@@ -75,6 +75,8 @@
 {-1, offsetof(PyTypeObject, tp_free)},
 {offsetof(PyNumberMethods, nb_matrix_multiply), offsetof(PyTypeObject, tp_as_number)},
 {offsetof(PyNumberMethods, nb_inplace_matrix_multiply), offsetof(PyTypeObject, tp_as_number)},
+{offsetof(PyNumberMethods, nb_increment), offsetof(PyTypeObject, tp_as_number)},
+{offsetof(PyNumberMethods, nb_decrement), offsetof(PyTypeObject, tp_as_number)},
 {offsetof(PyAsyncMethods, am_await), offsetof(PyTypeObject, tp_as_async)},
 {offsetof(PyAsyncMethods, am_aiter), offsetof(PyTypeObject, tp_as_async)},
 {offsetof(PyAsyncMethods, am_anext), offsetof(PyTypeObject, tp_as_async)},
