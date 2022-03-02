@@ -131,8 +131,16 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Or_singleton);
     Py_CLEAR(state->Or_type);
     Py_CLEAR(state->Pass_type);
+    Py_CLEAR(state->PostDecr_singleton);
+    Py_CLEAR(state->PostDecr_type);
+    Py_CLEAR(state->PostIncr_singleton);
+    Py_CLEAR(state->PostIncr_type);
     Py_CLEAR(state->Pow_singleton);
     Py_CLEAR(state->Pow_type);
+    Py_CLEAR(state->PreDecr_singleton);
+    Py_CLEAR(state->PreDecr_type);
+    Py_CLEAR(state->PreIncr_singleton);
+    Py_CLEAR(state->PreIncr_type);
     Py_CLEAR(state->RShift_singleton);
     Py_CLEAR(state->RShift_type);
     Py_CLEAR(state->Raise_type);
@@ -1600,7 +1608,7 @@ init_types(struct ast_state *state)
                                                   NULL);
     if (!state->FloorDiv_singleton) return 0;
     state->unaryop_type = make_type(state, "unaryop", state->AST_type, NULL, 0,
-        "unaryop = Invert | Not | UAdd | USub");
+        "unaryop = Invert | Not | UAdd | USub | PreIncr | PreDecr | PostIncr | PostDecr");
     if (!state->unaryop_type) return 0;
     if (!add_attributes(state, state->unaryop_type, NULL, 0)) return 0;
     state->Invert_type = make_type(state, "Invert", state->unaryop_type, NULL,
@@ -1629,6 +1637,38 @@ init_types(struct ast_state *state)
     state->USub_singleton = PyType_GenericNew((PyTypeObject *)state->USub_type,
                                               NULL, NULL);
     if (!state->USub_singleton) return 0;
+    state->PreIncr_type = make_type(state, "PreIncr", state->unaryop_type,
+                                    NULL, 0,
+        "PreIncr");
+    if (!state->PreIncr_type) return 0;
+    state->PreIncr_singleton = PyType_GenericNew((PyTypeObject
+                                                 *)state->PreIncr_type, NULL,
+                                                 NULL);
+    if (!state->PreIncr_singleton) return 0;
+    state->PreDecr_type = make_type(state, "PreDecr", state->unaryop_type,
+                                    NULL, 0,
+        "PreDecr");
+    if (!state->PreDecr_type) return 0;
+    state->PreDecr_singleton = PyType_GenericNew((PyTypeObject
+                                                 *)state->PreDecr_type, NULL,
+                                                 NULL);
+    if (!state->PreDecr_singleton) return 0;
+    state->PostIncr_type = make_type(state, "PostIncr", state->unaryop_type,
+                                     NULL, 0,
+        "PostIncr");
+    if (!state->PostIncr_type) return 0;
+    state->PostIncr_singleton = PyType_GenericNew((PyTypeObject
+                                                  *)state->PostIncr_type, NULL,
+                                                  NULL);
+    if (!state->PostIncr_singleton) return 0;
+    state->PostDecr_type = make_type(state, "PostDecr", state->unaryop_type,
+                                     NULL, 0,
+        "PostDecr");
+    if (!state->PostDecr_type) return 0;
+    state->PostDecr_singleton = PyType_GenericNew((PyTypeObject
+                                                  *)state->PostDecr_type, NULL,
+                                                  NULL);
+    if (!state->PostDecr_singleton) return 0;
     state->cmpop_type = make_type(state, "cmpop", state->AST_type, NULL, 0,
         "cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn");
     if (!state->cmpop_type) return 0;
@@ -4794,6 +4834,18 @@ PyObject* ast2obj_unaryop(struct ast_state *state, unaryop_ty o)
         case USub:
             Py_INCREF(state->USub_singleton);
             return state->USub_singleton;
+        case PreIncr:
+            Py_INCREF(state->PreIncr_singleton);
+            return state->PreIncr_singleton;
+        case PreDecr:
+            Py_INCREF(state->PreDecr_singleton);
+            return state->PreDecr_singleton;
+        case PostIncr:
+            Py_INCREF(state->PostIncr_singleton);
+            return state->PostIncr_singleton;
+        case PostDecr:
+            Py_INCREF(state->PostDecr_singleton);
+            return state->PostDecr_singleton;
     }
     Py_UNREACHABLE();
 }
@@ -10033,6 +10085,38 @@ obj2ast_unaryop(struct ast_state *state, PyObject* obj, unaryop_ty* out,
         *out = USub;
         return 0;
     }
+    isinstance = PyObject_IsInstance(obj, state->PreIncr_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = PreIncr;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->PreDecr_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = PreDecr;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->PostIncr_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = PostIncr;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->PostDecr_type);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        *out = PostDecr;
+        return 0;
+    }
 
     PyErr_Format(PyExc_TypeError, "expected some sort of unaryop, but got %R", obj);
     return 1;
@@ -12103,6 +12187,18 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "USub", state->USub_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "PreIncr", state->PreIncr_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "PreDecr", state->PreDecr_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "PostIncr", state->PostIncr_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "PostDecr", state->PostDecr_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "cmpop", state->cmpop_type) < 0) {
