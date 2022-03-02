@@ -1937,6 +1937,40 @@ handle_eval_breaker:
             DISPATCH();
         }
 
+        TARGET(UNARY_INCREMENT) {
+            PyObject *value = TOP();
+            PyObject *res = PyNumber_Increment(value);
+            if (res == NULL)
+                goto error;
+            if (oparg) {
+                PUSH(res);
+            }
+            else {
+                Py_DECREF(value);
+                SET_TOP(res);
+                Py_INCREF(res);
+                PUSH(res);
+            }
+            DISPATCH();
+        }
+
+        TARGET(UNARY_DECREMENT) {
+            PyObject *value = TOP();
+            PyObject *res = PyNumber_Decrement(value);
+            if (res == NULL)
+                goto error;
+            if (oparg) {
+                PUSH(res);
+            }
+            else {
+                Py_DECREF(value);
+                SET_TOP(res);
+                Py_INCREF(res);
+                PUSH(res);
+            }
+            DISPATCH();
+        }
+
         TARGET(BINARY_OP_MULTIPLY_INT) {
             assert(cframe.use_tracing == 0);
             PyObject *left = SECOND();
