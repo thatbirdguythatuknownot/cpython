@@ -699,6 +699,7 @@ extern "C" {
                 INIT_ID(__complex__), \
                 INIT_ID(__contains__), \
                 INIT_ID(__copy__), \
+                INIT_ID(__dec__), \
                 INIT_ID(__del__), \
                 INIT_ID(__delattr__), \
                 INIT_ID(__delete__), \
@@ -734,6 +735,7 @@ extern "C" {
                 INIT_ID(__imod__), \
                 INIT_ID(__import__), \
                 INIT_ID(__imul__), \
+                INIT_ID(__inc__), \
                 INIT_ID(__index__), \
                 INIT_ID(__init__), \
                 INIT_ID(__init_subclass__), \
