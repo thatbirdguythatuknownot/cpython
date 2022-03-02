@@ -26,7 +26,8 @@ typedef enum _operator { Add=1, Sub=2, Mult=3, MatMult=4, Div=5, Mod=6, Pow=7,
                          LShift=8, RShift=9, BitOr=10, BitXor=11, BitAnd=12,
                          FloorDiv=13 } operator_ty;
 
-typedef enum _unaryop { Invert=1, Not=2, UAdd=3, USub=4 } unaryop_ty;
+typedef enum _unaryop { Invert=1, Not=2, UAdd=3, USub=4, PreIncr=5, PreDecr=6,
+                        PostIncr=7, PostDecr=8 } unaryop_ty;
 
 typedef enum _cmpop { Eq=1, NotEq=2, Lt=3, LtE=4, Gt=5, GtE=6, Is=7, IsNot=8,
                       In=9, NotIn=10 } cmpop_ty;
