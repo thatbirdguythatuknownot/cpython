@@ -624,6 +624,8 @@ void mpd_copy_abs(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
 void mpd_copy_negate(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
 void mpd_copy_sign(mpd_t *result, const mpd_t *a, const mpd_t *b, mpd_context_t *ctx);
 void mpd_invert(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
+void mpd_increment(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
+void mpd_decrement(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
 void mpd_logb(mpd_t *result, const mpd_t *a, mpd_context_t *ctx);
 void mpd_or(mpd_t *result, const mpd_t *a, const mpd_t *b, mpd_context_t *ctx);
 void mpd_rotate(mpd_t *result, const mpd_t *a, const mpd_t *b, mpd_context_t *ctx);
