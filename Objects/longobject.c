@@ -4642,6 +4642,37 @@ long_bool(PyLongObject *v)
     return Py_SIZE(v) != 0;
 }
 
+static PyObject *
+long_increment(PyLongObject *v)
+{
+    PyObject *result;
+
+    if (Py_SIZE(v) == 0) {
+        result = _PyLong_GetOne();
+        if (result == NULL)
+            return NULL;
+        Py_INCREF(result);
+        return result;
+    }
+
+    return _PyLong_Add(v, (PyLongObject *)_PyLong_GetOne());
+}
+
+static PyObject *
+long_decrement(PyLongObject *v)
+{
+    PyObject *result;
+
+    if (Py_SIZE(v) == 0) {
+        result = PyLong_FromLong(-1L);
+        if (result == NULL)
+            return NULL;
+        return result;
+    }
+
+    return _PyLong_Subtract(v, (PyLongObject *)_PyLong_GetOne());
+}
+
 /* wordshift, remshift = divmod(shiftby, PyLong_SHIFT) */
 static int
 divmod_shift(PyObject *shiftby, Py_ssize_t *wordshift, digit *remshift)
