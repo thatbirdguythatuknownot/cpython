@@ -94,6 +94,31 @@ bool_xor(PyObject *a, PyObject *b)
     return PyBool_FromLong((a == Py_True) ^ (b == Py_True));
 }
 
+/* Increment and decrement redefined to return bool if the arg is bool. */
+
+static PyObject *
+bool_increment(PyObject *o)
+{
+    if (!PyBool_Check(o))
+        return PyLong_Type.tp_as_number->nb_increment(o);
+    Py_RETURN_TRUE;
+}
+
+static PyObject *not_boolean[2] = {
+    Py_True,
+    Py_False,
+};
+
+static PyObject *
+bool_decrement(PyObject *o)
+{
+    if (!PyBool_Check(o))
+        return PyLong_Type.tp_as_number->nb_decrement(o);
+    PyObject *res = not_boolean[o == Py_True];
+    Py_INCREF(res);
+    return res;
+}
+
 /* Doc string */
 
 PyDoc_STRVAR(bool_doc,
