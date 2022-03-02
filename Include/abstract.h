@@ -487,6 +487,16 @@ PyAPI_FUNC(PyObject *) PyNumber_Absolute(PyObject *o);
    This is the equivalent of the Python expression: ~o. */
 PyAPI_FUNC(PyObject *) PyNumber_Invert(PyObject *o);
 
+/* Returns the increment of 'o' on success, or NULL on failure.
+
+   This is the equivalent of the Python expression: ++o. */
+PyAPI_FUNC(PyObject *) PyNumber_Increment(PyObject *o);
+
+/* Returns the decrement of 'o' on success, or NULL on failure.
+
+   This is the equivalent of the Python expression: --o. */
+PyAPI_FUNC(PyObject *) PyNumber_Decrement(PyObject *o);
+
 /* Returns the result of left shifting o1 by o2 on success, or NULL on failure.
 
    This is the equivalent of the Python expression: o1 << o2. */
