@@ -858,6 +858,18 @@ float_bool(PyFloatObject *v)
     return v->ob_fval != 0.0;
 }
 
+static PyObject *
+float_increment(PyFloatObject *v)
+{
+    return PyFloat_FromDouble(v->ob_fval + 1.0);
+}
+
+static PyObject *
+float_decrement(PyFloatObject *v)
+{
+    return PyFloat_FromDouble(v->ob_fval - 1.0);
+}
+
 /*[clinic input]
 float.is_integer
 
