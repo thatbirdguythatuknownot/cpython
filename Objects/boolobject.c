@@ -165,6 +165,10 @@ static PyNumberMethods bool_as_number = {
     0,                          /* nb_inplace_floor_divide */
     0,                          /* nb_inplace_true_divide */
     0,                          /* nb_index */
+    0,                          /* nb_matrix_multiply */
+    0,                         /* nb_inplace_matrix_multiply */
+    bool_increment,            /* nb_increment */
+    bool_decrement,            /* nb_decrement */
 };
 
 static void _Py_NO_RETURN
