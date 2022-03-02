@@ -170,6 +170,16 @@ class OperatorTestCase:
         self.assertEqual(operator.countOf([nan, nan, 21], nan), 2)
         # == but not is
         self.assertEqual(operator.countOf([{}, 1, {}, 2], {}), 2)
+    
+    def test_decrement(self):
+        operator = self.module
+        self.assertRaises(TypeError, operator.decrement)
+        self.assertRaises(TypeError, operator.decrement, None)
+        self.assertEqual(operator.decrement(2), 1)
+        self.assertEqual(operator.decrement(5.3), 4.3)
+        self.assertEqual(operator.decrement(-3.1+2j), -4.1+1j)
+        self.assertEqual(operator.decrement(True), False)
+        self.assertEqual(operator.increment(False), True)
 
     def test_delitem(self):
         operator = self.module
@@ -197,6 +207,16 @@ class OperatorTestCase:
         self.assertRaises(TypeError, operator.getitem)
         self.assertRaises(TypeError, operator.getitem, a, None)
         self.assertEqual(operator.getitem(a, 2), 2)
+
+    def test_increment(self):
+        operator = self.module
+        self.assertRaises(TypeError, operator.increment)
+        self.assertRaises(TypeError, operator.increment, None)
+        self.assertEqual(operator.increment(2), 3)
+        self.assertEqual(operator.increment(5.3), 6.3)
+        self.assertEqual(operator.increment(-3.1+2j), -2.1+3j)
+        self.assertEqual(operator.increment(True), True)
+        self.assertEqual(operator.increment(False), True)
 
     def test_indexOf(self):
         operator = self.module
