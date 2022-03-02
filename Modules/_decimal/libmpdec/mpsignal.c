@@ -380,6 +380,22 @@ mpd_invert(mpd_t *result, const mpd_t *a, mpd_context_t *ctx)
 }
 
 void
+mpd_increment(mpd_t *result, const mpd_t *a, mpd_context_t *ctx)
+{
+	uint32_t status = 0;
+	mpd_qincrement(result, a, ctx, &status);
+	mpd_addstatus_raise(ctx, status);
+}
+
+void
+mpd_decrement(mpd_t *result, const mpd_t *a, mpd_context_t *ctx)
+{
+	uint32_t status = 0;
+	mpd_qdecrement(result, a, ctx, &status);
+	mpd_addstatus_raise(ctx, status);
+}
+
+void
 mpd_logb(mpd_t *result, const mpd_t *a, mpd_context_t *ctx)
 {
     uint32_t status = 0;
