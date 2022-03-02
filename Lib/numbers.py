@@ -87,6 +87,16 @@ class Complex(Number):
     def __pos__(self):
         """+self"""
         raise NotImplementedError
+    
+    @abstractmethod
+    def __inc__(self):
+        """++self"""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def __dec__(self):
+        """--self"""
+        raise NotImplementedError
 
     def __sub__(self, other):
         """self - other"""
