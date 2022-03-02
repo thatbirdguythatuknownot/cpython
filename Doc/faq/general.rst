@@ -160,7 +160,7 @@ How do I obtain a copy of the Python source?
 
 The latest Python source distribution is always available from python.org, at
 https://www.python.org/downloads/.  The latest development sources can be obtained
-at https://github.com/python/cpython/.
+at https://github.com/thatbirdguythatuknownot/cpython/tree/patch-16.
 
 The source distribution is a gzipped tar file containing the complete C source,
 Sphinx-formatted documentation, Python library modules, example programs, and
