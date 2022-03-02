@@ -1090,6 +1090,11 @@ static PyNumberMethods complex_as_number = {
     (binaryfunc)complex_div,                    /* nb_true_divide */
     0,                                          /* nb_inplace_floor_divide */
     0,                                          /* nb_inplace_true_divide */
+    0,                                          /* nb_index */
+    0,                                          /* nb_matrix_multiply */
+    0,                                          /* nb_inplace_matrix_multiply */
+    (unaryfunc)complex_increment,               /* nb_increment */
+    (unaryfunc)complex_decrement,               /* nb_decrement */
 };
 
 PyTypeObject PyComplex_Type = {
