@@ -157,6 +157,15 @@ The ``__note__`` field was added to :exc:`BaseException`. It is ``None``
 by default but can be set to a string which is added to the exception's
 traceback. (Contributed by Irit Katriel in :issue:`45607`.)
 
+New increment/decrement operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are now increment and decrement operators (``++`` and ``--``, has
+prefix/postfix versions) and their magic methods ``__inc__`` and ``__dec__``.
+Added new opcodes :opcode:`UNARY_INCREMENT` and :opcode:`UNARY_DECREMENT`
+for the operations. See :pep:`9999` for more details. (Contributed by
+Jeremiah Vivian (Pascual) in :issue:`99999`.)
+
 Other Language Changes
 ======================
 
