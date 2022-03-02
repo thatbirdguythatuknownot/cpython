@@ -285,6 +285,24 @@ PyDoc_STRVAR(_operator_invert__doc__,
 #define _OPERATOR_INVERT_METHODDEF    \
     {"invert", (PyCFunction)_operator_invert, METH_O, _operator_invert__doc__},
 
+PyDoc_STRVAR(_operator_increment__doc__,
+"increment($module, a, /)\n"
+"--\n"
+"\n"
+"Same as ++a.");
+
+#define _OPERATOR_INCREMENT_METHODDEF    \
+    {"increment", (PyCFunction)_operator_increment, METH_O, _operator_increment__doc__},
+
+PyDoc_STRVAR(_operator_decrement__doc__,
+"decrement($module, a, /)\n"
+"--\n"
+"\n"
+"Same as --a.");
+
+#define _OPERATOR_DECREMENT_METHODDEF    \
+    {"decrement", (PyCFunction)_operator_decrement, METH_O, _operator_decrement__doc__},
+
 PyDoc_STRVAR(_operator_lshift__doc__,
 "lshift($module, a, b, /)\n"
 "--\n"
