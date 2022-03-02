@@ -199,325 +199,333 @@ static char *soft_keywords[] = {
 #define sum_type 1123  // Left-recursive
 #define term_type 1124  // Left-recursive
 #define factor_type 1125
-#define power_type 1126
-#define await_primary_type 1127
-#define primary_type 1128  // Left-recursive
-#define slices_type 1129
-#define slice_type 1130
-#define atom_type 1131
-#define group_type 1132
-#define lambdef_type 1133
-#define lambda_params_type 1134
-#define lambda_parameters_type 1135
-#define lambda_slash_no_default_type 1136
-#define lambda_slash_with_default_type 1137
-#define lambda_star_etc_type 1138
-#define lambda_kwds_type 1139
-#define lambda_param_no_default_type 1140
-#define lambda_param_with_default_type 1141
-#define lambda_param_maybe_default_type 1142
-#define lambda_param_type 1143
-#define strings_type 1144
-#define list_type 1145
-#define tuple_type 1146
-#define set_type 1147
-#define dict_type 1148
-#define double_starred_kvpairs_type 1149
-#define double_starred_kvpair_type 1150
-#define kvpair_type 1151
-#define for_if_clauses_type 1152
-#define for_if_clause_type 1153
-#define listcomp_type 1154
-#define setcomp_type 1155
-#define genexp_type 1156
-#define dictcomp_type 1157
-#define arguments_type 1158
-#define args_type 1159
-#define kwargs_type 1160
-#define starred_expression_type 1161
-#define kwarg_or_starred_type 1162
-#define kwarg_or_double_starred_type 1163
-#define star_targets_type 1164
-#define star_targets_list_seq_type 1165
-#define star_targets_tuple_seq_type 1166
-#define star_target_type 1167
-#define target_with_star_atom_type 1168
-#define star_atom_type 1169
-#define single_target_type 1170
-#define single_subscript_attribute_target_type 1171
-#define t_primary_type 1172  // Left-recursive
-#define t_lookahead_type 1173
-#define del_targets_type 1174
-#define del_target_type 1175
-#define del_t_atom_type 1176
-#define type_expressions_type 1177
-#define func_type_comment_type 1178
-#define invalid_arguments_type 1179
-#define invalid_kwarg_type 1180
-#define expression_without_invalid_type 1181
-#define invalid_legacy_expression_type 1182
-#define invalid_expression_type 1183
-#define invalid_named_expression_type 1184
-#define invalid_assignment_type 1185
-#define invalid_ann_assign_target_type 1186
-#define invalid_del_stmt_type 1187
-#define invalid_block_type 1188
-#define invalid_comprehension_type 1189
-#define invalid_dict_comprehension_type 1190
-#define invalid_parameters_type 1191
-#define invalid_parameters_helper_type 1192
-#define invalid_lambda_parameters_type 1193
-#define invalid_lambda_parameters_helper_type 1194
-#define invalid_star_etc_type 1195
-#define invalid_lambda_star_etc_type 1196
-#define invalid_double_type_comments_type 1197
-#define invalid_with_item_type 1198
-#define invalid_for_target_type 1199
-#define invalid_group_type 1200
-#define invalid_import_from_targets_type 1201
-#define invalid_with_stmt_type 1202
-#define invalid_with_stmt_indent_type 1203
-#define invalid_try_stmt_type 1204
-#define invalid_except_stmt_type 1205
-#define invalid_finally_stmt_type 1206
-#define invalid_except_stmt_indent_type 1207
-#define invalid_except_star_stmt_indent_type 1208
-#define invalid_match_stmt_type 1209
-#define invalid_case_block_type 1210
-#define invalid_as_pattern_type 1211
-#define invalid_class_pattern_type 1212
-#define invalid_class_argument_pattern_type 1213
-#define invalid_if_stmt_type 1214
-#define invalid_elif_stmt_type 1215
-#define invalid_else_stmt_type 1216
-#define invalid_while_stmt_type 1217
-#define invalid_for_stmt_type 1218
-#define invalid_def_raw_type 1219
-#define invalid_class_def_raw_type 1220
-#define invalid_double_starred_kvpairs_type 1221
-#define invalid_kvpair_type 1222
-#define _loop0_1_type 1223
-#define _loop0_2_type 1224
-#define _loop1_3_type 1225
-#define _loop0_5_type 1226
-#define _gather_4_type 1227
-#define _tmp_6_type 1228
-#define _tmp_7_type 1229
-#define _tmp_8_type 1230
-#define _tmp_9_type 1231
-#define _tmp_10_type 1232
-#define _tmp_11_type 1233
-#define _tmp_12_type 1234
-#define _tmp_13_type 1235
-#define _loop1_14_type 1236
-#define _tmp_15_type 1237
-#define _tmp_16_type 1238
-#define _tmp_17_type 1239
-#define _loop0_19_type 1240
-#define _gather_18_type 1241
-#define _loop0_21_type 1242
-#define _gather_20_type 1243
-#define _tmp_22_type 1244
-#define _tmp_23_type 1245
-#define _loop0_24_type 1246
-#define _loop1_25_type 1247
-#define _loop0_27_type 1248
-#define _gather_26_type 1249
-#define _tmp_28_type 1250
-#define _loop0_30_type 1251
-#define _gather_29_type 1252
-#define _tmp_31_type 1253
-#define _loop1_32_type 1254
-#define _tmp_33_type 1255
-#define _tmp_34_type 1256
-#define _tmp_35_type 1257
-#define _loop0_36_type 1258
-#define _loop0_37_type 1259
-#define _loop0_38_type 1260
-#define _loop1_39_type 1261
-#define _loop0_40_type 1262
-#define _loop1_41_type 1263
-#define _loop1_42_type 1264
-#define _loop1_43_type 1265
-#define _loop0_44_type 1266
-#define _loop1_45_type 1267
-#define _loop0_46_type 1268
-#define _loop1_47_type 1269
-#define _loop0_48_type 1270
-#define _loop1_49_type 1271
-#define _loop0_51_type 1272
-#define _gather_50_type 1273
-#define _loop0_53_type 1274
-#define _gather_52_type 1275
-#define _loop0_55_type 1276
-#define _gather_54_type 1277
-#define _loop0_57_type 1278
-#define _gather_56_type 1279
-#define _tmp_58_type 1280
-#define _loop1_59_type 1281
-#define _loop1_60_type 1282
-#define _tmp_61_type 1283
-#define _tmp_62_type 1284
-#define _loop1_63_type 1285
-#define _loop0_65_type 1286
-#define _gather_64_type 1287
-#define _tmp_66_type 1288
-#define _tmp_67_type 1289
-#define _tmp_68_type 1290
-#define _tmp_69_type 1291
-#define _loop0_71_type 1292
-#define _gather_70_type 1293
-#define _loop0_73_type 1294
-#define _gather_72_type 1295
-#define _tmp_74_type 1296
-#define _loop0_76_type 1297
-#define _gather_75_type 1298
-#define _loop0_78_type 1299
-#define _gather_77_type 1300
-#define _loop1_79_type 1301
-#define _loop1_80_type 1302
-#define _loop0_82_type 1303
-#define _gather_81_type 1304
-#define _loop1_83_type 1305
-#define _loop1_84_type 1306
-#define _loop1_85_type 1307
-#define _tmp_86_type 1308
-#define _loop0_88_type 1309
-#define _gather_87_type 1310
-#define _tmp_89_type 1311
-#define _tmp_90_type 1312
-#define _tmp_91_type 1313
-#define _tmp_92_type 1314
-#define _tmp_93_type 1315
-#define _loop0_94_type 1316
-#define _loop0_95_type 1317
-#define _loop0_96_type 1318
-#define _loop1_97_type 1319
-#define _loop0_98_type 1320
-#define _loop1_99_type 1321
-#define _loop1_100_type 1322
-#define _loop1_101_type 1323
-#define _loop0_102_type 1324
-#define _loop1_103_type 1325
-#define _loop0_104_type 1326
-#define _loop1_105_type 1327
-#define _loop0_106_type 1328
-#define _loop1_107_type 1329
-#define _loop1_108_type 1330
-#define _tmp_109_type 1331
-#define _loop0_111_type 1332
-#define _gather_110_type 1333
-#define _loop1_112_type 1334
-#define _loop0_113_type 1335
-#define _loop0_114_type 1336
-#define _tmp_115_type 1337
-#define _loop0_117_type 1338
-#define _gather_116_type 1339
-#define _tmp_118_type 1340
-#define _loop0_120_type 1341
-#define _gather_119_type 1342
-#define _loop0_122_type 1343
-#define _gather_121_type 1344
-#define _loop0_124_type 1345
-#define _gather_123_type 1346
-#define _loop0_126_type 1347
-#define _gather_125_type 1348
-#define _loop0_127_type 1349
-#define _loop0_129_type 1350
-#define _gather_128_type 1351
-#define _loop1_130_type 1352
-#define _tmp_131_type 1353
-#define _loop0_133_type 1354
-#define _gather_132_type 1355
-#define _loop0_135_type 1356
-#define _gather_134_type 1357
-#define _loop0_137_type 1358
-#define _gather_136_type 1359
-#define _loop0_139_type 1360
-#define _gather_138_type 1361
-#define _loop0_141_type 1362
-#define _gather_140_type 1363
-#define _tmp_142_type 1364
-#define _tmp_143_type 1365
-#define _tmp_144_type 1366
-#define _tmp_145_type 1367
-#define _tmp_146_type 1368
-#define _tmp_147_type 1369
-#define _tmp_148_type 1370
-#define _tmp_149_type 1371
-#define _tmp_150_type 1372
-#define _loop0_151_type 1373
-#define _loop0_152_type 1374
-#define _loop0_153_type 1375
-#define _tmp_154_type 1376
-#define _tmp_155_type 1377
-#define _tmp_156_type 1378
-#define _tmp_157_type 1379
-#define _loop0_158_type 1380
-#define _loop0_159_type 1381
-#define _loop1_160_type 1382
-#define _loop1_161_type 1383
-#define _loop0_162_type 1384
-#define _loop0_163_type 1385
-#define _loop0_165_type 1386
-#define _gather_164_type 1387
-#define _loop1_166_type 1388
-#define _tmp_167_type 1389
-#define _tmp_168_type 1390
-#define _tmp_169_type 1391
-#define _loop0_171_type 1392
-#define _gather_170_type 1393
-#define _loop0_173_type 1394
-#define _gather_172_type 1395
-#define _loop0_175_type 1396
-#define _gather_174_type 1397
-#define _loop0_177_type 1398
-#define _gather_176_type 1399
-#define _tmp_178_type 1400
-#define _loop0_179_type 1401
-#define _tmp_180_type 1402
-#define _loop0_181_type 1403
-#define _tmp_182_type 1404
-#define _tmp_183_type 1405
-#define _tmp_184_type 1406
-#define _tmp_185_type 1407
-#define _tmp_186_type 1408
-#define _tmp_187_type 1409
-#define _tmp_188_type 1410
-#define _tmp_189_type 1411
-#define _loop0_191_type 1412
-#define _gather_190_type 1413
-#define _tmp_192_type 1414
-#define _tmp_193_type 1415
-#define _tmp_194_type 1416
-#define _tmp_195_type 1417
-#define _tmp_196_type 1418
-#define _tmp_197_type 1419
-#define _tmp_198_type 1420
-#define _tmp_199_type 1421
-#define _tmp_200_type 1422
-#define _tmp_201_type 1423
-#define _tmp_202_type 1424
-#define _tmp_203_type 1425
-#define _tmp_204_type 1426
-#define _tmp_205_type 1427
-#define _tmp_206_type 1428
-#define _tmp_207_type 1429
-#define _tmp_208_type 1430
-#define _tmp_209_type 1431
-#define _tmp_210_type 1432
-#define _tmp_211_type 1433
-#define _tmp_212_type 1434
-#define _tmp_213_type 1435
-#define _tmp_214_type 1436
-#define _tmp_215_type 1437
-#define _tmp_216_type 1438
-#define _tmp_217_type 1439
-#define _tmp_218_type 1440
-#define _tmp_219_type 1441
-#define _tmp_220_type 1442
-#define _loop1_221_type 1443
-#define _loop1_222_type 1444
+#define plus_factor_type 1126
+#define minus_factor_type 1127
+#define even_plus_factor_type 1128
+#define even_minus_factor_type 1129
+#define power_type 1130
+#define prefix_crement_type 1131
+#define postfix_crement_raw_type 1132
+#define postfix_crement_type 1133
+#define await_primary_type 1134
+#define primary_type 1135  // Left-recursive
+#define slices_type 1136
+#define slice_type 1137
+#define atom_type 1138
+#define group_type 1139
+#define lambdef_type 1140
+#define lambda_params_type 1141
+#define lambda_parameters_type 1142
+#define lambda_slash_no_default_type 1143
+#define lambda_slash_with_default_type 1144
+#define lambda_star_etc_type 1145
+#define lambda_kwds_type 1146
+#define lambda_param_no_default_type 1147
+#define lambda_param_with_default_type 1148
+#define lambda_param_maybe_default_type 1149
+#define lambda_param_type 1150
+#define strings_type 1151
+#define list_type 1152
+#define tuple_type 1153
+#define set_type 1154
+#define dict_type 1155
+#define double_starred_kvpairs_type 1156
+#define double_starred_kvpair_type 1157
+#define kvpair_type 1158
+#define for_if_clauses_type 1159
+#define for_if_clause_type 1160
+#define listcomp_type 1161
+#define setcomp_type 1162
+#define genexp_type 1163
+#define dictcomp_type 1164
+#define arguments_type 1165
+#define args_type 1166
+#define kwargs_type 1167
+#define starred_expression_type 1168
+#define kwarg_or_starred_type 1169
+#define kwarg_or_double_starred_type 1170
+#define star_targets_type 1171
+#define star_targets_list_seq_type 1172
+#define star_targets_tuple_seq_type 1173
+#define star_target_type 1174
+#define target_with_star_atom_type 1175
+#define star_atom_type 1176
+#define single_target_type 1177
+#define single_subscript_attribute_target_type 1178
+#define t_primary_type 1179  // Left-recursive
+#define t_lookahead_type 1180
+#define del_targets_type 1181
+#define del_target_type 1182
+#define del_t_atom_type 1183
+#define type_expressions_type 1184
+#define func_type_comment_type 1185
+#define invalid_arguments_type 1186
+#define invalid_kwarg_type 1187
+#define expression_without_invalid_type 1188
+#define invalid_legacy_expression_type 1189
+#define invalid_expression_type 1190
+#define invalid_crement_type 1191
+#define invalid_named_expression_type 1192
+#define invalid_assignment_type 1193
+#define invalid_ann_assign_target_type 1194
+#define invalid_del_stmt_type 1195
+#define invalid_block_type 1196
+#define invalid_comprehension_type 1197
+#define invalid_dict_comprehension_type 1198
+#define invalid_parameters_type 1199
+#define invalid_parameters_helper_type 1200
+#define invalid_lambda_parameters_type 1201
+#define invalid_lambda_parameters_helper_type 1202
+#define invalid_star_etc_type 1203
+#define invalid_lambda_star_etc_type 1204
+#define invalid_double_type_comments_type 1205
+#define invalid_with_item_type 1206
+#define invalid_for_target_type 1207
+#define invalid_group_type 1208
+#define invalid_import_from_targets_type 1209
+#define invalid_with_stmt_type 1210
+#define invalid_with_stmt_indent_type 1211
+#define invalid_try_stmt_type 1212
+#define invalid_except_stmt_type 1213
+#define invalid_finally_stmt_type 1214
+#define invalid_except_stmt_indent_type 1215
+#define invalid_except_star_stmt_indent_type 1216
+#define invalid_match_stmt_type 1217
+#define invalid_case_block_type 1218
+#define invalid_as_pattern_type 1219
+#define invalid_class_pattern_type 1220
+#define invalid_class_argument_pattern_type 1221
+#define invalid_if_stmt_type 1222
+#define invalid_elif_stmt_type 1223
+#define invalid_else_stmt_type 1224
+#define invalid_while_stmt_type 1225
+#define invalid_for_stmt_type 1226
+#define invalid_def_raw_type 1227
+#define invalid_class_def_raw_type 1228
+#define invalid_double_starred_kvpairs_type 1229
+#define invalid_kvpair_type 1230
+#define _loop0_1_type 1231
+#define _loop0_2_type 1232
+#define _loop1_3_type 1233
+#define _loop0_5_type 1234
+#define _gather_4_type 1235
+#define _tmp_6_type 1236
+#define _tmp_7_type 1237
+#define _tmp_8_type 1238
+#define _tmp_9_type 1239
+#define _tmp_10_type 1240
+#define _tmp_11_type 1241
+#define _tmp_12_type 1242
+#define _tmp_13_type 1243
+#define _loop1_14_type 1244
+#define _tmp_15_type 1245
+#define _tmp_16_type 1246
+#define _tmp_17_type 1247
+#define _loop0_19_type 1248
+#define _gather_18_type 1249
+#define _loop0_21_type 1250
+#define _gather_20_type 1251
+#define _tmp_22_type 1252
+#define _tmp_23_type 1253
+#define _loop0_24_type 1254
+#define _loop1_25_type 1255
+#define _loop0_27_type 1256
+#define _gather_26_type 1257
+#define _tmp_28_type 1258
+#define _loop0_30_type 1259
+#define _gather_29_type 1260
+#define _tmp_31_type 1261
+#define _loop1_32_type 1262
+#define _tmp_33_type 1263
+#define _tmp_34_type 1264
+#define _tmp_35_type 1265
+#define _loop0_36_type 1266
+#define _loop0_37_type 1267
+#define _loop0_38_type 1268
+#define _loop1_39_type 1269
+#define _loop0_40_type 1270
+#define _loop1_41_type 1271
+#define _loop1_42_type 1272
+#define _loop1_43_type 1273
+#define _loop0_44_type 1274
+#define _loop1_45_type 1275
+#define _loop0_46_type 1276
+#define _loop1_47_type 1277
+#define _loop0_48_type 1278
+#define _loop1_49_type 1279
+#define _loop0_51_type 1280
+#define _gather_50_type 1281
+#define _loop0_53_type 1282
+#define _gather_52_type 1283
+#define _loop0_55_type 1284
+#define _gather_54_type 1285
+#define _loop0_57_type 1286
+#define _gather_56_type 1287
+#define _tmp_58_type 1288
+#define _loop1_59_type 1289
+#define _loop1_60_type 1290
+#define _tmp_61_type 1291
+#define _tmp_62_type 1292
+#define _loop1_63_type 1293
+#define _loop0_65_type 1294
+#define _gather_64_type 1295
+#define _tmp_66_type 1296
+#define _tmp_67_type 1297
+#define _tmp_68_type 1298
+#define _tmp_69_type 1299
+#define _loop0_71_type 1300
+#define _gather_70_type 1301
+#define _loop0_73_type 1302
+#define _gather_72_type 1303
+#define _tmp_74_type 1304
+#define _loop0_76_type 1305
+#define _gather_75_type 1306
+#define _loop0_78_type 1307
+#define _gather_77_type 1308
+#define _loop1_79_type 1309
+#define _loop1_80_type 1310
+#define _loop0_82_type 1311
+#define _gather_81_type 1312
+#define _loop1_83_type 1313
+#define _loop1_84_type 1314
+#define _loop1_85_type 1315
+#define _tmp_86_type 1316
+#define _loop0_88_type 1317
+#define _gather_87_type 1318
+#define _tmp_89_type 1319
+#define _tmp_90_type 1320
+#define _tmp_91_type 1321
+#define _tmp_92_type 1322
+#define _tmp_93_type 1323
+#define _loop0_94_type 1324
+#define _loop0_95_type 1325
+#define _loop0_96_type 1326
+#define _loop1_97_type 1327
+#define _loop0_98_type 1328
+#define _loop1_99_type 1329
+#define _loop1_100_type 1330
+#define _loop1_101_type 1331
+#define _loop0_102_type 1332
+#define _loop1_103_type 1333
+#define _loop0_104_type 1334
+#define _loop1_105_type 1335
+#define _loop0_106_type 1336
+#define _loop1_107_type 1337
+#define _loop1_108_type 1338
+#define _tmp_109_type 1339
+#define _loop0_111_type 1340
+#define _gather_110_type 1341
+#define _loop1_112_type 1342
+#define _loop0_113_type 1343
+#define _loop0_114_type 1344
+#define _tmp_115_type 1345
+#define _loop0_117_type 1346
+#define _gather_116_type 1347
+#define _tmp_118_type 1348
+#define _loop0_120_type 1349
+#define _gather_119_type 1350
+#define _loop0_122_type 1351
+#define _gather_121_type 1352
+#define _loop0_124_type 1353
+#define _gather_123_type 1354
+#define _loop0_126_type 1355
+#define _gather_125_type 1356
+#define _loop0_127_type 1357
+#define _loop0_129_type 1358
+#define _gather_128_type 1359
+#define _loop1_130_type 1360
+#define _tmp_131_type 1361
+#define _loop0_133_type 1362
+#define _gather_132_type 1363
+#define _loop0_135_type 1364
+#define _gather_134_type 1365
+#define _loop0_137_type 1366
+#define _gather_136_type 1367
+#define _loop0_139_type 1368
+#define _gather_138_type 1369
+#define _loop0_141_type 1370
+#define _gather_140_type 1371
+#define _tmp_142_type 1372
+#define _tmp_143_type 1373
+#define _tmp_144_type 1374
+#define _tmp_145_type 1375
+#define _tmp_146_type 1376
+#define _tmp_147_type 1377
+#define _tmp_148_type 1378
+#define _tmp_149_type 1379
+#define _tmp_150_type 1380
+#define _loop0_151_type 1381
+#define _loop0_152_type 1382
+#define _loop0_153_type 1383
+#define _tmp_154_type 1384
+#define _tmp_155_type 1385
+#define _tmp_156_type 1386
+#define _tmp_157_type 1387
+#define _loop0_158_type 1388
+#define _loop0_159_type 1389
+#define _loop1_160_type 1390
+#define _loop1_161_type 1391
+#define _loop0_162_type 1392
+#define _loop0_163_type 1393
+#define _loop0_165_type 1394
+#define _gather_164_type 1395
+#define _loop1_166_type 1396
+#define _tmp_167_type 1397
+#define _tmp_168_type 1398
+#define _tmp_169_type 1399
+#define _loop0_171_type 1400
+#define _gather_170_type 1401
+#define _loop0_173_type 1402
+#define _gather_172_type 1403
+#define _loop0_175_type 1404
+#define _gather_174_type 1405
+#define _loop0_177_type 1406
+#define _gather_176_type 1407
+#define _tmp_178_type 1408
+#define _loop0_179_type 1409
+#define _tmp_180_type 1410
+#define _loop0_181_type 1411
+#define _tmp_182_type 1412
+#define _tmp_183_type 1413
+#define _tmp_184_type 1414
+#define _tmp_185_type 1415
+#define _tmp_186_type 1416
+#define _tmp_187_type 1417
+#define _tmp_188_type 1418
+#define _tmp_189_type 1419
+#define _loop0_191_type 1420
+#define _gather_190_type 1421
+#define _tmp_192_type 1422
+#define _tmp_193_type 1423
+#define _tmp_194_type 1424
+#define _tmp_195_type 1425
+#define _tmp_196_type 1426
+#define _tmp_197_type 1427
+#define _tmp_198_type 1428
+#define _tmp_199_type 1429
+#define _tmp_200_type 1430
+#define _tmp_201_type 1431
+#define _tmp_202_type 1432
+#define _tmp_203_type 1433
+#define _tmp_204_type 1434
+#define _tmp_205_type 1435
+#define _tmp_206_type 1436
+#define _tmp_207_type 1437
+#define _tmp_208_type 1438
+#define _tmp_209_type 1439
+#define _tmp_210_type 1440
+#define _tmp_211_type 1441
+#define _tmp_212_type 1442
+#define _tmp_213_type 1443
+#define _tmp_214_type 1444
+#define _tmp_215_type 1445
+#define _tmp_216_type 1446
+#define _tmp_217_type 1447
+#define _tmp_218_type 1448
+#define _tmp_219_type 1449
+#define _tmp_220_type 1450
+#define _loop1_221_type 1451
+#define _loop1_222_type 1452
 
 static mod_ty file_rule(Parser *p);
 static mod_ty interactive_rule(Parser *p);
@@ -645,7 +653,14 @@ static expr_ty shift_expr_rule(Parser *p);
 static expr_ty sum_rule(Parser *p);
 static expr_ty term_rule(Parser *p);
 static expr_ty factor_rule(Parser *p);
+static expr_ty plus_factor_rule(Parser *p);
+static expr_ty minus_factor_rule(Parser *p);
+static expr_ty even_plus_factor_rule(Parser *p);
+static expr_ty even_minus_factor_rule(Parser *p);
 static expr_ty power_rule(Parser *p);
+static expr_ty prefix_crement_rule(Parser *p);
+static expr_ty postfix_crement_raw_rule(Parser *p);
+static expr_ty postfix_crement_rule(Parser *p);
 static expr_ty await_primary_rule(Parser *p);
 static expr_ty primary_rule(Parser *p);
 static expr_ty slices_rule(Parser *p);
@@ -703,6 +718,7 @@ static void *invalid_kwarg_rule(Parser *p);
 static expr_ty expression_without_invalid_rule(Parser *p);
 static void *invalid_legacy_expression_rule(Parser *p);
 static void *invalid_expression_rule(Parser *p);
+static void *invalid_crement_rule(Parser *p);
 static void *invalid_named_expression_rule(Parser *p);
 static void *invalid_assignment_rule(Parser *p);
 static expr_ty invalid_ann_assign_target_rule(Parser *p);
@@ -13010,7 +13026,7 @@ term_raw(Parser *p)
     return _res;
 }
 
-// factor: '+' factor | '-' factor | '~' factor | power
+// factor: '~' factor | plus_factor | minus_factor | power
 static expr_ty
 factor_rule(Parser *p)
 {
@@ -13037,78 +13053,6 @@ factor_rule(Parser *p)
     UNUSED(_start_lineno); // Only used by EXTRA macro
     int _start_col_offset = p->tokens[_mark]->col_offset;
     UNUSED(_start_col_offset); // Only used by EXTRA macro
-    { // '+' factor
-        if (p->error_indicator) {
-            p->level--;
-            return NULL;
-        }
-        D(fprintf(stderr, "%*c> factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' factor"));
-        Token * _literal;
-        expr_ty a;
-        if (
-            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
-            &&
-            (a = factor_rule(p))  // factor
-        )
-        {
-            D(fprintf(stderr, "%*c+ factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' factor"));
-            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
-            if (_token == NULL) {
-                p->level--;
-                return NULL;
-            }
-            int _end_lineno = _token->end_lineno;
-            UNUSED(_end_lineno); // Only used by EXTRA macro
-            int _end_col_offset = _token->end_col_offset;
-            UNUSED(_end_col_offset); // Only used by EXTRA macro
-            _res = _PyAST_UnaryOp ( UAdd , a , EXTRA );
-            if (_res == NULL && PyErr_Occurred()) {
-                p->error_indicator = 1;
-                p->level--;
-                return NULL;
-            }
-            goto done;
-        }
-        p->mark = _mark;
-        D(fprintf(stderr, "%*c%s factor[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' factor"));
-    }
-    { // '-' factor
-        if (p->error_indicator) {
-            p->level--;
-            return NULL;
-        }
-        D(fprintf(stderr, "%*c> factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' factor"));
-        Token * _literal;
-        expr_ty a;
-        if (
-            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
-            &&
-            (a = factor_rule(p))  // factor
-        )
-        {
-            D(fprintf(stderr, "%*c+ factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' factor"));
-            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
-            if (_token == NULL) {
-                p->level--;
-                return NULL;
-            }
-            int _end_lineno = _token->end_lineno;
-            UNUSED(_end_lineno); // Only used by EXTRA macro
-            int _end_col_offset = _token->end_col_offset;
-            UNUSED(_end_col_offset); // Only used by EXTRA macro
-            _res = _PyAST_UnaryOp ( USub , a , EXTRA );
-            if (_res == NULL && PyErr_Occurred()) {
-                p->error_indicator = 1;
-                p->level--;
-                return NULL;
-            }
-            goto done;
-        }
-        p->mark = _mark;
-        D(fprintf(stderr, "%*c%s factor[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' factor"));
-    }
     { // '~' factor
         if (p->error_indicator) {
             p->level--;
@@ -13145,6 +13089,44 @@ factor_rule(Parser *p)
         D(fprintf(stderr, "%*c%s factor[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'~' factor"));
     }
+    { // plus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "plus_factor"));
+        expr_ty plus_factor_var;
+        if (
+            (plus_factor_var = plus_factor_rule(p))  // plus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "plus_factor"));
+            _res = plus_factor_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "plus_factor"));
+    }
+    { // minus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "minus_factor"));
+        expr_ty minus_factor_var;
+        if (
+            (minus_factor_var = minus_factor_rule(p))  // minus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "minus_factor"));
+            _res = minus_factor_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "minus_factor"));
+    }
     { // power
         if (p->error_indicator) {
             p->level--;
@@ -13171,7 +13153,441 @@ factor_rule(Parser *p)
     return _res;
 }
 
-// power: await_primary '**' factor | await_primary
+// plus_factor: '+' even_plus_factor | '~' factor | power
+static expr_ty
+plus_factor_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, plus_factor_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // '+' even_plus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> plus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' even_plus_factor"));
+        Token * _literal;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (a = even_plus_factor_rule(p))  // even_plus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ plus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' even_plus_factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( UAdd , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s plus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' even_plus_factor"));
+    }
+    { // '~' factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> plus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'~' factor"));
+        Token * _literal;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 31))  // token='~'
+            &&
+            (a = factor_rule(p))  // factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ plus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'~' factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( Invert , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s plus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'~' factor"));
+    }
+    { // power
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> plus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "power"));
+        expr_ty power_var;
+        if (
+            (power_var = power_rule(p))  // power
+        )
+        {
+            D(fprintf(stderr, "%*c+ plus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "power"));
+            _res = power_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s plus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "power"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, plus_factor_type, _res);
+    p->level--;
+    return _res;
+}
+
+// minus_factor: '-' even_minus_factor | '~' factor | power
+static expr_ty
+minus_factor_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, minus_factor_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // '-' even_minus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> minus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' even_minus_factor"));
+        Token * _literal;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (a = even_minus_factor_rule(p))  // even_minus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ minus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' even_minus_factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( USub , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s minus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' even_minus_factor"));
+    }
+    { // '~' factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> minus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'~' factor"));
+        Token * _literal;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 31))  // token='~'
+            &&
+            (a = factor_rule(p))  // factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ minus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'~' factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( Invert , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s minus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'~' factor"));
+    }
+    { // power
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> minus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "power"));
+        expr_ty power_var;
+        if (
+            (power_var = power_rule(p))  // power
+        )
+        {
+            D(fprintf(stderr, "%*c+ minus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "power"));
+            _res = power_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s minus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "power"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, minus_factor_type, _res);
+    p->level--;
+    return _res;
+}
+
+// even_plus_factor: '+' '+' even_plus_factor | minus_factor
+static expr_ty
+even_plus_factor_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, even_plus_factor_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // '+' '+' even_plus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> even_plus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' '+' even_plus_factor"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (a = even_plus_factor_rule(p))  // even_plus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ even_plus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' '+' even_plus_factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( UAdd , _PyAST_UnaryOp ( UAdd , a , EXTRA ) , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s even_plus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' '+' even_plus_factor"));
+    }
+    { // minus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> even_plus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "minus_factor"));
+        expr_ty minus_factor_var;
+        if (
+            (minus_factor_var = minus_factor_rule(p))  // minus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ even_plus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "minus_factor"));
+            _res = minus_factor_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s even_plus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "minus_factor"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, even_plus_factor_type, _res);
+    p->level--;
+    return _res;
+}
+
+// even_minus_factor: '-' '-' even_minus_factor | plus_factor
+static expr_ty
+even_minus_factor_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, even_minus_factor_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // '-' '-' even_minus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> even_minus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' '-' even_minus_factor"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (a = even_minus_factor_rule(p))  // even_minus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ even_minus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' '-' even_minus_factor"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( USub , _PyAST_UnaryOp ( USub , a , EXTRA ) , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s even_minus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' '-' even_minus_factor"));
+    }
+    { // plus_factor
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> even_minus_factor[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "plus_factor"));
+        expr_ty plus_factor_var;
+        if (
+            (plus_factor_var = plus_factor_rule(p))  // plus_factor
+        )
+        {
+            D(fprintf(stderr, "%*c+ even_minus_factor[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "plus_factor"));
+            _res = plus_factor_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s even_minus_factor[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "plus_factor"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, even_minus_factor_type, _res);
+    p->level--;
+    return _res;
+}
+
+// power: prefix_crement '**' factor | prefix_crement
 static expr_ty
 power_rule(Parser *p)
 {
@@ -13194,24 +13610,24 @@ power_rule(Parser *p)
     UNUSED(_start_lineno); // Only used by EXTRA macro
     int _start_col_offset = p->tokens[_mark]->col_offset;
     UNUSED(_start_col_offset); // Only used by EXTRA macro
-    { // await_primary '**' factor
+    { // prefix_crement '**' factor
         if (p->error_indicator) {
             p->level--;
             return NULL;
         }
-        D(fprintf(stderr, "%*c> power[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "await_primary '**' factor"));
+        D(fprintf(stderr, "%*c> power[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "prefix_crement '**' factor"));
         Token * _literal;
         expr_ty a;
         expr_ty b;
         if (
-            (a = await_primary_rule(p))  // await_primary
+            (a = prefix_crement_rule(p))  // prefix_crement
             &&
             (_literal = _PyPegen_expect_token(p, 35))  // token='**'
             &&
             (b = factor_rule(p))  // factor
         )
         {
-            D(fprintf(stderr, "%*c+ power[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "await_primary '**' factor"));
+            D(fprintf(stderr, "%*c+ power[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "prefix_crement '**' factor"));
             Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
             if (_token == NULL) {
                 p->level--;
@@ -13231,29 +13647,438 @@ power_rule(Parser *p)
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s power[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "await_primary '**' factor"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "prefix_crement '**' factor"));
+    }
+    { // prefix_crement
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> power[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "prefix_crement"));
+        expr_ty prefix_crement_var;
+        if (
+            (prefix_crement_var = prefix_crement_rule(p))  // prefix_crement
+        )
+        {
+            D(fprintf(stderr, "%*c+ power[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "prefix_crement"));
+            _res = prefix_crement_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s power[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "prefix_crement"));
+    }
+    _res = NULL;
+  done:
+    p->level--;
+    return _res;
+}
+
+// prefix_crement:
+//     | '+' '+' postfix_crement_raw
+//     | '-' '-' postfix_crement_raw
+//     | invalid_crement
+//     | '+' '+' primary
+//     | '-' '-' primary
+//     | postfix_crement
+static expr_ty
+prefix_crement_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, prefix_crement_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // '+' '+' postfix_crement_raw
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' '+' postfix_crement_raw"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (a = postfix_crement_raw_rule(p))  // postfix_crement_raw
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' '+' postfix_crement_raw"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( UAdd , _PyAST_UnaryOp ( UAdd , a , EXTRA ) , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' '+' postfix_crement_raw"));
+    }
+    { // '-' '-' postfix_crement_raw
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' '-' postfix_crement_raw"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (a = postfix_crement_raw_rule(p))  // postfix_crement_raw
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' '-' postfix_crement_raw"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( USub , _PyAST_UnaryOp ( USub , a , EXTRA ) , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' '-' postfix_crement_raw"));
+    }
+    if (p->call_invalid_rules) { // invalid_crement
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "invalid_crement"));
+        void *invalid_crement_var;
+        if (
+            (invalid_crement_var = invalid_crement_rule(p))  // invalid_crement
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "invalid_crement"));
+            _res = invalid_crement_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "invalid_crement"));
+    }
+    { // '+' '+' primary
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' '+' primary"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (a = primary_rule(p))  // primary
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' '+' primary"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( PreIncr , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' '+' primary"));
+    }
+    { // '-' '-' primary
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' '-' primary"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (a = primary_rule(p))  // primary
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' '-' primary"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( PreDecr , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' '-' primary"));
+    }
+    { // postfix_crement
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> prefix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "postfix_crement"));
+        expr_ty postfix_crement_var;
+        if (
+            (postfix_crement_var = postfix_crement_rule(p))  // postfix_crement
+        )
+        {
+            D(fprintf(stderr, "%*c+ prefix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "postfix_crement"));
+            _res = postfix_crement_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s prefix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "postfix_crement"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, prefix_crement_type, _res);
+    p->level--;
+    return _res;
+}
+
+// postfix_crement_raw: primary '+' '+' | primary '-' '-'
+static expr_ty
+postfix_crement_raw_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, postfix_crement_raw_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    if (p->mark == p->fill && _PyPegen_fill_token(p) < 0) {
+        p->error_indicator = 1;
+        p->level--;
+        return NULL;
+    }
+    int _start_lineno = p->tokens[_mark]->lineno;
+    UNUSED(_start_lineno); // Only used by EXTRA macro
+    int _start_col_offset = p->tokens[_mark]->col_offset;
+    UNUSED(_start_col_offset); // Only used by EXTRA macro
+    { // primary '+' '+'
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> postfix_crement_raw[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "primary '+' '+'"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (a = primary_rule(p))  // primary
+            &&
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+        )
+        {
+            D(fprintf(stderr, "%*c+ postfix_crement_raw[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "primary '+' '+'"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( PostIncr , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s postfix_crement_raw[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "primary '+' '+'"));
+    }
+    { // primary '-' '-'
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> postfix_crement_raw[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "primary '-' '-'"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (a = primary_rule(p))  // primary
+            &&
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+        )
+        {
+            D(fprintf(stderr, "%*c+ postfix_crement_raw[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "primary '-' '-'"));
+            Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
+            if (_token == NULL) {
+                p->level--;
+                return NULL;
+            }
+            int _end_lineno = _token->end_lineno;
+            UNUSED(_end_lineno); // Only used by EXTRA macro
+            int _end_col_offset = _token->end_col_offset;
+            UNUSED(_end_col_offset); // Only used by EXTRA macro
+            _res = _PyAST_UnaryOp ( PostDecr , a , EXTRA );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s postfix_crement_raw[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "primary '-' '-'"));
+    }
+    _res = NULL;
+  done:
+    _PyPegen_insert_memo(p, _mark, postfix_crement_raw_type, _res);
+    p->level--;
+    return _res;
+}
+
+// postfix_crement: postfix_crement_raw | await_primary
+static expr_ty
+postfix_crement_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    expr_ty _res = NULL;
+    if (_PyPegen_is_memoized(p, postfix_crement_type, &_res)) {
+        p->level--;
+        return _res;
+    }
+    int _mark = p->mark;
+    { // postfix_crement_raw
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> postfix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "postfix_crement_raw"));
+        expr_ty postfix_crement_raw_var;
+        if (
+            (postfix_crement_raw_var = postfix_crement_raw_rule(p))  // postfix_crement_raw
+        )
+        {
+            D(fprintf(stderr, "%*c+ postfix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "postfix_crement_raw"));
+            _res = postfix_crement_raw_var;
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s postfix_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "postfix_crement_raw"));
     }
     { // await_primary
         if (p->error_indicator) {
             p->level--;
             return NULL;
         }
-        D(fprintf(stderr, "%*c> power[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "await_primary"));
+        D(fprintf(stderr, "%*c> postfix_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "await_primary"));
         expr_ty await_primary_var;
         if (
             (await_primary_var = await_primary_rule(p))  // await_primary
         )
         {
-            D(fprintf(stderr, "%*c+ power[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "await_primary"));
+            D(fprintf(stderr, "%*c+ postfix_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "await_primary"));
             _res = await_primary_var;
             goto done;
         }
         p->mark = _mark;
-        D(fprintf(stderr, "%*c%s power[%d-%d]: %s failed!\n", p->level, ' ',
+        D(fprintf(stderr, "%*c%s postfix_crement[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "await_primary"));
     }
     _res = NULL;
   done:
+    _PyPegen_insert_memo(p, _mark, postfix_crement_type, _res);
     p->level--;
     return _res;
 }
@@ -19125,6 +19950,158 @@ invalid_expression_rule(Parser *p)
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s invalid_expression[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "disjunction 'if' disjunction !('else' | ':')"));
+    }
+    _res = NULL;
+  done:
+    p->level--;
+    return _res;
+}
+
+// invalid_crement:
+//     | '+' '+' !NAME primary
+//     | !NAME primary '+' '+'
+//     | '-' '-' !NAME primary
+//     | !NAME primary '-' '-'
+static void *
+invalid_crement_rule(Parser *p)
+{
+    if (p->level++ == MAXSTACK) {
+        p->error_indicator = 1;
+        PyErr_NoMemory();
+    }
+    if (p->error_indicator) {
+        p->level--;
+        return NULL;
+    }
+    void * _res = NULL;
+    int _mark = p->mark;
+    { // '+' '+' !NAME primary
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> invalid_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'+' '+' !NAME primary"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            _PyPegen_lookahead_with_name(0, _PyPegen_name_token, p)
+            &&
+            (a = primary_rule(p))  // primary
+        )
+        {
+            D(fprintf(stderr, "%*c+ invalid_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'+' '+' !NAME primary"));
+            _res = RAISE_SYNTAX_ERROR_KNOWN_LOCATION ( a , "cannot increment %s" , _PyPegen_get_expr_name ( a ) );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s invalid_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'+' '+' !NAME primary"));
+    }
+    { // !NAME primary '+' '+'
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> invalid_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "!NAME primary '+' '+'"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            _PyPegen_lookahead_with_name(0, _PyPegen_name_token, p)
+            &&
+            (a = primary_rule(p))  // primary
+            &&
+            (_literal = _PyPegen_expect_token(p, 14))  // token='+'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 14))  // token='+'
+        )
+        {
+            D(fprintf(stderr, "%*c+ invalid_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "!NAME primary '+' '+'"));
+            _res = RAISE_SYNTAX_ERROR_KNOWN_LOCATION ( a , "cannot increment %s" , _PyPegen_get_expr_name ( a ) );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s invalid_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "!NAME primary '+' '+'"));
+    }
+    { // '-' '-' !NAME primary
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> invalid_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'-' '-' !NAME primary"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            _PyPegen_lookahead_with_name(0, _PyPegen_name_token, p)
+            &&
+            (a = primary_rule(p))  // primary
+        )
+        {
+            D(fprintf(stderr, "%*c+ invalid_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'-' '-' !NAME primary"));
+            _res = RAISE_SYNTAX_ERROR_KNOWN_LOCATION ( a , "cannot decrement %s" , _PyPegen_get_expr_name ( a ) );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s invalid_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'-' '-' !NAME primary"));
+    }
+    { // !NAME primary '-' '-'
+        if (p->error_indicator) {
+            p->level--;
+            return NULL;
+        }
+        D(fprintf(stderr, "%*c> invalid_crement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "!NAME primary '-' '-'"));
+        Token * _literal;
+        Token * _literal_1;
+        expr_ty a;
+        if (
+            _PyPegen_lookahead_with_name(0, _PyPegen_name_token, p)
+            &&
+            (a = primary_rule(p))  // primary
+            &&
+            (_literal = _PyPegen_expect_token(p, 15))  // token='-'
+            &&
+            (_literal_1 = _PyPegen_expect_token(p, 15))  // token='-'
+        )
+        {
+            D(fprintf(stderr, "%*c+ invalid_crement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "!NAME primary '-' '-'"));
+            _res = RAISE_SYNTAX_ERROR_KNOWN_LOCATION ( a , "cannot decrement %s" , _PyPegen_get_expr_name ( a ) );
+            if (_res == NULL && PyErr_Occurred()) {
+                p->error_indicator = 1;
+                p->level--;
+                return NULL;
+            }
+            goto done;
+        }
+        p->mark = _mark;
+        D(fprintf(stderr, "%*c%s invalid_crement[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "!NAME primary '-' '-'"));
     }
     _res = NULL;
   done:
