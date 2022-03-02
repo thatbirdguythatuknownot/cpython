@@ -2844,6 +2844,22 @@ invalid_operation:
     mpd_seterror(result, MPD_Invalid_operation, status);
 }
 
+/* Increment */
+void
+mpd_qincrement(mpd_t *result, const mpd_t *a, const mpd_context_t *ctx,
+            uint32_t *status)
+{
+    mpd_qadd(result, a, &one, ctx, status);
+}
+
+/* Decrement */
+void
+mpd_qdecrement(mpd_t *result, const mpd_t *a, const mpd_context_t *ctx,
+            uint32_t *status)
+{
+    mpd_qsub(result, a, &one, ctx, status);
+}
+
 /* Exponent of the magnitude of the most significant digit of the operand. */
 void
 mpd_qlogb(mpd_t *result, const mpd_t *a, const mpd_context_t *ctx,
