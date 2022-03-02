@@ -213,6 +213,32 @@ _operator_invert(PyObject *module, PyObject *a)
 }
 
 /*[clinic input]
+_operator.increment = _operator.neg
+
+Same as ++a.
+[clinic start generated code]*/
+
+static PyObject *
+_operator_increment(PyObject *module, PyObject *a)
+/*[clinic end generated code: output=671c9cc64ad4532d input=9388e40ff693c555]*/
+{
+    return PyNumber_Increment(a);
+}
+
+/*[clinic input]
+_operator.decrement = _operator.neg
+
+Same as --a.
+[clinic start generated code]*/
+
+static PyObject *
+_operator_decrement(PyObject *module, PyObject *a)
+/*[clinic end generated code: output=ee6c7adb0aef3f01 input=f7d7b97583c96990]*/
+{
+    return PyNumber_Decrement(a);
+}
+
+/*[clinic input]
 _operator.lshift = _operator.add
 
 Same as a << b.
