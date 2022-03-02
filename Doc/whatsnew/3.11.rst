@@ -277,6 +277,11 @@ operator
   ``operator.call(obj, *args, **kwargs) == obj(*args, **kwargs)``.
   (Contributed by Antony Lee in :issue:`44019`.)
 
+* New functions ``operator.increment`` and ``operator.decrement``
+  added such that ``operator.increment(obj) == ++obj`` and
+  ``operator.decrement(obj) == --obj``. (Contributed by
+  Jeremiah Vivian (Pascual) in :issue:`99999`.)
+
 
 os
 --
@@ -447,6 +452,9 @@ CPython bytecode changes
   speed up conditional jumps.
 
 * :opcode:`JUMP_IF_NOT_EXC_MATCH` no longer pops the active exception.
+
+* Add :opcode:`UNARY_INCREMENT` and :opcode:`UNARY_DECREMENT` opcodes to
+  implement incrementing/decrementing respectively.
 
 
 Deprecated
@@ -711,6 +719,10 @@ C API Changes
   in the ``size`` field was the indicator.  Now only non-negative values
   be used for ``size``.
   (Contributed by Kumar Aditya in :issue:`46608`.)
+
+* Add new C API functions :cfunc:`PyNumber_Increment` and
+  :cfunc:`PyNumber_Decrement` in ``Objects/abstract.c`` to implement the
+  incrementing and decrementing operations.
 
 New Features
 ------------
