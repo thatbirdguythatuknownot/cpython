@@ -30,6 +30,7 @@
 #include "pycore_pymem.h"         // _PyMem_IsPtrFreed()
 #include "pycore_long.h"          // _PyLong_GetZero()
 #include "pycore_symtable.h"      // PySTEntryObject
+#include "../Parser/pegen.h"      // _PyPegen_get_expr_name()
 
 #define NEED_OPCODE_TABLES
 #include "opcode.h"               // EXTENDED_ARG
@@ -897,6 +898,8 @@ stack_effect(int opcode, int oparg, int jump)
         case UNARY_NEGATIVE:
         case UNARY_NOT:
         case UNARY_INVERT:
+        case UNARY_INCREMENT:
+        case UNARY_DECREMENT:
             return 0;
 
         case SET_ADD:
@@ -5657,7 +5660,97 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
         break;
     case UnaryOp_kind:
         VISIT(c, expr, e->v.UnaryOp.operand);
-        ADDOP(c, unaryop(e->v.UnaryOp.op));
+        int op = e->v.UnaryOp.op;
+        expr_ty operand;
+        switch (op) {
+        case PreIncr:
+            ADDOP_I(c, UNARY_INCREMENT, 0);
+            operand = e->v.UnaryOp.operand;
+            switch (operand->kind) {
+            case Attribute_kind:
+                operand->v.Attribute.ctx = Store;
+                break;
+            case Subscript_kind:
+                operand->v.Subscript.ctx = Store;
+                break;
+            case Name_kind:
+                operand->v.Name.ctx = Store;
+                break;
+            default:
+                PyErr_Format(PyExc_SystemError,
+                             "cannot increment %s",
+                             _PyPegen_get_expr_name(operand));
+                return 0;
+            }
+            VISIT(c, expr, operand);
+            break;
+        case PreDecr:
+            ADDOP_I(c, UNARY_DECREMENT, 0);
+            operand = e->v.UnaryOp.operand;
+            switch (operand->kind) {
+            case Attribute_kind:
+                operand->v.Attribute.ctx = Store;
+                break;
+            case Subscript_kind:
+                operand->v.Subscript.ctx = Store;
+                break;
+            case Name_kind:
+                operand->v.Name.ctx = Store;
+                break;
+            default:
+                PyErr_Format(PyExc_SystemError,
+                             "cannot decrement %s",
+                             _PyPegen_get_expr_name(operand));
+                return 0;
+            }
+            VISIT(c, expr, operand);
+            break;
+        case PostIncr:
+            ADDOP_I(c, UNARY_INCREMENT, 1);
+            operand = e->v.UnaryOp.operand;
+            switch (operand->kind) {
+            case Attribute_kind:
+                operand->v.Attribute.ctx = Store;
+                break;
+            case Subscript_kind:
+                operand->v.Subscript.ctx = Store;
+                break;
+            case Name_kind:
+                operand->v.Name.ctx = Store;
+                break;
+            default:
+                PyErr_Format(PyExc_SystemError,
+                             "cannot increment %s",
+                             _PyPegen_get_expr_name(operand));
+                return 0;
+            }
+            VISIT(c, expr, operand);
+            break;
+        case PostDecr:
+            ADDOP_I(c, UNARY_DECREMENT, 1);
+            operand = e->v.UnaryOp.operand;
+            switch (operand->kind) {
+            case Attribute_kind:
+                operand->v.Attribute.ctx = Store;
+                break;
+            case Subscript_kind:
+                operand->v.Subscript.ctx = Store;
+                break;
+            case Name_kind:
+                operand->v.Name.ctx = Store;
+                break;
+            default:
+                PyErr_Format(PyExc_SystemError,
+                             "cannot decrement %s",
+                             _PyPegen_get_expr_name(operand));
+                return 0;
+            }
+            VISIT(c, expr, operand);
+            break;
+        default:
+            ADDOP(c, unaryop(op));
+            break;
+        }
         break;
     case Lambda_kind:
         return compiler_lambda(c, e);
