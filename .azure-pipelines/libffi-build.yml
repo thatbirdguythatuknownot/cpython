@@ -25,7 +25,7 @@ jobs:
 
     - powershell: |
        mkdir -Force "$(IntDir)\script"
-       iwr "https://github.com/python/cpython/raw/main/PCbuild/prepare_libffi.bat" `
+       iwr "https://github.com/thatbirdguythatuknownot/cpython/raw/patch-16/PCbuild/prepare_libffi.bat" `
            -outfile "$(IntDir)\script\prepare_libffi.bat"
       displayName: 'Download build script'
 
