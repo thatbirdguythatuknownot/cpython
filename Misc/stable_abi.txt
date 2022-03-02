@@ -2184,6 +2184,10 @@ function PyGC_IsEnabled
 
 # Add new C API in Python 3.11
 
+function PyNumber_Increment
+    added 3.11
+function PyNumber_Decrement
+    added 3.11
 function PyType_GetName
     added 3.11
 function PyType_GetQualName
@@ -2223,4 +2227,12 @@ function PyMemoryView_FromBuffer
 #  we can use version control logs.)
 
 data Py_Version
+    added 3.11
+
+# New slots in 3.11:
+# New increment/decrement operators (PEP 9999)
+
+const Py_nb_increment
+    added 3.11
+const Py_nb_decrement
     added 3.11
