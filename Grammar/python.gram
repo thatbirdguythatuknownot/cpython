@@ -749,13 +749,48 @@ term[expr_ty]:
     | factor
 
 factor[expr_ty] (memo):
-    | '+' a=factor { _PyAST_UnaryOp(UAdd, a, EXTRA) }
-    | '-' a=factor { _PyAST_UnaryOp(USub, a, EXTRA) }
+    | '~' a=factor { _PyAST_UnaryOp(Invert, a, EXTRA) }
+    | plus_factor
+    | minus_factor
+    | power
+
+plus_factor[expr_ty] (memo):
+    | '+' a=even_plus_factor { _PyAST_UnaryOp(UAdd, a, EXTRA) }
     | '~' a=factor { _PyAST_UnaryOp(Invert, a, EXTRA) }
     | power
 
+minus_factor[expr_ty] (memo):
+    | '-' a=even_minus_factor { _PyAST_UnaryOp(USub, a, EXTRA) }
+    | '~' a=factor { _PyAST_UnaryOp(Invert, a, EXTRA) }
+    | power
+
+even_plus_factor[expr_ty] (memo):
+    | '+' '+' a=even_plus_factor { _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, a, EXTRA), EXTRA) }
+    | minus_factor
+
+even_minus_factor[expr_ty] (memo):
+    | '-' '-' a=even_minus_factor { _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, a, EXTRA), EXTRA) }
+    | plus_factor
+
 power[expr_ty]:
-    | a=await_primary '**' b=factor { _PyAST_BinOp(a, Pow, b, EXTRA) }
+    | a=prefix_crement '**' b=factor { _PyAST_BinOp(a, Pow, b, EXTRA) }
+    | prefix_crement
+
+prefix_crement[expr_ty] (memo):
+    | '+' '+' a=postfix_crement_raw { _PyAST_UnaryOp(UAdd, _PyAST_UnaryOp(UAdd, a, EXTRA), EXTRA) }
+    | '-' '-' a=postfix_crement_raw { _PyAST_UnaryOp(USub, _PyAST_UnaryOp(USub, a, EXTRA), EXTRA) }
+    | invalid_crement
+    | '+' '+' a=primary { _PyAST_UnaryOp(PreIncr, a, EXTRA) }
+    | '-' '-' a=primary { _PyAST_UnaryOp(PreDecr, a, EXTRA) }
+    | postfix_crement
+
+postfix_crement_raw[expr_ty] (memo):
+    | a=primary '+' '+' { _PyAST_UnaryOp(PostIncr, a, EXTRA) }
+    | a=primary '-' '-' { _PyAST_UnaryOp(PostDecr, a, EXTRA) }
+
+
+postfix_crement[expr_ty] (memo):
+    | postfix_crement_raw
     | await_primary
 
 # Primary elements
@@ -1095,6 +1130,20 @@ invalid_expression:
         _PyPegen_check_legacy_stmt(p, a) ? NULL : p->tokens[p->mark-1]->level == 0 ? NULL :
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a comma?") }
    | a=disjunction 'if' b=disjunction !('else'|':') { RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "expected 'else' after 'if' expression") }
+
+invalid_crement:
+    | '+' '+' !NAME a=primary {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(
+            a, "cannot increment %s", _PyPegen_get_expr_name(a)) }
+    | !NAME a=primary '+' '+' {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(
+            a, "cannot increment %s", _PyPegen_get_expr_name(a)) }
+    | '-' '-' !NAME a=primary {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(
+            a, "cannot decrement %s", _PyPegen_get_expr_name(a)) }
+    | !NAME a=primary '-' '-' {
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(
+            a, "cannot decrement %s", _PyPegen_get_expr_name(a)) }
 
 invalid_named_expression(memo):
     | a=expression ':=' expression {
