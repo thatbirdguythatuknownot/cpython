@@ -1875,6 +1875,11 @@ static PyNumberMethods float_as_number = {
     float_div,          /* nb_true_divide */
     0,                  /* nb_inplace_floor_divide */
     0,                  /* nb_inplace_true_divide */
+    0,                  /* nb_index */
+    0,                  /* nb_matrix_multiply */
+    0,                  /* nb_inplace_matrix_multiply */
+    (unaryfunc)float_increment, /* nb_increment */
+    (unaryfunc)float_decrement, /* nb_decrement */
 };
 
 PyTypeObject PyFloat_Type = {
