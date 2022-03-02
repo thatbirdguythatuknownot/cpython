@@ -7457,6 +7457,8 @@ slot_nb_index(PyObject *self)
 
 
 SLOT0(slot_nb_invert, __invert__)
+SLOT0(slot_nb_increment, __inc__)
+SLOT0(slot_nb_decrement, __dec__)
 SLOT1BIN(slot_nb_lshift, nb_lshift, __lshift__, __rlshift__)
 SLOT1BIN(slot_nb_rshift, nb_rshift, __rshift__, __rrshift__)
 SLOT1BIN(slot_nb_and, nb_and, __and__, __rand__)
@@ -8119,6 +8121,8 @@ static slotdef slotdefs[] = {
              "@"),
     IBSLOT("__imatmul__", nb_inplace_matrix_multiply, slot_nb_inplace_matrix_multiply,
            wrap_binaryfunc, "@="),
+    UNSLOT("__inc__", nb_increment, slot_nb_increment, wrap_unaryfunc, "++self"),
+    UNSLOT("__dec__", nb_decrement, slot_nb_decrement, wrap_unaryfunc, "++self"),
     MPSLOT("__len__", mp_length, slot_mp_length, wrap_lenfunc,
            "__len__($self, /)\n--\n\nReturn len(self)."),
     MPSLOT("__getitem__", mp_subscript, slot_mp_subscript,
