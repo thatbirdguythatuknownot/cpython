@@ -24,6 +24,8 @@ class complex "PyComplexObject *" "&PyComplex_Type"
 
 static Py_complex c_1 = {1., 0.};
 
+static Py_complex c_1_1j = {1., 1.};
+
 Py_complex
 _Py_c_sum(Py_complex a, Py_complex b)
 {
@@ -579,6 +581,24 @@ static int
 complex_bool(PyComplexObject *v)
 {
     return v->cval.real != 0.0 || v->cval.imag != 0.0;
+}
+
+static PyObject *
+complex_increment(PyComplexObject *v)
+{
+    Py_complex res;
+    res.real = v->cval.real + 1.0;
+    res.imag = v->cval.imag + 1.0;
+    return PyComplex_FromCComplex(res);
+}
+
+static PyObject *
+complex_decrement(PyComplexObject *v)
+{
+    Py_complex res;
+    res.real = v->cval.real - 1.0;
+    res.imag = v->cval.imag - 1.0;
+    return PyComplex_FromCComplex(res);
 }
 
 static PyObject *
