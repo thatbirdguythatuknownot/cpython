@@ -168,6 +168,9 @@ hasfree.append(138)
 def_op('DELETE_DEREF', 139)
 hasfree.append(139)
 
+def_op('UNARY_INCREMENT', 140)
+def_op('UNARY_DECREMENT', 141)
+
 def_op('CALL_FUNCTION_EX', 142)  # Flags
 
 def_op('EXTENDED_ARG', 144)
