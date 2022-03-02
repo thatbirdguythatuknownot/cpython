@@ -5979,6 +5979,10 @@ static PyNumberMethods long_as_number = {
     0,                          /* nb_inplace_floor_divide */
     0,                          /* nb_inplace_true_divide */
     long_long,                  /* nb_index */
+    0,                          /* nb_matrix_multiply */
+    0,                          /* nb_inplace_matrix_multiply */
+    (unaryfunc)long_increment,  /* nb_increment */
+    (unaryfunc)long_decrement,  /* nb_decrement */
 };
 
 PyTypeObject PyLong_Type = {
