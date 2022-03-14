@@ -444,7 +444,8 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
 {
     /* This version by Tim Peters */
     PyLongObject *v;
-    unsigned long x, prev;
+    PyObject **digits;
+    unsigned long x;
     long res;
     Py_ssize_t i;
     int sign;
@@ -481,19 +482,28 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
         break;
     default:
         sign = 1;
-        x = 0;
         if (i < 0) {
             sign = -1;
             i = -(i);
         }
-        while (--i >= 0) {
-            prev = x;
-            x = (x << PyLong_SHIFT) | v->ob_digit[i];
-            if ((x >> PyLong_SHIFT) != prev) {
+        digits = v->ob_digit;
+        /* in the default case, i >= 2 */
+#if ((ULONG_MAX >> PyLong_SHIFT)) >= ((1UL << PyLong_SHIFT) - 1)
+        /* use 2 digits */
+        x = digits[--i];
+        x = (x << PyLong_SHIFT) | digit[--i];
+#else
+        /* use 1 digit */
+        assert(ULONG_MAX >= ((1UL << PyLong_SHIFT) - 1));
+        x = digits[--i];
+#endif
+        while (i--) {
+            x = (x << PyLong_SHIFT) | digits[i];
+            if (x > ULONG_MAX >> PyLong_SHIFT) {
                 *overflow = sign;
                 goto exit;
             }
-        }
+        };
         /* Haven't lost any bits, but casting to long requires extra
          * care (see comment above).
          */
@@ -556,7 +566,8 @@ _PyLong_AsInt(PyObject *obj)
 Py_ssize_t
 PyLong_AsSsize_t(PyObject *vv) {
     PyLongObject *v;
-    size_t x, prev;
+    PyObject **digits;
+    size_t x;
     Py_ssize_t i;
     int sign;
 
@@ -577,16 +588,25 @@ PyLong_AsSsize_t(PyObject *vv) {
     case 1: return v->ob_digit[0];
     }
     sign = 1;
-    x = 0;
     if (i < 0) {
         sign = -1;
         i = -(i);
     }
-    while (--i >= 0) {
-        prev = x;
-        x = (x << PyLong_SHIFT) | v->ob_digit[i];
-        if ((x >> PyLong_SHIFT) != prev)
+    digits = v->ob_digit;
+#if ((ULONG_MAX >> PyLong_SHIFT)) >= ((1UL << PyLong_SHIFT) - 1)
+    /* use 2 digits */
+    x = digits[--i];
+    x = (x << PyLong_SHIFT) | digit[--i];
+#else
+    /* use 1 digit */
+    assert(SIZE_T_MAX >= ((1L << PyLong_SHIFT) - 1));
+    x = digits[--i];
+#endif
+    while (i--) {
+        x = (x << PyLong_SHIFT) | digits[i];
+        if (x > SIZE_T_MAX >> PyLong_SHIFT) {
             goto overflow;
+        }
     }
     /* Haven't lost any bits, but casting to a signed type requires
      * extra care (see comment above).
@@ -612,7 +632,8 @@ unsigned long
 PyLong_AsUnsignedLong(PyObject *vv)
 {
     PyLongObject *v;
-    unsigned long x, prev;
+    PyObject **digits;
+    unsigned long x;
     Py_ssize_t i;
 
     if (vv == NULL) {
@@ -626,7 +647,6 @@ PyLong_AsUnsignedLong(PyObject *vv)
 
     v = (PyLongObject *)vv;
     i = Py_SIZE(v);
-    x = 0;
     if (i < 0) {
         PyErr_SetString(PyExc_OverflowError,
                         "can't convert negative value to unsigned int");
@@ -636,10 +656,19 @@ PyLong_AsUnsignedLong(PyObject *vv)
     case 0: return 0;
     case 1: return v->ob_digit[0];
     }
-    while (--i >= 0) {
-        prev = x;
-        x = (x << PyLong_SHIFT) | v->ob_digit[i];
-        if ((x >> PyLong_SHIFT) != prev) {
+    digits = v->ob_digit;
+#if ((ULONG_MAX >> PyLong_SHIFT)) >= ((1UL << PyLong_SHIFT) - 1)
+    /* use 2 digits */
+    x = digits[--i];
+    x = (x << PyLong_SHIFT) | digit[--i];
+#else
+    /* use 1 digit */
+    assert(ULONG_MAX >= ((1UL << PyLong_SHIFT) - 1));
+    x = digits[--i];
+#endif
+    while (i--) {
+        x = (x << PyLong_SHIFT) | digits[i];
+        if (x > ULONG_MAX >> PyLong_SHIFT) {
             PyErr_SetString(PyExc_OverflowError,
                             "Python int too large to convert "
                             "to C unsigned long");
@@ -656,7 +685,8 @@ size_t
 PyLong_AsSize_t(PyObject *vv)
 {
     PyLongObject *v;
-    size_t x, prev;
+    PyObject **v;
+    size_t x;
     Py_ssize_t i;
 
     if (vv == NULL) {
@@ -670,7 +700,6 @@ PyLong_AsSize_t(PyObject *vv)
 
     v = (PyLongObject *)vv;
     i = Py_SIZE(v);
-    x = 0;
     if (i < 0) {
         PyErr_SetString(PyExc_OverflowError,
                    "can't convert negative value to size_t");
@@ -680,10 +709,19 @@ PyLong_AsSize_t(PyObject *vv)
     case 0: return 0;
     case 1: return v->ob_digit[0];
     }
-    while (--i >= 0) {
-        prev = x;
-        x = (x << PyLong_SHIFT) | v->ob_digit[i];
-        if ((x >> PyLong_SHIFT) != prev) {
+    digits = v->ob_digit;
+#if ((ULONG_MAX >> PyLong_SHIFT)) >= ((1UL << PyLong_SHIFT) - 1)
+    /* use 2 digits */
+    x = digits[--i];
+    x = (x << PyLong_SHIFT) | digit[--i];
+#else
+    /* use 1 digit */
+    assert(SIZE_T_MAX >= ((1L << PyLong_SHIFT) - 1));
+    x = digits[--i];
+#endif
+    while (i--) {
+        x = (x << PyLong_SHIFT) | digits[i];
+        if (x > SIZE_T_MAX >> PyLong_SHIFT) {
             PyErr_SetString(PyExc_OverflowError,
                 "Python int too large to convert to C size_t");
             return (size_t) -1;
@@ -699,6 +737,7 @@ static unsigned long
 _PyLong_AsUnsignedLongMask(PyObject *vv)
 {
     PyLongObject *v;
+    PyObject **digits;
     unsigned long x;
     Py_ssize_t i;
     int sign;
@@ -714,13 +753,14 @@ _PyLong_AsUnsignedLongMask(PyObject *vv)
     case 1: return v->ob_digit[0];
     }
     sign = 1;
-    x = 0;
     if (i < 0) {
         sign = -1;
         i = -i;
     }
-    while (--i >= 0) {
-        x = (x << PyLong_SHIFT) | v->ob_digit[i];
+    digits = v->ob_digit;
+    x = digits[--i];
+    while (i--) {
+        x = (x << PyLong_SHIFT) | digits[i];
     }
     return x * sign;
 }
