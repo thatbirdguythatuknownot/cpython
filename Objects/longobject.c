@@ -499,7 +499,7 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
 #endif
         while (i--) {
             x = (x << PyLong_SHIFT) | digits[i];
-            if (x > (LONG_MAX >> PyLong_SHIFT)) {
+            if (x > ((unsigned long)LONG_MAX >> PyLong_SHIFT)) {
                 *overflow = sign;
                 goto exit;
             }
@@ -599,12 +599,12 @@ PyLong_AsSsize_t(PyObject *vv) {
     x = (x << PyLong_SHIFT) | digit[--i];
 #else
     /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4)
+    assert(SIZEOF_SIZE_T == 4);
     x = digits[--i];
 #endif
     while (i--) {
         x = (x << PyLong_SHIFT) | digits[i];
-        if (x > (SSIZE_T_MAX >> PyLong_SHIFT)) {
+        if (x > (PY_SSIZE_T_MAX >> PyLong_SHIFT)) {
             goto overflow;
         }
     }
@@ -663,7 +663,7 @@ PyLong_AsUnsignedLong(PyObject *vv)
     x = (x << PyLong_SHIFT) | digit[--i];
 #else
     /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4)
+    assert(SIZEOF_SIZE_T == 4);
     x = digits[--i];
 #endif
     while (i--) {
@@ -685,7 +685,7 @@ size_t
 PyLong_AsSize_t(PyObject *vv)
 {
     PyLongObject *v;
-    PyObject **v;
+    digit *digits;
     size_t x;
     Py_ssize_t i;
 
@@ -716,12 +716,12 @@ PyLong_AsSize_t(PyObject *vv)
     x = (x << PyLong_SHIFT) | digit[--i];
 #else
     /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4)
+    assert(SIZEOF_SIZE_T == 4);
     x = digits[--i];
 #endif
     while (i--) {
         x = (x << PyLong_SHIFT) | digits[i];
-        if (x > (SIZE_T_MAX >> PyLong_SHIFT)) {
+        if (x > (SIZE_MAX >> PyLong_SHIFT)) {
             PyErr_SetString(PyExc_OverflowError,
                 "Python int too large to convert to C size_t");
             return (size_t) -1;
