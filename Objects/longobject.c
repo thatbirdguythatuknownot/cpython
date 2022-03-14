@@ -491,7 +491,7 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
 #if SIZEOF_SIZE_T == 8
         /* use 2 digits */
         x = digits[--i];
-        x = (x << PyLong_SHIFT) | digit[--i];
+        x = (x << PyLong_SHIFT) | digits[--i];
 #else
         /* use 1 digit */
         assert(SIZEOF_SIZE_T == 4);
@@ -596,7 +596,7 @@ PyLong_AsSsize_t(PyObject *vv) {
 #if SIZEOF_SIZE_T == 8
     /* use 2 digits */
     x = digits[--i];
-    x = (x << PyLong_SHIFT) | digit[--i];
+    x = (x << PyLong_SHIFT) | digits[--i];
 #else
     /* use 1 digit */
     assert(SIZEOF_SIZE_T == 4);
@@ -660,7 +660,7 @@ PyLong_AsUnsignedLong(PyObject *vv)
 #if SIZEOF_SIZE_T == 8
     /* use 2 digits */
     x = digits[--i];
-    x = (x << PyLong_SHIFT) | digit[--i];
+    x = (x << PyLong_SHIFT) | digits[--i];
 #else
     /* use 1 digit */
     assert(SIZEOF_SIZE_T == 4);
@@ -713,7 +713,7 @@ PyLong_AsSize_t(PyObject *vv)
 #if SIZEOF_SIZE_T == 8
     /* use 2 digits */
     x = digits[--i];
-    x = (x << PyLong_SHIFT) | digit[--i];
+    x = (x << PyLong_SHIFT) | digits[--i];
 #else
     /* use 1 digit */
     assert(SIZEOF_SIZE_T == 4);
