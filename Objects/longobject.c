@@ -1313,6 +1313,7 @@ static unsigned long long
 _PyLong_AsUnsignedLongLongMask(PyObject *vv)
 {
     PyLongObject *v;
+    digit *digits;
     unsigned long long x;
     Py_ssize_t i;
     int sign;
@@ -1333,7 +1334,9 @@ _PyLong_AsUnsignedLongLongMask(PyObject *vv)
         sign = -1;
         i = -i;
     }
-    while (--i >= 0) {
+    digits = v->ob_digit;
+    x = digits[--i];
+    while (i--) {
         x = (x << PyLong_SHIFT) | v->ob_digit[i];
     }
     return x * sign;
@@ -1378,7 +1381,8 @@ PyLong_AsLongLongAndOverflow(PyObject *vv, int *overflow)
 {
     /* This version by Tim Peters */
     PyLongObject *v;
-    unsigned long long x, prev;
+    digit *digits;
+    unsigned long long x;
     long long res;
     Py_ssize_t i;
     int sign;
@@ -1420,10 +1424,19 @@ PyLong_AsLongLongAndOverflow(PyObject *vv, int *overflow)
             sign = -1;
             i = -(i);
         }
-        while (--i >= 0) {
-            prev = x;
-            x = (x << PyLong_SHIFT) + v->ob_digit[i];
-            if ((x >> PyLong_SHIFT) != prev) {
+        digits = v->ob_digit;
+#if SIZEOF_SIZE_T == 8
+        /* use 2 digits */
+        x = digits[--i];
+        x = (x << PyLong_SHIFT) | digits[--i];
+#else
+        /* use 1 digit */
+        assert(SIZEOF_SIZE_T == 4);
+        x = digits[--i];
+#endif
+        while (i--) {
+            x = (x << PyLong_SHIFT) | digits[--i];
+            if (x > ((unsigned long long)LLONG_MAX >> PyLong_SHIFT)) {
                 *overflow = sign;
                 goto exit;
             }
