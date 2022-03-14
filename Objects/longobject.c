@@ -444,7 +444,7 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
 {
     /* This version by Tim Peters */
     PyLongObject *v;
-    PyObject **digits;
+    digit *digits;
     unsigned long x;
     long res;
     Py_ssize_t i;
@@ -566,7 +566,7 @@ _PyLong_AsInt(PyObject *obj)
 Py_ssize_t
 PyLong_AsSsize_t(PyObject *vv) {
     PyLongObject *v;
-    PyObject **digits;
+    digit *digits;
     size_t x;
     Py_ssize_t i;
     int sign;
@@ -632,7 +632,7 @@ unsigned long
 PyLong_AsUnsignedLong(PyObject *vv)
 {
     PyLongObject *v;
-    PyObject **digits;
+    digit *digits;
     unsigned long x;
     Py_ssize_t i;
 
@@ -737,7 +737,7 @@ static unsigned long
 _PyLong_AsUnsignedLongMask(PyObject *vv)
 {
     PyLongObject *v;
-    PyObject **digits;
+    digit *digits;
     unsigned long x;
     Py_ssize_t i;
     int sign;
