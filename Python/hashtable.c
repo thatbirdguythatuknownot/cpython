@@ -320,6 +320,7 @@ _Py_hashtable_new_full(_Py_hashtable_hash_func hash_func,
     _Py_hashtable_allocator_t alloc;
     if (allocator == NULL) {
         alloc.malloc = PyMem_Malloc;
+        alloc.calloc = PyMem_Calloc;
         alloc.free = PyMem_Free;
     }
     else {
