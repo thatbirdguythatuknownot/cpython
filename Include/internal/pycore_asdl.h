@@ -8,7 +8,7 @@ extern "C" {
 #  error "this header requires Py_BUILD_CORE define"
 #endif
 
-#include "pycore_pyarena.h"       // _PyArena_Malloc()
+#include "pycore_pyarena.h"       // _PyArena_Calloc()
 
 typedef PyObject * identifier;
 typedef PyObject * string;
@@ -67,12 +67,11 @@ asdl_ ## NAME ## _seq *_Py_asdl_ ## NAME ## _seq_new(Py_ssize_t size, PyArena *a
         return NULL; \
     } \
     n += sizeof(asdl_ ## NAME ## _seq); \
-    seq = (asdl_ ## NAME ## _seq *)_PyArena_Malloc(arena, n); \
+    seq = (asdl_ ## NAME ## _seq *)_PyArena_Calloc(arena, n); \
     if (!seq) { \
         PyErr_NoMemory(); \
         return NULL; \
     } \
-    memset(seq, 0, n); \
     seq->size = size; \
     seq->elements = (void**)seq->typed_elements; \
     return seq; \
