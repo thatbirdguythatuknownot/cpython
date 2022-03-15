@@ -69,6 +69,14 @@ PyAPI_FUNC(void) PyMem_Free(void *ptr);
         ( (type *) PyMem_Malloc((n) * sizeof(type)) ) )
 
 /*
+ * Allocate new memory for n objects of the given type and zero-fill the
+ * allocated memory. Returns NULL on request fail.
+ */
+#define PyMem_NewZero(type, n) \
+  ( ((size_t)(n) > PY_SSIZE_T_MAX / sizeof(type)) ? NULL :      \
+        ( (type *) PyMem_Calloc((n), sizeof(type)) ) )
+
+/*
  * The value of (p) is always clobbered by this macro regardless of success.
  * The caller MUST check if (p) is NULL afterwards and deal with the memory
  * error if so.  This means the original value of (p) MUST be saved for the
