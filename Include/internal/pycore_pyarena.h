@@ -52,6 +52,7 @@ PyAPI_FUNC(void) _PyArena_Free(PyArena *);
  */
 PyAPI_FUNC(void*) _PyArena_Malloc(PyArena *, size_t size);
 
+/* Has the same behaviour as _PyArena_Malloc, except for calloc(). */
 PyAPI_FUNC(void*) _PyArena_Calloc(PyArena *, size_t nitems, size_t elsize);
 
 /* This routine isn't a proper arena allocation routine.  It takes
