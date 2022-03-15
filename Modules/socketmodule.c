@@ -4530,7 +4530,13 @@ sock_sendmsg(PySocketSockObject *s, PyObject *args)
     if (ncmsgbufs > 0) {
         struct cmsghdr *cmsgh = NULL;
 
-        controlbuf = PyMem_Malloc(controllen);
+        /* Need to zero out the buffer as a workaround for glibc's
+           CMSG_NXTHDR() implementation.  After getting the pointer to
+           the next header, it checks its (uninitialized) cmsg_len
+           member to see if the "message" fits in the buffer, and
+           returns NULL if it doesn't.  Zero-filling the buffer
+           ensures that this doesn't happen. */
+        controlbuf = PyMem_Calloc(controllen, 1);
         if (controlbuf == NULL) {
             PyErr_NoMemory();
             goto finally;
@@ -4538,14 +4544,6 @@ sock_sendmsg(PySocketSockObject *s, PyObject *args)
         msg.msg_control = controlbuf;
 
         msg.msg_controllen = controllen;
-
-        /* Need to zero out the buffer as a workaround for glibc's
-           CMSG_NXTHDR() implementation.  After getting the pointer to
-           the next header, it checks its (uninitialized) cmsg_len
-           member to see if the "message" fits in the buffer, and
-           returns NULL if it doesn't.  Zero-filling the buffer
-           ensures that this doesn't happen. */
-        memset(controlbuf, 0, controllen);
 
         for (i = 0; i < ncmsgbufs; i++) {
             size_t msg_len, data_len = cmsgs[i].data.len;
