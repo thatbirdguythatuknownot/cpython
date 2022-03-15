@@ -4536,7 +4536,7 @@ sock_sendmsg(PySocketSockObject *s, PyObject *args)
            member to see if the "message" fits in the buffer, and
            returns NULL if it doesn't.  Zero-filling the buffer
            ensures that this doesn't happen. */
-        controlbuf = PyMem_Calloc(1, controllen);
+        controlbuf = PyMem_Calloc(controllen, 1);
         if (controlbuf == NULL) {
             PyErr_NoMemory();
             goto finally;
@@ -4701,12 +4701,11 @@ sock_sendmsg_afalg(PySocketSockObject *self, PyObject *args, PyObject *kwds)
         controllen += CMSG_SPACE(4);
     }
 
-    controlbuf = PyMem_Malloc(controllen);
+    controlbuf = PyMem_Calloc(controllen, 1);
     if (controlbuf == NULL) {
         PyErr_NoMemory();
         goto finally;
     }
-    memset(controlbuf, 0, controllen);
 
     msg.msg_controllen = controllen;
     msg.msg_control = controlbuf;
