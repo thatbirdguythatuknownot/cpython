@@ -157,6 +157,33 @@ _PyLong_New(Py_ssize_t size)
     return result;
 }
 
+PyLongObject *
+_PyLong_NewZero(Py_ssize_t size)
+{
+    PyLongObject *result;
+    if (size > (Py_ssize_t)MAX_LONG_DIGITS) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "too many digits in integer");
+        return NULL;
+    }
+    /* Fast operations for single digit integers (including zero)
+     * assume that there is always at least one digit present. */
+    Py_ssize_t ndigits = size ? size : 1;
+    /* Number of bytes needed is: offsetof(PyLongObject, ob_digit) +
+       sizeof(digit)*size.  Previous incarnations of this code used
+       sizeof(PyVarObject) instead of the offsetof, but this risks being
+       incorrect in the presence of padding between the PyVarObject header
+       and the digits. */
+    result = PyObject_Calloc(1, offsetof(PyLongObject, ob_digit) +
+                             ndigits*sizeof(digit));
+    if (!result) {
+        PyErr_NoMemory();
+        return NULL;
+    }
+    _PyObject_InitVar((PyVarObject*)result, &PyLong_Type, size);
+    return result;
+}
+
 PyObject *
 _PyLong_Copy(PyLongObject *src)
 {
@@ -3306,11 +3333,10 @@ x_mul(PyLongObject *a, PyLongObject *b)
     Py_ssize_t size_b = Py_ABS(Py_SIZE(b));
     Py_ssize_t i;
 
-    z = _PyLong_New(size_a + size_b);
+    z = _PyLong_NewZero(size_a + size_b);
     if (z == NULL)
         return NULL;
 
-    memset(z->ob_digit, 0, Py_SIZE(z) * sizeof(digit));
     if (a == b) {
         /* Efficient squaring per HAC, Algorithm 14.16:
          * http://www.cacr.math.uwaterloo.ca/hac/about/chap14.pdf
@@ -3671,10 +3697,9 @@ k_lopsided_mul(PyLongObject *a, PyLongObject *b)
     assert(2 * asize <= bsize);
 
     /* Allocate result space, and zero it out. */
-    ret = _PyLong_New(asize + bsize);
+    ret = _PyLong_NewZero(asize + bsize);
     if (ret == NULL)
         return NULL;
-    memset(ret->ob_digit, 0, Py_SIZE(ret) * sizeof(digit));
 
     /* Successive slices of b are copied into bslice. */
     bslice = _PyLong_New(asize);
