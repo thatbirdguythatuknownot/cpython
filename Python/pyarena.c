@@ -89,6 +89,22 @@ block_new(size_t size)
     return b;
 }
 
+static block *
+block_new_zero(size_t size)
+{
+    /* Allocate header and block as one unit and zero-fill.
+       ab_mem points just past header. */
+    block *b = (block *)PyMem_Calloc(1, sizeof(block) + size);
+    if (!b)
+        return NULL;
+    b->ab_size = size;
+    b->ab_mem = (void *)(b + 1);
+    b->ab_next = NULL;
+    b->ab_offset = (char *)_Py_ALIGN_UP(b->ab_mem, ALIGNMENT) -
+            (char *)(b->ab_mem);
+    return b;
+}
+
 static void
 block_free(block *b) {
     while (b) {
@@ -110,6 +126,33 @@ block_alloc(block *b, size_t size)
            exactly the right size. */
         /* TODO(jhylton): Think about space waste at end of block */
         block *newbl = block_new(
+                        size < DEFAULT_BLOCK_SIZE ?
+                        DEFAULT_BLOCK_SIZE : size);
+        if (!newbl)
+            return NULL;
+        assert(!b->ab_next);
+        b->ab_next = newbl;
+        b = newbl;
+    }
+
+    assert(b->ab_offset + size <= b->ab_size);
+    p = (void *)(((char *)b->ab_mem) + b->ab_offset);
+    b->ab_offset += size;
+    return p;
+}
+
+static void *
+block_calloc(block *b, size_t nitems, size_t elsize)
+{
+    void *p;
+    assert(b);
+    size = _Py_SIZE_ROUND_UP(nitems * elsize, ALIGNMENT);
+    if (b->ab_offset + size > b->ab_size) {
+        /* If we need to allocate more memory than will fit in
+           the default block, allocate a one-off block that is
+           exactly the right size. */
+        /* TODO(jhylton): Think about space waste at end of block */
+        block *newbl = block_new_zero(
                         size < DEFAULT_BLOCK_SIZE ?
                         DEFAULT_BLOCK_SIZE : size);
         if (!newbl)
@@ -186,6 +229,29 @@ _PyArena_Malloc(PyArena *arena, size_t size)
 #if defined(Py_DEBUG)
     arena->total_allocs++;
     arena->total_size += size;
+#endif
+    /* Reset cur if we allocated a new block. */
+    if (arena->a_cur->ab_next) {
+        arena->a_cur = arena->a_cur->ab_next;
+#if defined(Py_DEBUG)
+        arena->total_blocks++;
+        arena->total_block_size += arena->a_cur->ab_size;
+        if (arena->a_cur->ab_size > DEFAULT_BLOCK_SIZE)
+            ++arena->total_big_blocks;
+#endif
+    }
+    return p;
+}
+
+void *
+_PyArena_Calloc(PyArena *arena, size_t nitems, size_t elsize)
+{
+    void *p = block_calloc(arena->a_cur, nitems, elsize);
+    if (!p)
+        return PyErr_NoMemory();
+#if defined(Py_DEBUG)
+    arena->total_allocs++;
+    arena->total_size += size * elsize;
 #endif
     /* Reset cur if we allocated a new block. */
     if (arena->a_cur->ab_next) {
