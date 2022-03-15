@@ -1134,17 +1134,14 @@ _PyType_AllocNoTrack(PyTypeObject *type, Py_ssize_t nitems)
     /* note that we need to add one, for the sentinel */
 
     const size_t presize = _PyType_PreHeaderSize(type);
-    char *alloc = PyObject_Malloc(size + presize);
+    char *alloc = PyObject_Calloc(size + presize, 1);
     if (alloc  == NULL) {
         return PyErr_NoMemory();
     }
     obj = (PyObject *)(alloc + presize);
     if (presize) {
-        ((PyObject **)alloc)[0] = NULL;
-        ((PyObject **)alloc)[1] = NULL;
         _PyObject_GC_Link(obj);
     }
-    memset(obj, '\0', size);
 
     if (type->tp_itemsize == 0) {
         _PyObject_Init(obj, type);
