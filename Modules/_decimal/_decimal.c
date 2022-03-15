@@ -5690,7 +5690,7 @@ PyInit__decimal(void)
     mpd_traphandler = dec_traphandler;
     mpd_mallocfunc = PyMem_Malloc;
     mpd_reallocfunc = PyMem_Realloc;
-    mpd_callocfunc = mpd_callocfunc_em;
+    mpd_callocfunc = PyMem_Calloc;
     mpd_free = PyMem_Free;
     mpd_setminalloc(_Py_DEC_MINALLOC);
 
