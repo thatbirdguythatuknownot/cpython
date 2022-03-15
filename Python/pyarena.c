@@ -119,7 +119,7 @@ block_alloc(block *b, size_t size)
 {
     void *p;
     assert(b);
-    size = _Py_SIZE_ROUND_UP(size, ALIGNMENT);
+    size_t size = _Py_SIZE_ROUND_UP(size, ALIGNMENT);
     if (b->ab_offset + size > b->ab_size) {
         /* If we need to allocate more memory than will fit in
            the default block, allocate a one-off block that is
