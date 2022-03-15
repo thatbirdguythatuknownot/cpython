@@ -247,7 +247,7 @@ hashtable_new(_Py_hashtable_hash_func hash_func,
               _Py_hashtable_destroy_func key_destroy_func,
               _Py_hashtable_destroy_func value_destroy_func)
 {
-    _Py_hashtable_allocator_t hashtable_alloc = {malloc, free};
+    _Py_hashtable_allocator_t hashtable_alloc = {malloc, calloc, free};
     return _Py_hashtable_new_full(hash_func, compare_func,
                                   key_destroy_func, value_destroy_func,
                                   &hashtable_alloc);
