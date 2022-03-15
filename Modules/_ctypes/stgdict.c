@@ -463,13 +463,11 @@ PyCStructUnionType_update_stgdict(PyObject *type, PyObject *fields, int isStruct
         union_size = 0;
         total_align = align ? align : 1;
         stgdict->ffi_type_pointer.type = FFI_TYPE_STRUCT;
-        stgdict->ffi_type_pointer.elements = PyMem_New(ffi_type *, basedict->length + len + 1);
+        stgdict->ffi_type_pointer.elements = PyMem_NewZero(ffi_type *, basedict->length + len + 1);
         if (stgdict->ffi_type_pointer.elements == NULL) {
             PyErr_NoMemory();
             return -1;
         }
-        memset(stgdict->ffi_type_pointer.elements, 0,
-               sizeof(ffi_type *) * (basedict->length + len + 1));
         if (basedict->length > 0) {
             memcpy(stgdict->ffi_type_pointer.elements,
                    basedict->ffi_type_pointer.elements,
@@ -483,13 +481,11 @@ PyCStructUnionType_update_stgdict(PyObject *type, PyObject *fields, int isStruct
         union_size = 0;
         total_align = 1;
         stgdict->ffi_type_pointer.type = FFI_TYPE_STRUCT;
-        stgdict->ffi_type_pointer.elements = PyMem_New(ffi_type *, len + 1);
+        stgdict->ffi_type_pointer.elements = PyMem_NewZero(ffi_type *, len + 1);
         if (stgdict->ffi_type_pointer.elements == NULL) {
             PyErr_NoMemory();
             return -1;
         }
-        memset(stgdict->ffi_type_pointer.elements, 0,
-               sizeof(ffi_type *) * (len + 1));
         ffi_ofs = 0;
     }
 
