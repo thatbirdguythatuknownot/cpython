@@ -2945,13 +2945,12 @@ static int PyCData_MallocBuffer(CDataObject *obj, StgDictObject *dict)
         /* In python 2.4, and ctypes 0.9.6, the malloc call took about
            33% of the creation time for c_int().
         */
-        obj->b_ptr = (char *)PyMem_Malloc(dict->size);
+        obj->b_ptr = (char *)PyMem_Calloc(dict->size, 1);
         if (obj->b_ptr == NULL) {
             PyErr_NoMemory();
             return -1;
         }
         obj->b_needsfree = 1;
-        memset(obj->b_ptr, 0, dict->size);
     }
     obj->b_size = dict->size;
     return 0;
