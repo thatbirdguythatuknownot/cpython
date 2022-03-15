@@ -269,6 +269,13 @@ The following type-oriented macros are provided for convenience.  Note  that
    been initialized in any way.
 
 
+.. c:function:: TYPE* PyMem_NewZero(TYPE, size_t n)
+
+   Same as :c:func:`PyMem_Calloc`, and is equivalent to the code
+   ``PyMem_Calloc(n, sizeof(TYPE))`` with overflow checking. Returns a pointer
+   cast to :c:type:`TYPE*`. The memory will have been zero-filled before returning.
+
+
 .. c:function:: TYPE* PyMem_Resize(void *p, TYPE, size_t n)
 
    Same as :c:func:`PyMem_Realloc`, but the memory block is resized to ``(n *
