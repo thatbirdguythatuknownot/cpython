@@ -52,32 +52,6 @@ void *(* mpd_reallocfunc)(void *ptr, size_t size) = realloc;
 void *(* mpd_callocfunc)(size_t nmemb, size_t size) = calloc;
 void (* mpd_free)(void *ptr) = free;
 
-
-/* emulate calloc if it is not available */
-void *
-mpd_callocfunc_em(size_t nmemb, size_t size)
-{
-    void *ptr;
-    size_t req;
-    mpd_size_t overflow;
-
-    req = mul_size_t_overflow((mpd_size_t)nmemb, (mpd_size_t)size,
-                              &overflow);
-    if (overflow) {
-        return NULL;
-    }
-
-    ptr = mpd_mallocfunc(req);
-    if (ptr == NULL) {
-        return NULL;
-    }
-    /* used on uint32_t or uint64_t */
-    memset(ptr, 0, req);
-
-    return ptr;
-}
-
-
 /* malloc with overflow checking */
 void *
 mpd_alloc(mpd_size_t nmemb, mpd_size_t size)
