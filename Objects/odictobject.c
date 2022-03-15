@@ -554,13 +554,11 @@ _odict_resize(PyODictObject *od)
 
     /* Initialize a new "fast nodes" table. */
     size = ONE << (((PyDictObject *)od)->ma_keys->dk_log2_size);
-    fast_nodes = PyMem_NEW(_ODictNode *, size);
+    fast_nodes = PyMem_NewZero(_ODictNode *, size);
     if (fast_nodes == NULL) {
         PyErr_NoMemory();
         return -1;
     }
-    for (i = 0; i < size; i++)
-        fast_nodes[i] = NULL;
 
     /* Copy the current nodes into the table. */
     _odict_FOREACH(od, node) {
