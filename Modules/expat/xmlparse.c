@@ -980,6 +980,7 @@ parserCreate(const XML_Char *encodingName,
     if (parser != NULL) {
       mtemp = (XML_Memory_Handling_Suite *)&(parser->m_mem);
       mtemp->malloc_fcn = memsuite->malloc_fcn;
+      mtemp->calloc_fcn = memsuite->calloc_fcn;
       mtemp->realloc_fcn = memsuite->realloc_fcn;
       mtemp->free_fcn = memsuite->free_fcn;
     }
@@ -989,6 +990,7 @@ parserCreate(const XML_Char *encodingName,
     if (parser != NULL) {
       mtemp = (XML_Memory_Handling_Suite *)&(parser->m_mem);
       mtemp->malloc_fcn = malloc;
+      mtemp->calloc_fcn = calloc;
       mtemp->realloc_fcn = realloc;
       mtemp->free_fcn = free;
     }
@@ -7018,19 +7020,16 @@ static NAMED *
 lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
   size_t i;
   if (table->size == 0) {
-    size_t tsize;
     if (! createSize)
       return NULL;
     table->power = INIT_POWER;
     /* table->size is a power of 2 */
     table->size = (size_t)1 << INIT_POWER;
-    tsize = table->size * sizeof(NAMED *);
-    table->v = table->mem->malloc_fcn(tsize);
+    table->v = table->mem->calloc_fcn(table->size, sizeof(NAMED *));
     if (! table->v) {
       table->size = 0;
       return NULL;
     }
-    memset(table->v, 0, tsize);
     i = hash(parser, name) & ((unsigned long)table->size - 1);
   } else {
     unsigned long h = hash(parser, name);
@@ -7064,11 +7063,9 @@ lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
         return NULL;
       }
 
-      size_t tsize = newSize * sizeof(NAMED *);
-      NAMED **newV = table->mem->malloc_fcn(tsize);
+      NAMED **newV = table->mem->calloc_fcn(newSize, sizeof(NAMED *));
       if (! newV)
         return NULL;
-      memset(newV, 0, tsize);
       for (i = 0; i < table->size; i++)
         if (table->v[i]) {
           unsigned long newHash = hash(parser, table->v[i]->name);
@@ -7094,10 +7091,9 @@ lookup(XML_Parser parser, HASH_TABLE *table, KEY name, size_t createSize) {
       }
     }
   }
-  table->v[i] = table->mem->malloc_fcn(createSize);
+  table->v[i] = table->mem->calloc_fcn(1, createSize);
   if (! table->v[i])
     return NULL;
-  memset(table->v[i], 0, createSize);
   table->v[i]->name = name;
   (table->used)++;
   return table->v[i];
