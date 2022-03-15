@@ -1858,13 +1858,11 @@ pmerge(PyObject *acc, PyObject **to_merge, Py_ssize_t to_merge_size)
        remain[i] is the index of the next base in to_merge[i]
        that is not included in acc.
     */
-    remain = PyMem_New(int, to_merge_size);
+    remain = PyMem_NewZero(int, to_merge_size);
     if (remain == NULL) {
         PyErr_NoMemory();
         return -1;
     }
-    for (i = 0; i < to_merge_size; i++)
-        remain[i] = 0;
 
   again:
     empty_cnt = 0;
