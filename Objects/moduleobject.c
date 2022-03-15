@@ -231,13 +231,12 @@ _PyModule_CreateInitialized(PyModuleDef* module, int module_api_version)
         return NULL;
 
     if (module->m_size > 0) {
-        m->md_state = PyMem_Malloc(module->m_size);
+        m->md_state = PyMem_Calloc(module->m_size, 1);
         if (!m->md_state) {
             PyErr_NoMemory();
             Py_DECREF(m);
             return NULL;
         }
-        memset(m->md_state, 0, module->m_size);
     }
 
     if (module->m_methods != NULL) {
@@ -397,12 +396,11 @@ PyModule_ExecDef(PyObject *module, PyModuleDef *def)
         if (md->md_state == NULL) {
             /* Always set a state pointer; this serves as a marker to skip
              * multiple initialization (importlib.reload() is no-op) */
-            md->md_state = PyMem_Malloc(def->m_size);
+            md->md_state = PyMem_Calloc(def->m_size, 1);
             if (!md->md_state) {
                 PyErr_NoMemory();
                 return -1;
             }
-            memset(md->md_state, 0, def->m_size);
         }
     }
 
