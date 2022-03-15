@@ -746,13 +746,12 @@ PyMemoTable_New(void)
     memo->mt_used = 0;
     memo->mt_allocated = MT_MINSIZE;
     memo->mt_mask = MT_MINSIZE - 1;
-    memo->mt_table = PyMem_Malloc(MT_MINSIZE * sizeof(PyMemoEntry));
+    memo->mt_table = PyMem_Calloc(MT_MINSIZE, sizeof(PyMemoEntry));
     if (memo->mt_table == NULL) {
         PyMem_Free(memo);
         PyErr_NoMemory();
         return NULL;
     }
-    memset(memo->mt_table, 0, MT_MINSIZE * sizeof(PyMemoEntry));
 
     return memo;
 }
@@ -866,7 +865,7 @@ _PyMemoTable_ResizeTable(PyMemoTable *self, size_t min_size)
 
     /* Allocate new table. */
     oldtable = self->mt_table;
-    self->mt_table = PyMem_NEW(PyMemoEntry, new_size);
+    self->mt_table = PyMem_NewZero(PyMemoEntry, new_size);
     if (self->mt_table == NULL) {
         self->mt_table = oldtable;
         PyErr_NoMemory();
@@ -874,7 +873,6 @@ _PyMemoTable_ResizeTable(PyMemoTable *self, size_t min_size)
     }
     self->mt_allocated = new_size;
     self->mt_mask = new_size - 1;
-    memset(self->mt_table, 0, sizeof(PyMemoEntry) * new_size);
 
     /* Copy entries from the old table. */
     to_process = self->mt_used;
@@ -1569,12 +1567,11 @@ _Unpickler_MemoPut(UnpicklerObject *self, size_t idx, PyObject *value)
 static PyObject **
 _Unpickler_NewMemo(Py_ssize_t new_size)
 {
-    PyObject **memo = PyMem_NEW(PyObject *, new_size);
+    PyObject **memo = PyMem_NewZero(PyObject *, new_size);
     if (memo == NULL) {
         PyErr_NoMemory();
         return NULL;
     }
-    memset(memo, 0, new_size * sizeof(PyObject *));
     return memo;
 }
 
