@@ -2248,11 +2248,10 @@ unicode_asucs4(PyObject *self, PyObject *args)
     }
 
     buf_len = str_len + 1;
-    buffer = PyMem_NEW(Py_UCS4, buf_len);
+    buffer = PyMem_NewZero(Py_UCS4, buf_len);
     if (buffer == NULL) {
         return PyErr_NoMemory();
     }
-    memset(buffer, 0, sizeof(Py_UCS4)*buf_len);
     buffer[str_len] = 0xffffU;
 
     if (!PyUnicode_AsUCS4(unicode, buffer, buf_len, copy_null)) {
