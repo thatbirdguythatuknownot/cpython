@@ -488,14 +488,10 @@ PyLong_AsLongAndOverflow(PyObject *vv, int *overflow)
         }
         /* in the default case, i >= 2 */
         digits = v->ob_digit;
+        x = digits[--i];
 #if SIZEOF_SIZE_T == 8
-        /* use 2 digits */
-        x = digits[--i];
+        /* use another digit */
         x = (x << PyLong_SHIFT) | digits[--i];
-#else
-        /* use 1 digit */
-        assert(SIZEOF_SIZE_T == 4);
-        x = digits[--i];
 #endif
         while (i--) {
             x = (x << PyLong_SHIFT) | digits[i];
@@ -593,14 +589,10 @@ PyLong_AsSsize_t(PyObject *vv) {
         i = -(i);
     }
     digits = v->ob_digit;
+    x = digits[--i];
 #if SIZEOF_SIZE_T == 8
-    /* use 2 digits */
-    x = digits[--i];
+    /* use another digit */
     x = (x << PyLong_SHIFT) | digits[--i];
-#else
-    /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4);
-    x = digits[--i];
 #endif
     while (i--) {
         x = (x << PyLong_SHIFT) | digits[i];
@@ -657,14 +649,10 @@ PyLong_AsUnsignedLong(PyObject *vv)
     case 1: return v->ob_digit[0];
     }
     digits = v->ob_digit;
+    x = digits[--i];
 #if SIZEOF_SIZE_T == 8
-    /* use 2 digits */
-    x = digits[--i];
+    /* use another digit */
     x = (x << PyLong_SHIFT) | digits[--i];
-#else
-    /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4);
-    x = digits[--i];
 #endif
     while (i--) {
         x = (x << PyLong_SHIFT) | digits[i];
@@ -710,14 +698,10 @@ PyLong_AsSize_t(PyObject *vv)
     case 1: return v->ob_digit[0];
     }
     digits = v->ob_digit;
+    x = digits[--i];
 #if SIZEOF_SIZE_T == 8
-    /* use 2 digits */
-    x = digits[--i];
+    /* use another digit */
     x = (x << PyLong_SHIFT) | digits[--i];
-#else
-    /* use 1 digit */
-    assert(SIZEOF_SIZE_T == 4);
-    x = digits[--i];
 #endif
     while (i--) {
         x = (x << PyLong_SHIFT) | digits[i];
@@ -1425,14 +1409,10 @@ PyLong_AsLongLongAndOverflow(PyObject *vv, int *overflow)
             i = -(i);
         }
         digits = v->ob_digit;
+        x = digits[--i];
 #if SIZEOF_SIZE_T == 8
-        /* use 2 digits */
-        x = digits[--i];
+        /* use another digit */
         x = (x << PyLong_SHIFT) | digits[--i];
-#else
-        /* use 1 digit */
-        assert(SIZEOF_SIZE_T == 4);
-        x = digits[--i];
 #endif
         while (i--) {
             x = (x << PyLong_SHIFT) | digits[--i];
