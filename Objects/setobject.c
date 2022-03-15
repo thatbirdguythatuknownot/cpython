@@ -269,9 +269,10 @@ set_table_resize(PySetObject *so, Py_ssize_t minused)
             memcpy(small_copy, oldtable, sizeof(small_copy));
             oldtable = small_copy;
         }
+        memset(newtable, 0, sizeof(setentry) * newsize);
     }
     else {
-        newtable = PyMem_NEW(setentry, newsize);
+        newtable = PyMem_NewZero(setentry, newsize);
         if (newtable == NULL) {
             PyErr_NoMemory();
             return -1;
@@ -280,7 +281,6 @@ set_table_resize(PySetObject *so, Py_ssize_t minused)
 
     /* Make the set empty, using the new table. */
     assert(newtable != oldtable);
-    memset(newtable, 0, sizeof(setentry) * newsize);
     so->mask = newsize - 1;
     so->table = newtable;
 
