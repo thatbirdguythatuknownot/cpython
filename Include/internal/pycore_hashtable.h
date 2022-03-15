@@ -51,6 +51,9 @@ typedef struct {
     // Allocate a memory block
     void* (*malloc) (size_t size);
 
+    // Allocate a memory sequence with 0s
+    void* (*calloc) (size_t nitems, size_t elsize);
+
     // Release a memory block
     void (*free) (void *ptr);
 } _Py_hashtable_allocator_t;
