@@ -815,8 +815,6 @@ extern void *(* mpd_callocfunc)(size_t nmemb, size_t size);
 extern void *(* mpd_reallocfunc)(void *ptr, size_t size);
 extern void (* mpd_free)(void *ptr);
 
-void *mpd_callocfunc_em(size_t nmemb, size_t size);
-
 void *mpd_alloc(mpd_size_t nmemb, mpd_size_t size);
 void *mpd_calloc(mpd_size_t nmemb, mpd_size_t size);
 void *mpd_realloc(void *ptr, mpd_size_t nmemb, mpd_size_t size, uint8_t *err);
