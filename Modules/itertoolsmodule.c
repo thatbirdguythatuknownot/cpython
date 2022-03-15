@@ -2262,7 +2262,7 @@ product_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
     npools = nargs * repeat;
 
-    indices = PyMem_New(Py_ssize_t, npools);
+    indices = PyMem_NewZero(Py_ssize_t, npools);
     if (indices == NULL) {
         PyErr_NoMemory();
         goto error;
@@ -2278,13 +2278,11 @@ product_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         if (pool == NULL)
             goto error;
         PyTuple_SET_ITEM(pools, i, pool);
-        indices[i] = 0;
     }
     for ( ; i < npools; ++i) {
         PyObject *pool = PyTuple_GET_ITEM(pools, i - nargs);
         Py_INCREF(pool);
         PyTuple_SET_ITEM(pools, i, pool);
-        indices[i] = 0;
     }
 
     /* create productobject structure */
@@ -2611,14 +2609,11 @@ itertools_combinations_impl(PyTypeObject *type, PyObject *iterable,
         goto error;
     }
 
-    indices = PyMem_New(Py_ssize_t, r);
+    indices = PyMem_NewZero(Py_ssize_t, r);
     if (indices == NULL) {
         PyErr_NoMemory();
         goto error;
     }
-
-    for (i=0 ; i<r ; i++)
-        indices[i] = i;
 
     /* create combinationsobject structure */
     co = (combinationsobject *)type->tp_alloc(type, 0);
@@ -2948,14 +2943,11 @@ itertools_combinations_with_replacement_impl(PyTypeObject *type,
         goto error;
     }
 
-    indices = PyMem_New(Py_ssize_t, r);
+    indices = PyMem_NewZero(Py_ssize_t, r);
     if (indices == NULL) {
         PyErr_NoMemory();
         goto error;
     }
-
-    for (i=0 ; i<r ; i++)
-        indices[i] = 0;
 
     /* create cwrobject structure */
     co = (cwrobject *)type->tp_alloc(type, 0);
