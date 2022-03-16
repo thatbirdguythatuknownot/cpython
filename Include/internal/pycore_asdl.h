@@ -53,15 +53,17 @@ asdl_int_seq *_Py_asdl_int_seq_new(Py_ssize_t size, PyArena *arena);
 asdl_ ## NAME ## _seq *_Py_asdl_ ## NAME ## _seq_new(Py_ssize_t size, PyArena *arena) \
 { \
     asdl_ ## NAME ## _seq *seq = NULL; \
+    size_t n = 0;
     /* check if size is sane and can be added safely */ \
     if (size < 0 || \
         (size && (((size_t)size - 1) > (SIZE_MAX / sizeof(void *)) || \
-                  (sizeof(TYPE *) * (size_t)size) > SIZE_MAX))) \
+                  (n = sizeof(TYPE *) * (size - 1)) >
+                      (SIZE_MAX - sizeof(asdl_ ## NAME ## _seq))))) \
     { \
         PyErr_NoMemory(); \
         return NULL; \
     } \
-    seq = (asdl_ ## NAME ## _seq *)_PyArena_Calloc(arena, size, sizeof(TYPE *)); \
+    seq = (asdl_ ## NAME ## _seq *)_PyArena_Calloc(arena, 1, n + sizeof(asdl_ ## NAME ## _seq)); \
     if (!seq) { \
         PyErr_NoMemory(); \
         return NULL; \
