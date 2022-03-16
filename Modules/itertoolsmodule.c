@@ -2598,7 +2598,6 @@ itertools_combinations_impl(PyTypeObject *type, PyObject *iterable,
     Py_ssize_t n;
     PyObject *pool = NULL;
     Py_ssize_t *indices = NULL;
-    Py_ssize_t i;
 
     pool = PySequence_Tuple(iterable);
     if (pool == NULL)
@@ -2932,7 +2931,6 @@ itertools_combinations_with_replacement_impl(PyTypeObject *type,
     Py_ssize_t n;
     PyObject *pool = NULL;
     Py_ssize_t *indices = NULL;
-    Py_ssize_t i;
 
     pool = PySequence_Tuple(iterable);
     if (pool == NULL)
