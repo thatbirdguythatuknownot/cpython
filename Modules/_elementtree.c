@@ -3040,7 +3040,7 @@ static struct PyExpat_CAPI *expat_capi;
 #define EXPAT(func) (expat_capi->func)
 
 static XML_Memory_Handling_Suite ExpatMemoryHandler = {
-    PyObject_Malloc, PyObject_Realloc, PyObject_Free};
+    PyObject_Malloc, PyObject_Calloc, PyObject_Realloc, PyObject_Free};
 
 typedef struct {
     PyObject_HEAD
