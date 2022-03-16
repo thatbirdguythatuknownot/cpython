@@ -220,7 +220,7 @@ XML_SetXmlDeclHandler(XML_Parser parser, XML_XmlDeclHandler xmldecl);
 
 typedef struct {
   void *(*malloc_fcn)(size_t size);
-  void *(*calloc_fcn)(size_t size);
+  void *(*calloc_fcn)(size_t nitems, size_t elsize);
   void *(*realloc_fcn)(void *ptr, size_t size);
   void (*free_fcn)(void *ptr);
 } XML_Memory_Handling_Suite;
