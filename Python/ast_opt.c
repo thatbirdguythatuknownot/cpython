@@ -717,7 +717,32 @@ astfold_expr(expr_ty node_, PyArena *ctx_, _PyASTOptimizeState *state)
     case BinOp_kind:
         CALL(astfold_expr, expr_ty, node_->v.BinOp.left);
         CALL(astfold_expr, expr_ty, node_->v.BinOp.right);
-        CALL(fold_binop, expr_ty, node_);
+        if (node_->v.BinOp.op == CallPipe) {
+            expr_ty left = node_->v.BinOp.left;
+            expr_ty right = node_->v.BinOp.right;
+            if (!right->v.Call.args) {
+                right->v.Call.args = (asdl_expr_seq*)_Py_asdl_generic_seq_new(1, ctx_);
+                if (!right->v.Call.args) {
+                    return 0;
+                }
+                asdl_seq_SET(right->v.Call.args, 0, left);
+            }
+            else {
+                asdl_expr_seq *new_seq = (asdl_expr_seq*)_Py_asdl_expr_seq_new(asdl_seq_LEN(right->v.Call.args) + 1, ctx_);
+                if (!new_seq) {
+                    return 0;
+                }
+
+                for (Py_ssize_t i = 0, l = asdl_seq_LEN(new_seq); i + 1 < l; i++) {
+                    asdl_seq_SET(new_seq, i, asdl_seq_GET(right->v.Call.args, i));
+                }
+                asdl_seq_SET(new_seq, asdl_seq_LEN(new_seq) - 1, left);
+                right->v.Call.args = new_seq;
+            }
+        }
+        else {
+            CALL(fold_binop, expr_ty, node_);
+        }
         break;
     case UnaryOp_kind:
         CALL(astfold_expr, expr_ty, node_->v.UnaryOp.operand);
