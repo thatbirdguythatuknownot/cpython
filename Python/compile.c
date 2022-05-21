@@ -5754,7 +5754,7 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
     case BoolOp_kind:
         return compiler_boolop(c, e);
     case BinOp_kind:
-        if (e->v.BinOp.op == Comp) {
+        if (e->v.BinOp.op == CallPipe) {
             VISIT(c, expr, e->v.BinOp.right);
         }
         else {
