@@ -635,9 +635,8 @@ expressions[expr_ty]:
 expression[expr_ty] (memo):
     | invalid_expression
     | invalid_legacy_expression
-    | a=disjunction 'if' b=disjunction 'else' c=expression { _PyAST_IfExp(b, a, c, EXTRA) }
-    | disjunction
-    | lambdef
+    | a=expression '|>' b=primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
+    | real_expression
 
 yield_expr[expr_ty]:
     | 'yield' 'from' a=expression { _PyAST_YieldFrom(a, EXTRA) }
@@ -666,6 +665,11 @@ named_expression[expr_ty]:
     | assignment_expression
     | invalid_named_expression
     | expression !':='
+
+real_expression[expr_ty] (memo):
+    | a=disjunction 'if' b=disjunction 'else' c=real_expression { _PyAST_IfExp(b, a, c, EXTRA) }
+    | disjunction
+    | lambdef
 
 disjunction[expr_ty] (memo):
     | a=conjunction b=('or' c=conjunction { c })+ { _PyAST_BoolOp(
@@ -1091,9 +1095,8 @@ invalid_kwarg:
 
 # IMPORTANT: Note that the "_without_invalid" suffix causes the rule to not call invalid rules under it
 expression_without_invalid[expr_ty]:
-    | a=disjunction 'if' b=disjunction 'else' c=expression { _PyAST_IfExp(b, a, c, EXTRA) }
-    | disjunction
-    | lambdef
+    | a=expression '|>' b=primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
+    | real_expression
 invalid_legacy_expression:
     | a=NAME !'(' b=star_expressions {
         _PyPegen_check_legacy_stmt(p, a) ? RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b,
@@ -1106,6 +1109,10 @@ invalid_expression:
         _PyPegen_check_legacy_stmt(p, a) ? NULL : p->tokens[p->mark-1]->level == 0 ? NULL :
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a comma?") }
    | a=disjunction 'if' b=disjunction !('else'|':') { RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "expected 'else' after 'if' expression") }
+   | a=expression_without_invalid '|>' b=primary {
+        b->kind == Call_kind ? NULL :
+        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "cannot use the call-piping operator on %s",
+                                          _PyPegen_get_expr_name(b)) }
 
 invalid_named_expression(memo):
     | a=expression ':=' expression {
