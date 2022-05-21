@@ -5754,9 +5754,14 @@ compiler_visit_expr1(struct compiler *c, expr_ty e)
     case BoolOp_kind:
         return compiler_boolop(c, e);
     case BinOp_kind:
-        VISIT(c, expr, e->v.BinOp.left);
-        VISIT(c, expr, e->v.BinOp.right);
-        ADDOP_BINARY(c, e->v.BinOp.op);
+        if (e->v.BinOp.op == Comp) {
+            VISIT(c, expr, e->v.BinOp.right);
+        }
+        else {
+            VISIT(c, expr, e->v.BinOp.left);
+            VISIT(c, expr, e->v.BinOp.right);
+            ADDOP_BINARY(c, e->v.BinOp.op);
+        }
         break;
     case UnaryOp_kind:
         VISIT(c, expr, e->v.UnaryOp.operand);
