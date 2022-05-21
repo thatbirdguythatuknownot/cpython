@@ -635,7 +635,7 @@ expressions[expr_ty]:
 expression[expr_ty] (memo):
     | invalid_expression
     | invalid_legacy_expression
-    | a=expression '|>' b=primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
+    | a=expression '|>' b=call_primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
     | real_expression
 
 yield_expr[expr_ty]:
@@ -790,6 +790,17 @@ primary[expr_ty]:
                  EXTRA) }
     | a=primary '[' b=slices ']' { _PyAST_Subscript(a, b, Load, EXTRA) }
     | atom
+
+call_primary[expr_ty] (memo):
+    | a=call_primary '.' b=NAME &t_lookahead { _PyAST_Attribute(a, b->v.Name.id, Load, EXTRA) }
+    | a=call_primary b=genexp { _PyAST_Call(a, CHECK(asdl_expr_seq*, (asdl_expr_seq*)_PyPegen_singleton_seq(p, b)), NULL, EXTRA) }
+    | a=call_primary '(' b=[arguments] ')' {
+        _PyAST_Call(a,
+                 (b) ? ((expr_ty) b)->v.Call.args : NULL,
+                 (b) ? ((expr_ty) b)->v.Call.keywords : NULL,
+                 EXTRA) }
+    | a=call_primary '[' b=slices ']' &t_lookahead { _PyAST_Subscript(a, b, Load, EXTRA) }
+    | atom &t_lookahead
 
 slices[expr_ty]:
     | a=slice !',' { a }
@@ -1095,7 +1106,7 @@ invalid_kwarg:
 
 # IMPORTANT: Note that the "_without_invalid" suffix causes the rule to not call invalid rules under it
 expression_without_invalid[expr_ty]:
-    | a=expression '|>' b=primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
+    | a=expression '|>' b=call_primary { _PyAST_BinOp(a, CallPipe, b, EXTRA) }
     | real_expression
 invalid_legacy_expression:
     | a=NAME !'(' b=star_expressions {
@@ -1109,7 +1120,7 @@ invalid_expression:
         _PyPegen_check_legacy_stmt(p, a) ? NULL : p->tokens[p->mark-1]->level == 0 ? NULL :
         RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "invalid syntax. Perhaps you forgot a comma?") }
    | a=disjunction 'if' b=disjunction !('else'|':') { RAISE_SYNTAX_ERROR_KNOWN_RANGE(a, b, "expected 'else' after 'if' expression") }
-   | a=expression_without_invalid '|>' b=primary {
+   | a=expression_without_invalid '|>' !call_primary b=real_expression {
         b->kind == Call_kind ? NULL :
         RAISE_SYNTAX_ERROR_KNOWN_LOCATION(b, "cannot use the call-piping operator on %s",
                                           _PyPegen_get_expr_name(b)) }
