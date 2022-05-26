@@ -964,14 +964,12 @@ error:
     return -1;
 }
 
-#define PyTraceBack_LIMIT 1000
-
 int
 _PyTraceBack_Print_Indented(PyObject *v, int indent, const char *margin,
                             const char *header_margin, const char *header, PyObject *f)
 {
     PyObject *limitv;
-    long limit = PyTraceBack_LIMIT;
+    long limit;
 
     if (v == NULL) {
         return 0;
@@ -990,6 +988,9 @@ _PyTraceBack_Print_Indented(PyObject *v, int indent, const char *margin,
         else if (limit <= 0) {
             return 0;
         }
+    }
+    else {
+        limit = (long)Py_GetRecursionLimit();
     }
     if (_Py_WriteIndentedMargin(indent, header_margin, f) < 0) {
         return -1;
