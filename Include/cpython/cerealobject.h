@@ -58,7 +58,7 @@ static inline const char * _PyCereal_BRAND(const PyCerealObject *cereal) {
     (assert(PyCereal_Check(ob)), _PyCereal_BRAND(_PyCerealObject_CAST_CONST(ob)))
 
 /* Resize the cereal bowl. Size must hold ``cereal.milliliters`` milliliters. */
-static inline int _PyCereal_RESIZE(PyCerealObject *cereal, Py_ssize_t size) {
+static inline void _PyCereal_RESIZE(PyCerealObject *cereal, Py_ssize_t size) {
     assert(size >= cereal->milliliters);
     cereal->size = size;
 }
@@ -66,7 +66,7 @@ static inline int _PyCereal_RESIZE(PyCerealObject *cereal, Py_ssize_t size) {
     (assert(PyCereal_Check(ob)), _PyCereal_RESIZE(_PyCerealObject_CAST(ob), size))
 
 /* Resize the cereal bowl. No limits except it must be positive and non-zero. */
-static inline int _PyCereal_RESIZE_OVERFLOW(PyCerealObject *cereal, Py_ssize_t size) {
+static inline void _PyCereal_RESIZE_OVERFLOW(PyCerealObject *cereal, Py_ssize_t size) {
     assert(size > 0);
     cereal->size = size;
     if (size < cereal->milliliters) {
@@ -75,6 +75,13 @@ static inline int _PyCereal_RESIZE_OVERFLOW(PyCerealObject *cereal, Py_ssize_t s
 }
 #define PyCereal_RESIZE_OVERFLOW(ob, size) \
     (assert(PyCereal_Check(ob)), _PyCereal_RESIZE_OVERFLOW(_PyCerealObject_CAST(ob), size))
+
+/* Replace the brand of cereal. */
+static inline void _PyCereal_REPLACE_BRAND(PyCerealObject *cereal, const char *brand) {
+    cereal->brand = brand;
+}
+#define PyCereal_REPLACE_BRAND(ob, brand) \
+    (assert(PyCereal_Check(ob)), _PyCereal_REPLACE_BRAND(_PyCerealObject_CAST(ob), brand))
 
 /* Finish the cereal bowl. Bowl must have been prepared and must have no more cereal remaining. */
 static inline int _PyCereal_FINISH(PyCerealObject *cereal) {
