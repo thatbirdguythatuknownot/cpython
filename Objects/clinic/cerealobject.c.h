@@ -58,29 +58,41 @@ exit:
 }
 
 PyDoc_STRVAR(cereal_prepare__doc__,
-"prepare($self, milliliters, /)\n"
+"prepare($self, milliliters, /, brand=\'\')\n"
 "--\n"
 "\n"
 "Prepare `milliliters` milliliters of cereal. `milliliters` must not exceed cereal bowl size.\n"
 "\n"
 "  milliliters\n"
-"    How much milliliters of cereal to prepare. Must not exceed bowl capacity");
+"    How much milliliters of cereal to prepare. Must not exceed bowl capacity\n"
+"  brand\n"
+"    The brand of cereal");
 
 #define CEREAL_PREPARE_METHODDEF    \
-    {"prepare", (PyCFunction)cereal_prepare, METH_O, cereal_prepare__doc__},
+    {"prepare", (PyCFunction)(void(*)(void))cereal_prepare, METH_FASTCALL|METH_KEYWORDS, cereal_prepare__doc__},
 
 static PyObject *
-cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters);
+cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters,
+                    const char *brand);
 
 static PyObject *
-cereal_prepare(PyCerealObject *self, PyObject *arg)
+cereal_prepare(PyCerealObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
 {
     PyObject *return_value = NULL;
+    static const char * const _keywords[] = {"", "brand", NULL};
+    static _PyArg_Parser _parser = {NULL, _keywords, "prepare", 0};
+    PyObject *argsbuf[2];
+    Py_ssize_t noptargs = nargs + (kwnames ? PyTuple_GET_SIZE(kwnames) : 0) - 1;
     Py_ssize_t milliliters;
+    const char *brand = "";
 
+    args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 1, 2, 0, argsbuf);
+    if (!args) {
+        goto exit;
+    }
     {
         Py_ssize_t ival = -1;
-        PyObject *iobj = _PyNumber_Index(arg);
+        PyObject *iobj = _PyNumber_Index(args[0]);
         if (iobj != NULL) {
             ival = PyLong_AsSsize_t(iobj);
             Py_DECREF(iobj);
@@ -90,7 +102,24 @@ cereal_prepare(PyCerealObject *self, PyObject *arg)
         }
         milliliters = ival;
     }
-    return_value = cereal_prepare_impl(self, milliliters);
+    if (!noptargs) {
+        goto skip_optional_pos;
+    }
+    if (!PyUnicode_Check(args[1])) {
+        _PyArg_BadArgument("prepare", "argument 'brand'", "str", args[1]);
+        goto exit;
+    }
+    Py_ssize_t brand_length;
+    brand = PyUnicode_AsUTF8AndSize(args[1], &brand_length);
+    if (brand == NULL) {
+        goto exit;
+    }
+    if (strlen(brand) != (size_t)brand_length) {
+        PyErr_SetString(PyExc_ValueError, "embedded null character");
+        goto exit;
+    }
+skip_optional_pos:
+    return_value = cereal_prepare_impl(self, milliliters, brand);
 
 exit:
     return return_value;
@@ -399,4 +428,56 @@ cereal_resize_overflow(PyCerealObject *self, PyObject *arg)
 exit:
     return return_value;
 }
-/*[clinic end generated code: output=3f427c6575920a90 input=a9049054013a1b77]*/
+
+PyDoc_STRVAR(cereal_replace_brand__doc__,
+"replace_brand($self, /, brand=\'\')\n"
+"--\n"
+"\n"
+"Return a cereal bowl with a different brand named `brand`.\n"
+"\n"
+"  brand\n"
+"    The brand of cereal");
+
+#define CEREAL_REPLACE_BRAND_METHODDEF    \
+    {"replace_brand", (PyCFunction)(void(*)(void))cereal_replace_brand, METH_FASTCALL|METH_KEYWORDS, cereal_replace_brand__doc__},
+
+static PyObject *
+cereal_replace_brand_impl(PyCerealObject *self, const char *brand);
+
+static PyObject *
+cereal_replace_brand(PyCerealObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+{
+    PyObject *return_value = NULL;
+    static const char * const _keywords[] = {"brand", NULL};
+    static _PyArg_Parser _parser = {NULL, _keywords, "replace_brand", 0};
+    PyObject *argsbuf[1];
+    Py_ssize_t noptargs = nargs + (kwnames ? PyTuple_GET_SIZE(kwnames) : 0) - 0;
+    const char *brand = "";
+
+    args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 0, 1, 0, argsbuf);
+    if (!args) {
+        goto exit;
+    }
+    if (!noptargs) {
+        goto skip_optional_pos;
+    }
+    if (!PyUnicode_Check(args[0])) {
+        _PyArg_BadArgument("replace_brand", "argument 'brand'", "str", args[0]);
+        goto exit;
+    }
+    Py_ssize_t brand_length;
+    brand = PyUnicode_AsUTF8AndSize(args[0], &brand_length);
+    if (brand == NULL) {
+        goto exit;
+    }
+    if (strlen(brand) != (size_t)brand_length) {
+        PyErr_SetString(PyExc_ValueError, "embedded null character");
+        goto exit;
+    }
+skip_optional_pos:
+    return_value = cereal_replace_brand_impl(self, brand);
+
+exit:
+    return return_value;
+}
+/*[clinic end generated code: output=86649a2019304f62 input=a9049054013a1b77]*/
