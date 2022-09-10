@@ -532,15 +532,16 @@ cereal.prepare
     milliliters: Py_ssize_t
         How much milliliters of cereal to prepare. Must not exceed bowl capacity
     /
-    brand: str(encoding='UTF8', accept={bytes, bytearray, str}) = ""
+    brand: str = ""
         The brand of cereal
 
 Prepare `milliliters` milliliters of cereal. `milliliters` must not exceed cereal bowl size.
 [clinic start generated code]*/
 
 static PyObject *
-cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters, const char *brand)
-/*[clinic end generated code: output=ad92a05b88f5445a input=e8e7a926f5b9ebdd]*/
+cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters,
+                    const char *brand)
+/*[clinic end generated code: output=2dffeb8261a58c4e input=9ce5999c0293d0a0]*/
 {
     if (PyCereal_Prepare(self, milliliters, brand) == -1) {
         return NULL;
@@ -695,7 +696,7 @@ cereal_resize_overflow_impl(PyCerealObject *self, Py_ssize_t size)
 /*[clinic input]
 cereal.replace_brand
 
-    brand: str(encoding='UTF8', accept={bytes, bytearray, str}) = ""
+    brand: str = ""
         The brand of cereal
 
 Return a cereal bowl with a different brand named `brand`.
@@ -703,7 +704,7 @@ Return a cereal bowl with a different brand named `brand`.
 
 static PyObject *
 cereal_replace_brand_impl(PyCerealObject *self, const char *brand)
-/*[clinic end generated code: output=<hex code> input=<hex code>]*/
+/*[clinic end generated code: output=09acfd86097bc4aa input=d12806186a9ba2dd]*/
 {
     return PyCereal_ReplaceBrand(self, brand);
 }
