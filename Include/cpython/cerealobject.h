@@ -7,7 +7,8 @@ typedef struct {
     PyObject_VAR_HEAD
     Py_ssize_t milliliters;  /* How many milliliters of cereal the bowl has */
     Py_ssize_t size;         /* Maximum capacity of the cereal bowl */
-    int is_prepared;         /* If the cereal bowl is prepared */
+    int is_prepared;
+    const char *brand;       /* Brand of cereal in the bowl */
 
     /* Reserved for future use */
     int is_finished;         /* If the cereal bowl is finished */
@@ -48,6 +49,13 @@ static inline int _PyCereal_IS_FINISHED(const PyCerealObject *cereal) {
     (assert(PyCereal_Check(ob)), _PyCereal_IS_FINISHED(_PyCerealObject_CAST_CONST(ob)))
 #define _PyCereal_IS_UNPREPARED _PyCereal_IS_FINISHED
 #define PyCereal_IS_UNPREPARED PyCereal_IS_FINISHED
+
+/* Return the brand of cereal in cereal bowl */
+static inline const char * _PyCereal_BRAND(const PyCerealObject *cereal) {
+    return cereal->brand;
+}
+#define PyCereal_BRAND(ob) \
+    (assert(PyCereal_Check(ob)), _PyCereal_BRAND(_PyCerealObject_CAST_CONST(ob)))
 
 /* Resize the cereal bowl. Size must hold ``cereal.milliliters`` milliliters. */
 static inline int _PyCereal_RESIZE(PyCerealObject *cereal, Py_ssize_t size) {
