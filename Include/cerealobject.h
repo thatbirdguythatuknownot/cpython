@@ -167,6 +167,12 @@ PyAPI_FUNC(PyObject *) PyCereal_AddSizeRelative(PyCerealObject *cereal, Py_ssize
  */
 PyAPI_FUNC(PyObject *) PyCereal_MultiplySizeRelative(PyCerealObject *cereal, Py_ssize_t ml);
 
+/* PyObject *PyCereal_ReplaceBrand(PyCerealObject *cereal, const char *brand)
+ *   Return a cereal bowl with the cereal bowl ``cereal``'s brand
+ :   replaced with ``brand``.
+ */
+PyAPI_FUNC(PyObject *) PyCereal_ReplaceBrand(PyCerealObject *cereal, const char *brand);
+
 #ifdef __cplusplus
 }
 #endif
