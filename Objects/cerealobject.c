@@ -39,14 +39,19 @@ PyCereal_New(Py_ssize_t ml)
     new->size = ml;
     new->milliliters = 0;
     new->is_prepared = 0;
+    new->brand = "";
 
     return (PyObject *)new;
 }
 
 PyObject *
-PyCereal_FromFields(Py_ssize_t size, Py_ssize_t ml)
+PyCereal_FromFields(Py_ssize_t size, Py_ssize_t ml, const char *brand)
 {
     PyCerealObject *new;
+
+    if (brand == NULL) {
+        brand = "";
+    }
 
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
@@ -81,14 +86,19 @@ PyCereal_FromFields(Py_ssize_t size, Py_ssize_t ml)
     new->size = size;
     new->milliliters = ml;
     new->is_prepared = ml ? 1 : 0;
+    new->brand = brand;
 
     return (PyObject *)new;
 }
 
 PyObject *
-PyCereal_FromFieldsOverflow(Py_ssize_t size, Py_ssize_t ml)
+PyCereal_FromFieldsOverflow(Py_ssize_t size, Py_ssize_t ml, const char *brand)
 {
     PyCerealObject *new;
+
+    if (brand == NULL) {
+        brand = "";
+    }
 
     if (size < 0) {
         PyErr_Format(PyExc_TypeError,
@@ -118,13 +128,18 @@ PyCereal_FromFieldsOverflow(Py_ssize_t size, Py_ssize_t ml)
     new->size = size;
     new->milliliters = ml > size ? size : ml;
     new->is_prepared = ml ? 1 : 0;
+    new->brand = brand;
 
     return (PyObject *)new;
 }
 
 int
-PyCereal_Prepare(PyCerealObject *cereal, Py_ssize_t ml)
+PyCereal_Prepare(PyCerealObject *cereal, Py_ssize_t ml, const char *brand)
 {
+    if (brand == NULL) {
+        brand = "";
+    }
+
     if (cereal->is_prepared) {
         PyErr_SetString(PyExc_TypeError,
                         "cannot prepare an already prepared cereal bowl");
@@ -150,6 +165,7 @@ PyCereal_Prepare(PyCerealObject *cereal, Py_ssize_t ml)
 
     cereal->is_prepared = 1;
     cereal->milliliters = ml;
+    cereal->brand = brand;
     return 0;
 }
 
@@ -235,7 +251,7 @@ PyCereal_Add(PyCerealObject *cereal, Py_ssize_t ml)
         return NULL;
     }
 
-    return PyCereal_FromFields(size, milliliters);
+    return PyCereal_FromFields(size, milliliters, cereal->brand);
 }
 
 PyObject *
@@ -262,7 +278,7 @@ PyCereal_Subtract(PyCerealObject *cereal, Py_ssize_t ml)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->size, cereal->milliliters - ml);
+    return PyCereal_FromFields(cereal->size, cereal->milliliters - ml, cereal->brand);
 }
 
 PyObject *
@@ -292,7 +308,7 @@ PyCereal_Multiply(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(size_bowl, milliliters);
+    return PyCereal_FromFields(size_bowl, milliliters, cereal->brand);
 }
 
 PyObject *
@@ -316,7 +332,7 @@ PyCereal_Divide(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->size, cereal->milliliters / size);
+    return PyCereal_FromFields(cereal->size, cereal->milliliters / size, cereal->brand);
 }
 
 PyObject *
@@ -334,7 +350,7 @@ PyCereal_Resize(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(size, cereal->milliliters);
+    return PyCereal_FromFields(size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -347,7 +363,7 @@ PyCereal_ResizeOverflow(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFieldsOverflow(size, cereal->milliliters);
+    return PyCereal_FromFieldsOverflow(size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -360,7 +376,7 @@ PyCereal_AddSizeAbsolute(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->size+size, cereal->milliliters);
+    return PyCereal_FromFields(cereal->size+size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -380,7 +396,7 @@ PyCereal_SubtractSizeAbsolute(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(size, cereal->milliliters);
+    return PyCereal_FromFields(size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -393,7 +409,7 @@ PyCereal_MultiplySizeAbsolute(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->size*size, cereal->milliliters);
+    return PyCereal_FromFields(cereal->size*size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -406,7 +422,7 @@ PyCereal_AddSizeRelative(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->milliliters+size, cereal->milliliters);
+    return PyCereal_FromFields(cereal->milliliters+size, cereal->milliliters, cereal->brand);
 }
 
 PyObject *
@@ -419,7 +435,13 @@ PyCereal_MultiplySizeRelative(PyCerealObject *cereal, Py_ssize_t size)
         return NULL;
     }
 
-    return PyCereal_FromFields(cereal->milliliters*size, cereal->milliliters);
+    return PyCereal_FromFields(cereal->milliliters*size, cereal->milliliters, cereal->brand);
+}
+
+PyObject *
+PyCereal_ReplaceBrand(PyCerealObject *cereal, const char *brand)
+{
+    return PyCereal_FromFields(cereal->size, cereal->milliliters, brand);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -469,17 +491,18 @@ cereal___init___impl(PyCerealObject *self, Py_ssize_t capacity,
 static PyObject *
 cereal_repr(PyCerealObject *cereal)
 {
-    return PyUnicode_FromFormat("%s(capacity=%zd, milliliters=%zd)",
+    return PyUnicode_FromFormat("%s(capacity=%zd, milliliters=%zd, brand=%s)",
                                 Py_TYPE(cereal)->tp_name, cereal->size,
-                                cereal->milliliters);
+                                cereal->milliliters, cereal->brand);
 }
 
 static PyObject *
 cereal_str(PyCerealObject *cereal)
 {
     return PyUnicode_FromFormat("Cereal bowl that can hold %zd milliliters "
-                                "with %zd milliliters of cereal in it",
-                                cereal->size, cereal->milliliters);
+                                "with %zd milliliters of %s%ccereal in it",
+                                cereal->size, cereal->milliliters, cereal->brand,
+                                cereal->brand[0] != '\0' ? " " : "");
 }
 
 static PyObject *
@@ -509,15 +532,17 @@ cereal.prepare
     milliliters: Py_ssize_t
         How much milliliters of cereal to prepare. Must not exceed bowl capacity
     /
+    brand: str(encoding='UTF8', accept={bytes, bytearray, str}) = ""
+        The brand of cereal
 
 Prepare `milliliters` milliliters of cereal. `milliliters` must not exceed cereal bowl size.
 [clinic start generated code]*/
 
 static PyObject *
-cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters)
+cereal_prepare_impl(PyCerealObject *self, Py_ssize_t milliliters, const char *brand)
 /*[clinic end generated code: output=ad92a05b88f5445a input=e8e7a926f5b9ebdd]*/
 {
-    if (PyCereal_Prepare(self, milliliters) == -1) {
+    if (PyCereal_Prepare(self, milliliters, brand) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -667,6 +692,22 @@ cereal_resize_overflow_impl(PyCerealObject *self, Py_ssize_t size)
     return PyCereal_ResizeOverflow(self, size);
 }
 
+/*[clinic input]
+cereal.replace_brand
+
+    brand: str(encoding='UTF8', accept={bytes, bytearray, str}) = ""
+        The brand of cereal
+
+Return a cereal bowl with a different brand named `brand`.
+[clinic start generated code]*/
+
+static PyObject *
+cereal_replace_brand_impl(PyCerealObject *self, const char *brand)
+/*[clinic end generated code: output=<hex code> input=<hex code>]*/
+{
+    return PyCereal_ReplaceBrand(self, brand);
+}
+
 static PyObject *
 cereal_addition(PyObject *self, PyObject *other)
 {
@@ -733,6 +774,7 @@ static PyMemberDef cereal_members[] = {
     {"size", T_PYSSIZET, offsetof(PyCerealObject, size), READONLY},
     {"milliliters", T_PYSSIZET, offsetof(PyCerealObject, milliliters), READONLY},
     {"is_prepared", T_INT, offsetof(PyCerealObject, is_prepared), READONLY},
+    {"brand", T_STRING, offsetof(PyCerealObject, brand), READONLY},
     {NULL}
 };
 
